@@ -14,17 +14,32 @@ class LightPoint(object):
         self.root = Et.parse(filename).getroot()
         self.id = self.root.get('Id')
 
-    def plot(self, startDate, endDate, timeLocator=mdates.HourLocator):
-        flag = True
+    def __skipToDate(self, dstDate):
         i = 0
-        while flag and i < len(self.root):
+        while i < len(self.root):
             child = self.root[i]
             date = datetime.strptime(child.get('Time'), LightPoint.dateFormat)
-            flag = date < startDate
+            flag = date < dstDate
+            if flag is False:
+                break
+
             i += 1
 
-        i -= 1
-        print('Start date:[%s]' % date.__str__())
+        return i
+
+    @staticmethod
+    def plot(x, k, timeLocator):
+        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter(LightPoint.dateFormat))
+        plt.gca().xaxis.set_major_locator(timeLocator())
+
+        for i in range(len(x)):
+            plt.plot(x[i], 0, k[i])
+
+        plt.gcf().autofmt_xdate()
+        plt.show()
+
+    def plotDateRange(self, startDate, endDate, timeLocator=mdates.HourLocator):
+        i = self.__skipToDate(startDate)
 
         x = []
         k = []
@@ -48,14 +63,36 @@ class LightPoint(object):
             col = LightPoint.colors[val + 1]
             k.append(col)
 
-        print('End date:[%s]' % date.__str__())
+        print('Start date:[%s]' % x[0].__str__())
+        print('End date:[%s]' % x[len(x) - 1].__str__())
         print('nPts:[%d]' % len(x))
 
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter(LightPoint.dateFormat))
-        plt.gca().xaxis.set_major_locator(timeLocator())
+        LightPoint.plot(x, k, timeLocator)
 
-        for i in range(len(x)):
-            plt.plot(x[i], 0, k[i])
+    def plotPtsRange(self, startDate, nPts, timeLocator=mdates.HourLocator):
+        i = self.__skipToDate(startDate)
 
-        plt.gcf().autofmt_xdate()
-        plt.show()
+        x = []
+        k = []
+
+        maxIdx = min(i + nPts, len(self.root))
+        while i < maxIdx:
+            child = self.root[i]
+            date = datetime.strptime(child.get('Time'), LightPoint.dateFormat)
+            x.append(date)
+            print(date)
+            i += 1
+
+            try:
+                val = int(child.text)
+            except ValueError:
+                val = -1
+
+            col = LightPoint.colors[val + 1]
+            k.append(col)
+
+        print('Start date:[%s]' % x[0].__str__())
+        print('End date:[%s]' % x[len(x) - 1].__str__())
+        print('nPts:[%d]' % len(x))
+
+        LightPoint.plot(x, k, timeLocator)
