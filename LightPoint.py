@@ -6,8 +6,11 @@ import matplotlib.dates as mdates
 
 class LightPoint(object):
     dateFormat = '%Y-%m-%d %H:%M:%S.%f'
-    nullColor = 'ro'
-    colors = [nullColor, 'ko', 'yo']
+    nullColor = 'red'
+    colors = [nullColor, 'black', 'yellow']
+
+    # nullColor = 'ro'
+    # colors = [nullColor, 'ko', 'yo']
 
     def __init__(self, filename):
         self.filename = filename
@@ -27,8 +30,13 @@ class LightPoint(object):
 
         return i
 
-    @staticmethod
-    def plot(x, k, timeLocator):
+    def __plot(self, startDate, lambdaFunc, timeLocator):
+        x, k = self.collectData(startDate, lambdaFunc)
+
+        print('Start date:[%s]' % x[0].__str__())
+        print('End date:[%s]' % x[len(x) - 1].__str__())
+        print('nPts:[%d]' % len(x))
+
         plt.gca().xaxis.set_major_formatter(mdates.DateFormatter(LightPoint.dateFormat))
         plt.gca().xaxis.set_major_locator(timeLocator())
 
@@ -38,7 +46,7 @@ class LightPoint(object):
         plt.gcf().autofmt_xdate()
         plt.show()
 
-    def plotDateRange(self, startDate, endDate, timeLocator=mdates.HourLocator):
+    def collectData(self, startDate, lambdaFunc):
         i = self.__skipToDate(startDate)
 
         x = []
@@ -47,12 +55,10 @@ class LightPoint(object):
         while i < len(self.root):
             child = self.root[i]
             date = datetime.strptime(child.get('Time'), LightPoint.dateFormat)
-            flag = date < endDate
-            if flag is False:
+            if lambdaFunc(x, date) is False:
                 break
 
             x.append(date)
-            print(date)
             i += 1
 
             try:
@@ -63,36 +69,12 @@ class LightPoint(object):
             col = LightPoint.colors[val + 1]
             k.append(col)
 
-        print('Start date:[%s]' % x[0].__str__())
-        print('End date:[%s]' % x[len(x) - 1].__str__())
-        print('nPts:[%d]' % len(x))
+        return x, k
 
-        LightPoint.plot(x, k, timeLocator)
+    def plotDateRange(self, startDate, endDate, timeLocator=mdates.HourLocator):
+        lambdaFunc = lambda x, date: date < endDate
+        self.__plot(startDate, lambdaFunc, timeLocator)
 
     def plotPtsRange(self, startDate, nPts, timeLocator=mdates.HourLocator):
-        i = self.__skipToDate(startDate)
-
-        x = []
-        k = []
-
-        maxIdx = min(i + nPts, len(self.root))
-        while i < maxIdx:
-            child = self.root[i]
-            date = datetime.strptime(child.get('Time'), LightPoint.dateFormat)
-            x.append(date)
-            print(date)
-            i += 1
-
-            try:
-                val = int(child.text)
-            except ValueError:
-                val = -1
-
-            col = LightPoint.colors[val + 1]
-            k.append(col)
-
-        print('Start date:[%s]' % x[0].__str__())
-        print('End date:[%s]' % x[len(x) - 1].__str__())
-        print('nPts:[%d]' % len(x))
-
-        LightPoint.plot(x, k, timeLocator)
+        lambdaFunc = lambda x, date: len(x) < nPts
+        self.__plot(startDate, lambdaFunc, timeLocator)
