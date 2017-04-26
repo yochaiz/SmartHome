@@ -1,26 +1,21 @@
 from Device import Device
 from datetime import datetime
+from Plot import Plot
 
 
-class Amplifier(Device):
-    keys = ['State', 'Volume', 'Source']
+class Microphone(Device):
+    keys = {'RmsVolume': 'go', 'MaxVolume': 'bo'}
 
     nullValue = "null"
-    nullColor = 'yo'
-    colors = {nullValue: nullColor, '0': 'ro', '1': 'go'}
-
-    # nullColorBar = 'yellow'
-    # colorsBars = ['red', 'green']
 
     def __init__(self, filename):
-        super(Amplifier, self).__init__(filename)
+        super(Microphone, self).__init__(filename)
 
     def collectData(self, startDate, lambdaFunc):
         i = self._Device__skipToDate(startDate)
 
         x = []
         y = []
-        lastColor = self.nullColor
 
         while i < len(self.root):
             child = self.root[i]
@@ -33,30 +28,27 @@ class Amplifier(Device):
             for k in self.keys:
                 val = child.findall(k)
                 if len(val) > 0 and val[0].text != self.nullValue:
-                    elem[k] = val[0].text
+                    elem[k] = float(val[0].text)
                 else:
                     completeElement = False
                     break
-            print(elem)
+            # print(elem)
 
             if completeElement is True:
-                k = 'State'
-                elem[k] = self.colors[elem[k]] if elem[k] != self.nullValue else lastColor
-                lastColor = elem[k]
-
                 x.append(date)
                 y.append(elem)
 
             i += 1
 
+        # [x, y] = Plot.dateWithMinimalGap([x, y], lambda i: (x[i] - x[i - 1]).seconds)
         return x, y
 
     def _Device__plotInternal(self, ax, x, k):
-        ax.set_ylabel("Volume")
+        ax.set_ylabel("Volume [dB]")
         for i in range(len(x)):
             elem = k[i]
-            ax.plot(x[i], elem['Volume'], elem['State'])
-            ax.annotate(elem['Source'], (x[i], elem['Volume']))
+            for key in elem.keys():
+                ax.plot(x[i], elem[key], self.keys[key])
 
     def __plotInternal(self, ax, x, k):
         self._Device__plotInternal(ax, x, k)
