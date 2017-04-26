@@ -2,10 +2,12 @@ import xml.etree.ElementTree as Et
 from datetime import datetime
 import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
+from Device import Device
 
 
-class LightPoint(object):
-    dateFormat = '%Y-%m-%d %H:%M:%S.%f'
+class LightPoint(Device):
+    # dateFormat = '%Y-%m-%d %H:%M:%S.%f'
+    # dateFormat = '%Y-%m-%d %H:%M:%S'
     nullColor = 'red'
     nullValue = "null"
     colors = {nullValue: nullColor, '0': 'black', '1': 'yellow'}
@@ -16,24 +18,9 @@ class LightPoint(object):
     # colors = [nullColor, 'ko', 'yo']
 
     def __init__(self, filename):
-        self.filename = filename
-        self.root = Et.parse(filename).getroot()
-        self.id = self.root.get('Id')
+        Device.__init__(self, filename)
 
-    def __skipToDate(self, dstDate):
-        i = 0
-        while i < len(self.root):
-            child = self.root[i]
-            date = datetime.strptime(child.get('Time'), LightPoint.dateFormat)
-            flag = date < dstDate
-            if flag is False:
-                break
-
-            i += 1
-
-        return i
-
-    def __plot(self, startDate, lambdaFunc, timeLocator):
+    def _Device__plot(self, startDate, lambdaFunc, timeLocator):
         x, k = self.collectData(startDate, lambdaFunc)
 
         print('Start date:[%s]' % x[0].__str__())
@@ -50,7 +37,7 @@ class LightPoint(object):
         plt.show()
 
     def collectData(self, startDate, lambdaFunc):
-        i = self.__skipToDate(startDate)
+        i = self._Device__skipToDate(startDate)
 
         x = []
         k = []
@@ -58,7 +45,7 @@ class LightPoint(object):
 
         while i < len(self.root):
             child = self.root[i]
-            date = datetime.strptime(child.get('Time'), LightPoint.dateFormat)
+            date = datetime.strptime(child.get('Time')[:-3], LightPoint.dateFormat)
             if lambdaFunc(x, date) is False:
                 break
 
@@ -70,11 +57,3 @@ class LightPoint(object):
             lastColor = col
 
         return x, k
-
-    def plotDateRange(self, startDate, endDate, timeLocator=mdates.HourLocator):
-        lambdaFunc = lambda x, date: date < endDate
-        self.__plot(startDate, lambdaFunc, timeLocator)
-
-    def plotPtsRange(self, startDate, nPts, timeLocator=mdates.HourLocator):
-        lambdaFunc = lambda x, date: len(x) < nPts
-        self.__plot(startDate, lambdaFunc, timeLocator)
