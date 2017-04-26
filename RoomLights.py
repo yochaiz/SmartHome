@@ -33,65 +33,52 @@ class RoomLights(object):
         lambdaFunc = lambda x, date: date < endDate
 
         fig, ax = plt.subplots()
-        val = [9, 1, 2, 3, 4]  # the bar lengths
-        pos = range(5)  # the bar centers on the y axis
-        ax.barh(pos, val, 0.2, align='center')
-        ax.set_yticks(pos)
-        ax.set_yticklabels(('Tom', 'Dick', 'Harry', 'Slim', 'Jim'))
-        ax.invert_yaxis()
-        ax.set_xticklabels(range(120, 130))
 
-        dd = endDate - startDate
-        step = timedelta(seconds=round(dd.seconds / 10.0))
-        val = startDate
-        rr = []
-        while val < endDate:
-            rr.append(val)
-            val += step
+        counter = 1
+        # padding = len(self.LightPoints) * 0.1
+        # plt.ylim([(counter - padding), (len(self.LightPoints) + padding)])
 
-        ax.set_xticklabels(rr)
+        nPts = 0
+        xAxisLabels = []
+        xAxisTicks = []
+        for lp in self.LightPoints:
+            x, k = lp.collectData(startDate, lambdaFunc)
+            # adding start & end dates to data
+            x.append(endDate)
+            x.insert(0, startDate)
+            k.insert(0, lp.nullColor)
+            nPts = max(nPts, len(x))
+            # adding initial value to x axis
+            xAxisLabels.append(x[0])
+            xAxisTicks.append(0)
+            lastVal = 0
+            for i in range(len(x) - 1):
+                val = (x[i + 1] - x[i]).seconds
+                xAxisLabels.append(x[i + 1])
+                xAxisTicks.append(xAxisTicks[len(xAxisTicks) - 1] + val)
+                ax.barh(counter - .1, val, 0.2, color=k[i], left=lastVal)
+                # edgecolor = 'white', linewidth = 2.0
+                lastVal += val
+
+            counter += 1
+
+        ax.set_yticks(range(counter)[1:])
+        ax.set_yticklabels([lp.id[lp.id.rfind(RoomLights.filePrefix) + 1:] for lp in self.LightPoints])
+
+        # Removes too close labels
+        minGap = round((xAxisLabels[len(xAxisLabels) - 1] - xAxisLabels[0]).seconds / 50.0)
+        i = 1
+        while i < len(xAxisTicks):
+            if xAxisTicks[i] - xAxisTicks[i - 1] < minGap:
+                del xAxisTicks[i]
+                del xAxisLabels[i]
+            else:
+                i += 1
+
+        ax.set_xticks(xAxisTicks)
+        ax.set_xticklabels(xAxisLabels)
+
+        print('nPts:[%d]' % nPts)
+
         plt.gcf().autofmt_xdate()
-
-        xlabel('Performance')
-        show()
-
-        # fig, ax = plt.subplots()
-        #
-        # plt.gca().xaxis.set_major_formatter(mdates.DateFormatter(LightPoint.dateFormat))
-        # plt.gca().xaxis.set_major_locator(timeLocator())
-        #
-        # counter = 1
-        # # padding = len(self.LightPoints) * 0.1
-        # # plt.ylim([(counter - padding), (len(self.LightPoints) + padding)])
-        #
-        # nPts = 0
-        # for lp in self.LightPoints:
-        #     x, k = lp.collectData(startDate, lambdaFunc)
-        #     nPts = max(nPts, len(x))
-        #     lastVal = 0
-        #     for i in range(len(x) - 1):
-        #         # plt.plot(x[i], counter, k[i])
-        #         val = x[i + 1] - x[i]
-        #         val = val.seconds / 3600.0
-        #         plt.barh(counter - .1, val, 0.2, color=k[i], left=lastVal)
-        #         lastVal += val
-        #
-        #     counter += 1
-        #
-        # ax.set_yticks(range(counter)[1:])
-        # ax.set_yticklabels([lp.id[lp.id.rfind(RoomLights.filePrefix) + 1:] for lp in self.LightPoints])
-        #
-        # # step = x[len(x) - 1] - x[0]
-        # # step = timedelta(seconds=round(step.seconds / 10.0))
-        # # dateRange = []
-        # # val = x[0]
-        # # while val < x[len(x) - 1]:
-        # #     dateRange.append(val)
-        # #     val += step
-        # #
-        # # ax.set_xticks(dateRange)
-        #
-        # print('nPts:[%d]' % nPts)
-        #
-        # plt.gcf().autofmt_xdate()
-        # plt.show()
+        plt.show()
