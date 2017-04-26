@@ -61,6 +61,7 @@ class RoomLights(object):
         xAxisLabels = []
         xAxisTicks = []
         for lp in self.LightPoints:
+            lp.setPlotBars()
             x, k = lp.collectData(startDate, lambdaFunc)
             # adding start & end dates to data
             x.append(endDate)

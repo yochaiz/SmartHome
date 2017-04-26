@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 import xml.etree.ElementTree as Et
 from datetime import datetime
-import matplotlib.dates as mdates
+import matplotlib.pyplot as plt
 
 
 class Device:
@@ -27,18 +27,50 @@ class Device:
 
         return i
 
+    def __datesWithMinimalGap(self, x):
+        # Removes too close labels
+        minGap = round((x[len(x) - 1] - x[0]).seconds / 50.0)
+        i = 1
+        while i < len(x):
+            if (x[i] - x[i - 1]).seconds < minGap:
+                del x[i]
+            else:
+                i += 1
+
+        return x
+
     @abstractmethod
     def collectData(self, startDate, lambdaFunc):
         raise NotImplementedError('subclasses must override collectData()!')
 
     @abstractmethod
-    def __plot(self, startDate, lambdaFunc, timeLocator):
+    def __plotInternal(self, ax, x, k):
         raise NotImplementedError('subclasses must override __plot()!')
 
-    def plotDateRange(self, startDate, endDate, timeLocator=mdates.HourLocator):
-        lambdaFunc = lambda x, date: date < endDate
-        self.__plot(startDate, lambdaFunc, timeLocator)
+    def plot(self, startDate, lambdaFunc):
+        x, k = self.collectData(startDate, lambdaFunc)
 
-    def plotPtsRange(self, startDate, nPts, timeLocator=mdates.HourLocator):
+        print('Start date:[%s]' % x[0])
+        print('End date:[%s]' % x[len(x) - 1])
+        print('nPts:[%d]' % len(x))
+
+        fig, ax = plt.subplots()
+
+        self.__plotInternal(ax, x, k)
+        ax.set_title("[%s] \n [%s]-[%s]" % (self.filename, x[0], x[len(x) - 1]))
+
+        xAxis = self.__datesWithMinimalGap(x)
+
+        ax.set_xticks(xAxis)
+        ax.set_xticklabels(xAxis)
+
+        plt.gcf().autofmt_xdate()
+        plt.show()
+
+    def plotDateRange(self, startDate, endDate):
+        lambdaFunc = lambda x, date: date < endDate
+        self.plot(startDate, lambdaFunc)
+
+    def plotPtsRange(self, startDate, nPts):
         lambdaFunc = lambda x, date: len(x) < nPts
-        self.__plot(startDate, lambdaFunc, timeLocator)
+        self.plot(startDate, lambdaFunc)

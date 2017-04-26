@@ -1,58 +1,53 @@
-import xml.etree.ElementTree as Et
 from datetime import datetime
-import matplotlib.pyplot as plt
-import matplotlib.dates as mdates
 from Device import Device
 
 
 class LightPoint(Device):
-    # dateFormat = '%Y-%m-%d %H:%M:%S.%f'
-    # dateFormat = '%Y-%m-%d %H:%M:%S'
-    nullColor = 'red'
     nullValue = "null"
-    colors = {nullValue: nullColor, '0': 'black', '1': 'yellow'}
 
-    # colors = [nullColor, 'black', 'yellow']
+    nullColorDot = 'ro'
+    colorsDots = {nullValue: nullColorDot, '0': 'ko', '1': 'yo'}
 
-    # nullColor = 'ro'
-    # colors = [nullColor, 'ko', 'yo']
+    nullColorBar = 'red'
+    colorsBars = {nullValue: nullColorBar, '0': 'black', '1': 'yellow'}
 
     def __init__(self, filename):
         Device.__init__(self, filename)
+        self.nullColor = self.nullColorDot
+        self.colors = self.colorsDots
 
-    def _Device__plot(self, startDate, lambdaFunc, timeLocator):
-        x, k = self.collectData(startDate, lambdaFunc)
+    def setPlotDots(self):
+        self.nullColor = self.nullColorDot
+        self.colors = self.colorsDots
 
-        print('Start date:[%s]' % x[0].__str__())
-        print('End date:[%s]' % x[len(x) - 1].__str__())
-        print('nPts:[%d]' % len(x))
+    def setPlotBars(self):
+        self.nullColor = self.nullColorBar
+        self.colors = self.colorsBars
 
-        plt.gca().xaxis.set_major_formatter(mdates.DateFormatter(LightPoint.dateFormat))
-        plt.gca().xaxis.set_major_locator(timeLocator())
-
+    def _Device__plotInternal(self, ax, x, k):
         for i in range(len(x)):
-            plt.plot(x[i], 0, k[i])
+            ax.plot(x[i], 0, k[i])
 
-        plt.gcf().autofmt_xdate()
-        plt.show()
+    def __plotInternal(self, ax, x, k):
+        self._Device__plotInternal(ax, x, k)
 
     def collectData(self, startDate, lambdaFunc):
         i = self._Device__skipToDate(startDate)
 
         x = []
         k = []
-        lastColor = LightPoint.nullColor
+        lastColor = self.nullColor
 
         while i < len(self.root):
             child = self.root[i]
-            date = datetime.strptime(child.get('Time')[:-3], LightPoint.dateFormat)
+            date = datetime.strptime(child.get('Time')[:-3], self.dateFormat)
             if lambdaFunc(x, date) is False:
                 break
 
             x.append(date)
             i += 1
 
-            col = LightPoint.colors[child.text] if child.text != LightPoint.nullValue else lastColor
+            col = self.colors[child.text] if child.text != self.nullValue else lastColor
             k.append(col)
             lastColor = col
 
