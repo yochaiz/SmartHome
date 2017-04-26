@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 import xml.etree.ElementTree as Et
 from datetime import datetime
 import matplotlib.pyplot as plt
+from Plot import Plot
 
 
 class Device:
@@ -27,18 +28,6 @@ class Device:
 
         return i
 
-    def __datesWithMinimalGap(self, x):
-        # Removes too close labels
-        minGap = round((x[len(x) - 1] - x[0]).seconds / 50.0)
-        i = 1
-        while i < len(x):
-            if (x[i] - x[i - 1]).seconds < minGap:
-                del x[i]
-            else:
-                i += 1
-
-        return x
-
     @abstractmethod
     def collectData(self, startDate, lambdaFunc):
         raise NotImplementedError('subclasses must override collectData()!')
@@ -57,9 +46,9 @@ class Device:
         fig, ax = plt.subplots()
 
         self.__plotInternal(ax, x, k)
-        ax.set_title("[%s] \n [%s]-[%s]" % (self.filename, x[0], x[len(x) - 1]))
+        ax.set_title("[%s] \n Time Range: %s" % (self.filename, Plot.timedeltaToText(x[len(x) - 1] - x[0])))
 
-        xAxis = self.__datesWithMinimalGap(x)
+        [xAxis] = Plot.dateWithMinimalGap([x], lambda i: (x[i] - x[i - 1]).seconds)
 
         ax.set_xticks(xAxis)
         ax.set_xticklabels(xAxis)

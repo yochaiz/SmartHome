@@ -1,8 +1,7 @@
 from os import listdir
 from LightPoint import LightPoint
-import matplotlib.pyplot as plt
 import matplotlib.dates as mdates
-from datetime import timedelta
+from Plot import Plot
 
 from pylab import *
 
@@ -28,25 +27,6 @@ class RoomLights(object):
                         self.LightPoints.append(LightPoint(RoomLights.LightPointsFolder + filename))
 
         print('Room [%s] contains [%d] lights' % (roomNumber, len(self.LightPoints)))
-
-    @staticmethod
-    # converts time delta object to text of the greater time type (days,hours,min,secs)
-    def __timedeltaToText(t):
-        if t.days > 0:
-            return "[%d] Days" % t.days
-
-        hours, remainder_ = divmod(t.seconds, 3600)
-        minutes, seconds = divmod(remainder_, 60)
-        if hours > 0:
-            return "[%d] Hours, [%d] Minutes, [%d] Seconds" % (hours, minutes, seconds)
-
-        if minutes > 0:
-            return "[%d] Minutes, [%d] Seconds" % (minutes, seconds)
-
-        if seconds > 0:
-            return "[%d] Seconds" % seconds
-
-        raise ValueError("Time delta is shorter than a second")
 
     def plot(self, startDate, endDate, timeLocator=mdates.HourLocator):
         lambdaFunc = lambda x, date: date < endDate
@@ -85,14 +65,9 @@ class RoomLights(object):
         ax.set_yticklabels([lp.id[lp.id.rfind(RoomLights.filePrefix) + 1:] for lp in self.LightPoints])
 
         # Removes too close labels
-        minGap = round((xAxisLabels[len(xAxisLabels) - 1] - xAxisLabels[0]).seconds / 50.0)
-        i = 1
-        while i < len(xAxisTicks):
-            if xAxisTicks[i] - xAxisTicks[i - 1] < minGap:
-                del xAxisTicks[i]
-                del xAxisLabels[i]
-            else:
-                i += 1
+        res = Plot.dateWithMinimalGap([xAxisLabels, xAxisTicks], lambda i: xAxisTicks[i] - xAxisTicks[i - 1])
+        xAxisLabels = res[0]
+        xAxisTicks = res[1]
 
         ax.set_xticks(xAxisTicks)
         ax.set_xticklabels(xAxisLabels)
@@ -104,5 +79,5 @@ class RoomLights(object):
         plt.gcf().autofmt_xdate()
 
         timeDiff = (endDate - startDate)
-        plt.title("[%s]-[%s] \n Time range: %s" % (startDate, endDate, RoomLights.__timedeltaToText(timeDiff)))
+        plt.title("[%s]-[%s] \n Time range: %s" % (startDate, endDate, Plot.timedeltaToText(timeDiff)))
         plt.show()
