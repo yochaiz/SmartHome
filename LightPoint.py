@@ -7,7 +7,10 @@ import matplotlib.dates as mdates
 class LightPoint(object):
     dateFormat = '%Y-%m-%d %H:%M:%S.%f'
     nullColor = 'red'
-    colors = [nullColor, 'black', 'yellow']
+    nullValue = "null"
+    colors = {nullValue: nullColor, '0': 'black', '1': 'yellow'}
+
+    # colors = [nullColor, 'black', 'yellow']
 
     # nullColor = 'ro'
     # colors = [nullColor, 'ko', 'yo']
@@ -51,6 +54,7 @@ class LightPoint(object):
 
         x = []
         k = []
+        lastColor = LightPoint.nullColor
 
         while i < len(self.root):
             child = self.root[i]
@@ -61,13 +65,9 @@ class LightPoint(object):
             x.append(date)
             i += 1
 
-            try:
-                val = int(child.text)
-            except ValueError:
-                val = -1
-
-            col = LightPoint.colors[val + 1]
+            col = LightPoint.colors[child.text] if child.text != LightPoint.nullValue else lastColor
             k.append(col)
+            lastColor = col
 
         return x, k
 

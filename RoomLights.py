@@ -29,6 +29,25 @@ class RoomLights(object):
 
         print('Room [%s] contains [%d] lights' % (roomNumber, len(self.LightPoints)))
 
+    @staticmethod
+    # converts time delta object to text of the greater time type (days,hours,min,secs)
+    def __timedeltaToText(t):
+        if t.days > 0:
+            return "[%d] Days" % t.days
+
+        hours, remainder_ = divmod(t.seconds, 3600)
+        minutes, seconds = divmod(remainder_, 60)
+        if hours > 0:
+            return "[%d] Hours, [%d] Minutes, [%d] Seconds" % (hours, minutes, seconds)
+
+        if minutes > 0:
+            return "[%d] Minutes, [%d] Seconds" % (minutes, seconds)
+
+        if seconds > 0:
+            return "[%d] Seconds" % seconds
+
+        raise ValueError("Time delta is shorter than a second")
+
     def plot(self, startDate, endDate, timeLocator=mdates.HourLocator):
         lambdaFunc = lambda x, date: date < endDate
 
@@ -56,8 +75,7 @@ class RoomLights(object):
                 val = (x[i + 1] - x[i]).seconds
                 xAxisLabels.append(x[i + 1])
                 xAxisTicks.append(xAxisTicks[len(xAxisTicks) - 1] + val)
-                ax.barh(counter - .1, val, 0.2, color=k[i], left=lastVal)
-                # edgecolor = 'white', linewidth = 2.0
+                ax.barh(counter - .1, val, 0.2, color=k[i], edgecolor='grey', linewidth=0.5, left=lastVal)
                 lastVal += val
 
             counter += 1
@@ -80,5 +98,10 @@ class RoomLights(object):
 
         print('nPts:[%d]' % nPts)
 
+        bgcolor = 0.95
+        ax.set_axis_bgcolor((bgcolor, bgcolor, bgcolor))
         plt.gcf().autofmt_xdate()
+
+        timeDiff = (endDate - startDate)
+        plt.title("[%s]-[%s] \n Time range: %s" % (startDate, endDate, RoomLights.__timedeltaToText(timeDiff)))
         plt.show()
