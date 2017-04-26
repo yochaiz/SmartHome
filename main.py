@@ -12,11 +12,11 @@ from Amplifier import Amplifier
 # room = RoomLights('1')
 # room.plot(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))
 
-probe = ThermalProbe('data/ThermalProbe/Devices.ClimateControl.ThermalProbe.1.xml')
-probe.plotDateRange(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))
+# probe = ThermalProbe('data/ThermalProbe/Devices.ClimateControl.ThermalProbe.1.xml')
+# probe.plotDateRange(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))
 
 # ir = AuxChannel('data/AuxChannel/Devices.Alarm.AuxChannel.4.xml')
 # ir.plotDateRange(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))
 
-# ampf = Amplifier('data/Amplifier/Devices.Sound.Amplifier.1.2.xml')
-# ampf.plotDateRange(datetime(2016, 6, 11, 16, 20, 00), datetime(2016, 6, 11, 16, 40, 00))
+ampf = Amplifier('data/Amplifier/Devices.Sound.Amplifier.1.1.xml')
+ampf.plotDateRange(datetime(2016, 2, 1, 19, 15, 00), datetime(2016, 2, 1, 19, 20, 00))
