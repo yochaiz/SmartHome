@@ -7,7 +7,8 @@ from Amplifier import Amplifier
 from Microphone import Microphone
 
 light = LightPoint('data\LightPoints\Devices.LightsAndAutomation.LightPoint.1.2.xml')
-light.plotDateRange(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))
+light.plotBars(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))
+# light.plotDateRange(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))
 # light.plotPtsRange(datetime(2016, 1, 23, 12, 30, 45), 7)
 
 # room = RoomLights('1')
