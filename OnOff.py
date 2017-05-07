@@ -25,9 +25,15 @@ class OnOff(Device):
         self.nullColor = self.nullColorBar
         self.colors = self.colorsBars
 
+    # def _Device__plotInternal(self, ax, x, k):
+    #     for i in range(len(x)):
+    #         ax.plot(x[i], 0, k[i])
+
     def _Device__plotInternal(self, ax, x, k):
-        for i in range(len(x)):
-            ax.plot(x[i], 0, k[i])
+        for key in k.iterkeys():
+            ax.plot(k[key], [0] * len(k[key]), self.colors[key], label=key)
+
+        ax.legend()
 
     def __plotInternal(self, ax, x, k):
         self._Device__plotInternal(ax, x, k)
@@ -36,8 +42,10 @@ class OnOff(Device):
         i = self._Device__skipToDate(startDate)
 
         x = []
-        k = []
-        lastColor = self.nullColor
+        xByClass = {}
+
+        for key in self.colors.iterkeys():
+            xByClass[key] = []
 
         while i < len(self.root):
             child = self.root[i]
@@ -48,8 +56,9 @@ class OnOff(Device):
             x.append(date)
             i += 1
 
-            col = self.colors[child.text] if child.text != self.nullValue else lastColor
-            k.append(col)
-            lastColor = col
+            key = child.text
+            xByClass[key].append(date)
 
+
+        k = xByClass
         return x, k
