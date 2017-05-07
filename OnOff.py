@@ -44,8 +44,8 @@ class OnOff(Device):
         print('End date:[%s]' % x[nPts - 1])
         print('nPts:[%d]' % nPts)
 
-        xColors = k[1]
-        xColors.insert(0, self.nullColorBar)
+        xColorKeys = k[1]
+        xColorKeys.insert(0, self.nullValue)
 
         xAxisLabels = []
         xAxisTicks = []
@@ -56,12 +56,23 @@ class OnOff(Device):
         fig, ax = plt.subplots()
 
         lastVal = 0
+        legendMap = {}
         for i in range(len(x) - 1):
             val = (x[i + 1] - x[i]).seconds
             xAxisLabels.append(x[i + 1])
             xAxisTicks.append(xAxisTicks[len(xAxisTicks) - 1] + val)
-            ax.barh(0, val, 0.2, color=xColors[i], edgecolor='grey', linewidth=0.5, left=lastVal)
+            h = ax.barh(0, val, 0.2, color=self.colorsBars[xColorKeys[i]], edgecolor='grey', linewidth=0.5,
+                        left=lastVal)
+            legendMap[xColorKeys[i]] = h
             lastVal += val
+
+        # building legend
+        handles, labels = [], []
+        for key in legendMap.iterkeys():
+            handles.append(legendMap[key])
+            labels.append(key)
+
+        ax.legend(handles, labels, loc='center left', bbox_to_anchor=(1, 0.5))
 
         # Removes too close labels
         res = Plot.dateWithMinimalGap([xAxisLabels, xAxisTicks], lambda i: xAxisTicks[i] - xAxisTicks[i - 1])
@@ -95,7 +106,7 @@ class OnOff(Device):
         i = self._Device__skipToDate(startDate)
 
         x = []
-        xColors = []
+        xColorKeys = []
         xByClass = {}
 
         for key in colors.iterkeys():
@@ -112,7 +123,7 @@ class OnOff(Device):
 
             key = child.text
             xByClass[key].append(date)
-            xColors.append(colors[key])
+            xColorKeys.append(key)
 
-        k = [xByClass, xColors]
+        k = [xByClass, xColorKeys]
         return x, k
