@@ -56,7 +56,7 @@ class RoomLights(object):
                 val = (x[i + 1] - x[i]).seconds
                 xAxisLabels.append(x[i + 1])
                 xAxisTicks.append(xAxisTicks[len(xAxisTicks) - 1] + val)
-                ax.barh(counter - .1, val, 0.2, color=k[i], edgecolor='grey', linewidth=0.5, left=lastVal)
+                # ax.barh(counter - .1, val, 0.2, color=k[i], edgecolor='grey', linewidth=0.5, left=lastVal)
                 lastVal += val
 
             counter += 1

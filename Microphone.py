@@ -54,5 +54,7 @@ class Microphone(Device):
 
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
+        return None, None
+
     def __plotInternal(self, ax, x, k):
         self._Device__plotInternal(ax, x, k)

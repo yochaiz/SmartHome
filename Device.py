@@ -36,6 +36,12 @@ class Device:
     def __plotInternal(self, ax, x, k):
         raise NotImplementedError('subclasses must override __plot()!')
 
+    def __plotXaxis(self, ax, x, xAxisLabels=None, xAxisTicks=None):
+        [xAxis] = Plot.dateWithMinimalGap([x], lambda i: (x[i] - x[i - 1]).seconds)
+
+        ax.set_xticks(xAxis)
+        ax.set_xticklabels(xAxis)
+
     def plot(self, startDate, lambdaFunc):
         x, k = self.collectData(startDate, lambdaFunc)
 
@@ -45,13 +51,10 @@ class Device:
 
         fig, ax = plt.subplots()
 
-        self.__plotInternal(ax, x, k)
+        xAxisLabels, xAxisTicks = self.__plotInternal(ax, x, k)
         ax.set_title("[%s] \n Time Range: %s" % (self.filename, Plot.timedeltaToText(x[len(x) - 1] - x[0])))
 
-        [xAxis] = Plot.dateWithMinimalGap([x], lambda i: (x[i] - x[i - 1]).seconds)
-
-        ax.set_xticks(xAxis)
-        ax.set_xticklabels(xAxis)
+        self.__plotXaxis(ax, x, xAxisLabels, xAxisTicks)
 
         plt.gcf().autofmt_xdate()
         plt.show()

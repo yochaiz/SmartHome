@@ -28,52 +28,10 @@ class OnOff(Device):
         self.nullColor = self.nullColorBar
         self.colors = self.colorsBars
 
-    def plotDots(self, ax, k):
-        for key in k.iterkeys():
-            ax.plot(k[key], [0] * len(k[key]), self.colors[key], label=key)
+    def __plotXaxis(self, ax, x, xAxisLabels, xAxisTicks):
+        self._Device__plotXaxis(ax, x, xAxisLabels, xAxisTicks)
 
-    def plotBars(self, startDate, endDate):
-        lambdaFunc = lambda x, date: date < endDate
-        x, k = self.collectData(startDate, lambdaFunc, self.colorsBars)
-
-        x.append(endDate)
-        x.insert(0, startDate)
-        nPts = len(x)
-
-        print('Start date:[%s]' % x[0])
-        print('End date:[%s]' % x[nPts - 1])
-        print('nPts:[%d]' % nPts)
-
-        xColorKeys = k[1]
-        xColorKeys.insert(0, self.nullValue)
-
-        xAxisLabels = []
-        xAxisTicks = []
-        # adding initial value to x axis
-        xAxisLabels.append(x[0])
-        xAxisTicks.append(0)
-
-        fig, ax = plt.subplots()
-
-        lastVal = 0
-        legendMap = {}
-        for i in range(len(x) - 1):
-            val = (x[i + 1] - x[i]).seconds
-            xAxisLabels.append(x[i + 1])
-            xAxisTicks.append(xAxisTicks[len(xAxisTicks) - 1] + val)
-            h = ax.barh(0, val, 0.2, color=self.colorsBars[xColorKeys[i]], edgecolor='grey', linewidth=0.5,
-                        left=lastVal)
-            legendMap[xColorKeys[i]] = h
-            lastVal += val
-
-        # building legend
-        handles, labels = [], []
-        for key in legendMap.iterkeys():
-            handles.append(legendMap[key])
-            labels.append(key)
-
-        ax.legend(handles, labels, loc='center left', bbox_to_anchor=(1, 0.5))
-
+    def _Device__plotXaxis(self, ax, x, xAxisLabels, xAxisTicks):
         # Removes too close labels
         res = Plot.dateWithMinimalGap([xAxisLabels, xAxisTicks], lambda i: xAxisTicks[i] - xAxisTicks[i - 1])
         xAxisLabels = res[0]
@@ -84,17 +42,54 @@ class OnOff(Device):
 
         bgcolor = 0.95
         ax.set_axis_bgcolor((bgcolor, bgcolor, bgcolor))
-        ax.set_title("[%s] \n Time Range: %s" % (self.filename, Plot.timedeltaToText(x[nPts - 1] - x[0])))
-        plt.gcf().autofmt_xdate()
-        plt.show()
 
-    # def _Device__plotInternal(self, ax, x, k):
-    #     for i in range(len(x)):
-    #         ax.plot(x[i], 0, k[i])
+    # def buildBarsPlot(self, ax, startDate, endDate, yHeight=0):
+    #     lambdaFunc = lambda x, date: date < endDate
+    #     x, k = self.collectData(startDate, lambdaFunc, self.colorsBars)
+
+    # x.append(endDate)
+    # x.insert(0, startDate)
+    # nPts = len(x)
+
+    # print('Start date:[%s]' % x[0])
+    # print('End date:[%s]' % x[nPts - 1])
+    # print('nPts:[%d]' % nPts)
+
+    def buildBarsPlot(self, ax, x, k, yHeight=0):
+        xColorKeys = k[1]
+        # xColorKeys.insert(0, self.nullValue)
+
+        xAxisLabels = []
+        xAxisTicks = []
+        # adding initial value to x axis
+        xAxisLabels.append(x[0])
+        xAxisTicks.append(0)
+
+        lastVal = 0
+        legendMap = {}
+        for i in range(len(x) - 1):
+            val = (x[i + 1] - x[i]).seconds
+            xAxisLabels.append(x[i + 1])
+            xAxisTicks.append(xAxisTicks[len(xAxisTicks) - 1] + val)
+            h = ax.barh(yHeight, val, 0.2, color=self.colorsBars[xColorKeys[i]], edgecolor='grey', linewidth=0.5,
+                        left=lastVal)
+            legendMap[xColorKeys[i]] = h
+            lastVal += val
+
+        # building legend
+        handles, labels = [], []
+        for key in legendMap.iterkeys():
+            handles.append(legendMap[key])
+            labels.append(key)
+
+        return xAxisLabels, xAxisTicks, handles, labels
 
     def _Device__plotInternal(self, ax, x, k):
-        self.plotDots(ax, k[0])
-        ax.legend()
+        xAxisLabels, xAxisTicks, handles, labels = self.buildBarsPlot(ax, x, k)
+        ax.legend(handles, labels, loc='center left', bbox_to_anchor=(1, 0.5))
+        self.__plotXaxis(ax, x, xAxisLabels, xAxisTicks)
+
+        return xAxisLabels, xAxisTicks
 
     def __plotInternal(self, ax, x, k):
         self._Device__plotInternal(ax, x, k)
@@ -127,3 +122,11 @@ class OnOff(Device):
 
         k = [xByClass, xColorKeys]
         return x, k
+
+    # def plotDots(self, ax, k):
+    #     for key in k.iterkeys():
+    #         ax.plot(k[key], [0] * len(k[key]), self.colors[key], label=key)
+
+    # def _Device__plotInternal(self, ax, x, k):
+    #     self.plotDots(ax, k[0])
+    #     ax.legend()

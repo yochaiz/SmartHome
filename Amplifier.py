@@ -54,8 +54,6 @@ class Amplifier(Device):
                 for j in range(1, len(self.keys)):
                     yByClass[key][self.keys[j]].append(elem[self.keys[j]])
 
-                    # y.append(elem)
-
             i += 1
 
         y = [xByClass, yByClass]
@@ -74,6 +72,8 @@ class Amplifier(Device):
                 ax.annotate(yByClass[key][self.keys[2]][i], (xByClass[key][i], yByClass[key][self.keys[1]][i]))
 
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+        return None, None
 
     def __plotInternal(self, ax, x, k):
         self._Device__plotInternal(ax, x, k)
