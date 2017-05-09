@@ -15,13 +15,13 @@ from Room import Room
 # ax.set_axis_bgcolor((bgcolor, bgcolor, bgcolor))
 # plt.show()
 
-# room = Room('data/LivingRoom')
-# room.plotDateRange(datetime(2016, 2, 21, 17, 00, 00), datetime(2016, 2, 21, 21, 00, 00))
+room = Room('data/LivingRoom')
+room.plotDateRange(datetime(2016, 1, 23, 7, 0, 0), datetime(2016, 1, 23, 23, 0, 0))
 
-light = LightPoint('data\LightPoints\Devices.LightsAndAutomation.LightPoint.1.2.xml')
+# light = LightPoint('data\LightPoints\Devices.LightsAndAutomation.LightPoint.1.2.xml')
 # light.plotDateRange(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))
-startDate, seqLen = light.findSequence(20, timedelta(minutes=2))
-print(startDate, seqLen)
+# startDate, seqLen = light.findSequence(20, timedelta(minutes=2))
+# print(startDate, seqLen)
 # light.showBarsPlot(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))
 # light.plotPtsRange(datetime(2016, 1, 23, 12, 30, 45), 7)
 

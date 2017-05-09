@@ -33,7 +33,7 @@ class Device:
         raise NotImplementedError('subclasses must override collectData()!')
 
     @abstractmethod
-    def __plotInternal(self, ax, x, k):
+    def __plotInternal(self, ax, x, k, pos=None):
         raise NotImplementedError('subclasses must override __plot()!')
 
     @abstractmethod
@@ -46,14 +46,14 @@ class Device:
         ax.set_xticks(xAxis)
         ax.set_xticklabels(xAxis)
 
-    def addToPlot(self, ax, startDate, lambdaFunc):
+    def addToPlot(self, ax, startDate, lambdaFunc, pos=None):
         x, k = self.collectData(startDate, lambdaFunc)
 
         print('Start date:[%s]' % x[0])
         print('End date:[%s]' % x[len(x) - 1])
         print('nPts:[%d]' % len(x))
 
-        xAxisLabels, xAxisTicks = self.__plotInternal(ax, x, k)
+        xAxisLabels, xAxisTicks = self.__plotInternal(ax, x, k, pos)
         ax.set_title("[%s] \n Time Range: %s" % (self.filename, Plot.timedeltaToText(x[len(x) - 1] - x[0])))
 
         self.__sortPlotXaxis(ax, x, xAxisLabels, xAxisTicks)

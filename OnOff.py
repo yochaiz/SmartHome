@@ -16,8 +16,8 @@ class OnOff(Device):
         self.nullColorBar = nullColorBar
         self.colorsBars = {self.nullValue: nullColorBar, '0': barColors[0], '1': barColors[1]}
 
-        self.nullColor = self.nullColorDot
-        self.colors = self.colorsDots
+        self.nullColor = self.nullColorBar
+        self.colors = self.colorsBars
         # self.colors = self.colorsBars
 
     def setPlotDots(self):
@@ -28,17 +28,35 @@ class OnOff(Device):
         self.nullColor = self.nullColorBar
         self.colors = self.colorsBars
 
+    def mergeXaxis(self, axTicks, axLabels, xAxisTicks, xAxisLabels):
+        i = 0
+        j = 0
+        while i < len(axTicks):
+            while j < len(xAxisTicks) and axTicks[i] > xAxisTicks[j]:
+                j += 1
+
+            if j >= len(xAxisTicks) or axTicks[i] < xAxisTicks[j]:
+                xAxisTicks.insert(j, axTicks[i])
+                xAxisLabels.insert(j, datetime.strptime(axLabels[i]._text, self.dateFormat))
+
+            i += 1
+
     def __sortPlotXaxis(self, ax, x, xAxisLabels, xAxisTicks):
         self._Device__sortPlotXaxis(ax, x, xAxisLabels, xAxisTicks)
 
     def _Device__sortPlotXaxis(self, ax, x, xAxisLabels, xAxisTicks):
+        # merge labels
+        self.mergeXaxis(ax.get_xticks(), ax.get_xticklabels(), xAxisTicks, xAxisLabels)
+
         # Removes too close labels
         res = Plot.dateWithMinimalGap([xAxisLabels, xAxisTicks], lambda i: xAxisTicks[i] - xAxisTicks[i - 1])
         xAxisLabels = res[0]
         xAxisTicks = res[1]
 
+        jj = ax.get_xticks()
         ax.set_xticks(xAxisTicks)
         ax.set_xticklabels(xAxisLabels)
+        jj2 = ax.get_xticklabels()
 
         bgcolor = 0.95
         ax.set_axis_bgcolor((bgcolor, bgcolor, bgcolor))
@@ -87,9 +105,9 @@ class OnOff(Device):
 
         return plotData, xAxisLabels, xAxisTicks
 
-    def _Device__plotInternal(self, ax, x, k):
+    def _Device__plotInternal(self, ax, x, k, pos):
         plotData, xAxisLabels, xAxisTicks = self.buildPlotData(x, k)
-        h = ax.barh([0] * len(plotData[0]), plotData[0], height=plotData[1], color=plotData[2], left=plotData[3],
+        h = ax.barh([pos] * len(plotData[0]), plotData[0], height=plotData[1], color=plotData[2], left=plotData[3],
                     edgecolor='grey', linewidth=0.5)
 
         # building legend
@@ -100,12 +118,12 @@ class OnOff(Device):
             labels.append(key)
 
         ax.legend(handles, labels, loc='center left', bbox_to_anchor=(1, 0.5))
-        self.__sortPlotXaxis(ax, x, xAxisLabels, xAxisTicks)
+        # self.__sortPlotXaxis(ax, x, xAxisLabels, xAxisTicks)
 
         return xAxisLabels, xAxisTicks
 
-    def __plotInternal(self, ax, x, k):
-        self._Device__plotInternal(ax, x, k)
+    def __plotInternal(self, ax, x, k, pos):
+        self._Device__plotInternal(ax, x, k, pos)
 
     def collectData(self, startDate, lambdaFunc, colors=None):
         if colors is None:
@@ -119,6 +137,10 @@ class OnOff(Device):
 
         for key in colors.iterkeys():
             xByClass[key] = []
+
+        x.append(startDate)
+        xColorKeys.append(self.nullValue)
+        xByClass[self.nullValue].append(startDate)
 
         while i < len(self.root):
             child = self.root[i]

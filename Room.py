@@ -1,5 +1,6 @@
 from AuxChannel import AuxChannel
 from ThermalProbe import ThermalProbe
+from LightPoint import LightPoint
 import os
 import matplotlib.pyplot as plt
 from datetime import timedelta
@@ -7,7 +8,7 @@ from datetime import timedelta
 
 class Room:
     # deviceMap = {'AuxChannel': AuxChannel, 'ThermalProbe': ThermalProbe}
-    deviceMap = {'AuxChannel': AuxChannel}
+    deviceMap = {'LightPoints': LightPoint}
 
     def __init__(self, roomFolderName):
         self.devices = {}
@@ -22,13 +23,20 @@ class Room:
 
     def plotDateRange(self, startDate, endDate):
         lambdaFunc = lambda x, date: date < endDate
-        fig, ax = plt.subplots()
 
         for key in self.devices.keys():
-            for obj in self.devices[key]:
-                stDate, seqLen = obj.findSequence(10, timedelta(minutes=2))
-                print('File:[%s] - Date:[%s] - SeqLen:[%d]' % (obj.filename, stDate, seqLen))
-                # obj.addToPlot(ax, startDate, lambdaFunc)
+            fig, ax = plt.subplots()
+            ax.set_xticks([])  # clear xAxis initial values
+            yLabels = []
+            for i, obj in enumerate(self.devices[key]):
+                # obj = self.devices[key][0]
+                # stDate, seqLen = obj.findSequence(10, timedelta(minutes=2))
+                # print('File:[%s] - Date:[%s] - SeqLen:[%d]' % (obj.filename, stDate, seqLen))
+                obj.addToPlot(ax, startDate, lambdaFunc, i - .1)
+                yLabels.append(obj.id)
+
+            ax.set_yticks(range(len(self.devices[key])))
+            ax.set_yticklabels(yLabels)
 
         plt.gcf().autofmt_xdate()
         plt.show()
