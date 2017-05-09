@@ -1,11 +1,12 @@
 from LightPoint import LightPoint
 from RoomLights import RoomLights
-from datetime import datetime
+from datetime import datetime, timedelta
 from ThermalProbe import ThermalProbe
 from AuxChannel import AuxChannel
 from Amplifier import Amplifier
 from Microphone import Microphone
 from Room import Room
+
 # import matplotlib.pyplot as plt
 #
 # fig, ax = plt.subplots()
@@ -15,9 +16,12 @@ from Room import Room
 # plt.show()
 
 # room = Room('data/LivingRoom')
+# room.plotDateRange(datetime(2016, 2, 21, 17, 00, 00), datetime(2016, 2, 21, 21, 00, 00))
 
 light = LightPoint('data\LightPoints\Devices.LightsAndAutomation.LightPoint.1.2.xml')
-light.plotDateRange(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))
+# light.plotDateRange(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))
+startDate, seqLen = light.findSequence(20, timedelta(minutes=2))
+print(startDate, seqLen)
 # light.showBarsPlot(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))
 # light.plotPtsRange(datetime(2016, 1, 23, 12, 30, 45), 7)
 

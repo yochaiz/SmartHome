@@ -65,7 +65,7 @@ class Amplifier(Device):
         xByClass = y[0]
         yByClass = y[1]
         for key in xByClass.iterkeys():
-            ax.plot(xByClass[key], yByClass[key][self.keys[1]], self.colors[key], label=key)
+            ax.__plot(xByClass[key], yByClass[key][self.keys[1]], self.colors[key], label=key)
 
             # annotate source value
             for i in range(len(xByClass[key])):

@@ -50,7 +50,7 @@ class Microphone(Device):
         yByClass = k[1]
 
         for key in xByClass.keys():
-            ax.plot(xByClass[key], yByClass[key], self.keys[key], label=key)
+            ax.__plot(xByClass[key], yByClass[key], self.keys[key], label=key)
 
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 

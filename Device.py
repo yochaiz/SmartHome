@@ -36,33 +36,74 @@ class Device:
     def __plotInternal(self, ax, x, k):
         raise NotImplementedError('subclasses must override __plot()!')
 
+    @abstractmethod
+    def buildPlotData(self, x, k):
+        raise NotImplementedError('subclasses must override buildPlotData()!')
+
     def __sortPlotXaxis(self, ax, x, xAxisLabels=None, xAxisTicks=None):
         [xAxis] = Plot.dateWithMinimalGap([x], lambda i: (x[i] - x[i - 1]).seconds)
 
         ax.set_xticks(xAxis)
         ax.set_xticklabels(xAxis)
 
-    def plot(self, startDate, lambdaFunc):
+    def addToPlot(self, ax, startDate, lambdaFunc):
         x, k = self.collectData(startDate, lambdaFunc)
 
         print('Start date:[%s]' % x[0])
         print('End date:[%s]' % x[len(x) - 1])
         print('nPts:[%d]' % len(x))
 
-        fig, ax = plt.subplots()
-
         xAxisLabels, xAxisTicks = self.__plotInternal(ax, x, k)
         ax.set_title("[%s] \n Time Range: %s" % (self.filename, Plot.timedeltaToText(x[len(x) - 1] - x[0])))
 
         self.__sortPlotXaxis(ax, x, xAxisLabels, xAxisTicks)
 
+    def __plot(self, startDate, lambdaFunc):
+        fig, ax = plt.subplots()
+        self.addToPlot(ax, startDate, lambdaFunc)
         plt.gcf().autofmt_xdate()
         plt.show()
 
     def plotDateRange(self, startDate, endDate):
         lambdaFunc = lambda x, date: date < endDate
-        self.plot(startDate, lambdaFunc)
+        self.__plot(startDate, lambdaFunc)
 
     def plotPtsRange(self, startDate, nPts):
         lambdaFunc = lambda x, date: len(x) < nPts
-        self.plot(startDate, lambdaFunc)
+        self.__plot(startDate, lambdaFunc)
+
+    # finds sequence in seqLen length with minGap between two neighbor elements
+    # if there is no seqLen length sequence, returns the longest sequence exists
+    def findSequence(self, seqLen, minGap):
+        i = 0
+        curSeqLen = 0
+        startDate = None
+        curDate = None
+        maxSeqLen = 0
+        maxSeqStartDate = None
+        while i < len(self.root) and curSeqLen < seqLen:
+            child = self.root[i]
+            date = datetime.strptime(child.get('Time')[:-3], Device.dateFormat)
+
+            if curSeqLen == 0:
+                startDate = date
+                curDate = date
+                curSeqLen += 1
+            elif date - curDate >= minGap:
+                curSeqLen += 1
+                curDate = date
+            else:
+                curSeqLen = 1
+                startDate = date
+                curDate = date
+
+            if curSeqLen > maxSeqLen:
+                maxSeqLen = curSeqLen
+                maxSeqStartDate = startDate
+
+            i += 1
+
+        if curSeqLen == seqLen:
+            return startDate, seqLen
+
+        return maxSeqStartDate, maxSeqLen

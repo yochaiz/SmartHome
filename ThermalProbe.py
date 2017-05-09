@@ -30,7 +30,7 @@ class ThermalProbe(Device):
         return x, k
 
     def _Device__plotInternal(self, ax, x, k):
-        ax.plot(x, k, 'bo')
+        ax.__plot(x, k, 'bo')
         ax.set_ylabel('Temperature [Celsius]')
 
         return None, None

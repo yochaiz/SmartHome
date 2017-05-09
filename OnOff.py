@@ -55,7 +55,7 @@ class OnOff(Device):
     # print('End date:[%s]' % x[nPts - 1])
     # print('nPts:[%d]' % nPts)
 
-    def buildBarsPlotData(self, x, k):
+    def buildPlotData(self, x, k):
         xColorKeys = k[1]
         # xColorKeys.insert(0, self.nullValue)
 
@@ -87,12 +87,8 @@ class OnOff(Device):
 
         return plotData, xAxisLabels, xAxisTicks
 
-    def buildBarsPlot(self, ax, x, k):
-        plotData, xAxisLabels, xAxisTicks = self.buildBarsPlotData(x, k)
-        ax.barh(0, plotData[0], plotData[1], color=plotData[2], left=plotData[3], edgecolor='grey', linewidth=0.5)
-
     def _Device__plotInternal(self, ax, x, k):
-        plotData, xAxisLabels, xAxisTicks = self.buildBarsPlotData(x, k)
+        plotData, xAxisLabels, xAxisTicks = self.buildPlotData(x, k)
         h = ax.barh([0] * len(plotData[0]), plotData[0], height=plotData[1], color=plotData[2], left=plotData[3],
                     edgecolor='grey', linewidth=0.5)
 
