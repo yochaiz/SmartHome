@@ -54,13 +54,14 @@ class Device:
         print('nPts:[%d]' % len(x))
 
         xAxisLabels, xAxisTicks = self.__plotInternal(ax, x, k, pos)
-        ax.set_title("[%s] \n Time Range: %s" % (self.filename, Plot.timedeltaToText(x[len(x) - 1] - x[0])))
 
         self.__sortPlotXaxis(ax, x, xAxisLabels, xAxisTicks)
+        return x[0], x[len(x) - 1]
 
     def __plot(self, startDate, lambdaFunc):
         fig, ax = plt.subplots()
-        self.addToPlot(ax, startDate, lambdaFunc)
+        date1, date2 = self.addToPlot(ax, startDate, lambdaFunc)
+        ax.set_title("[%s] \n Time Range: %s" % (self.filename, Plot.timedeltaToText(date2 - date1)))
         plt.gcf().autofmt_xdate()
         plt.show()
 
