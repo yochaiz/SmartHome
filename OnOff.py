@@ -53,25 +53,11 @@ class OnOff(Device):
         xAxisLabels = res[0]
         xAxisTicks = res[1]
 
-        jj = ax.get_xticks()
         ax.set_xticks(xAxisTicks)
         ax.set_xticklabels(xAxisLabels)
-        jj2 = ax.get_xticklabels()
 
         bgcolor = 0.95
         ax.set_axis_bgcolor((bgcolor, bgcolor, bgcolor))
-
-    # def buildBarsPlot(self, ax, startDate, endDate, yHeight=0):
-    #     lambdaFunc = lambda x, date: date < endDate
-    #     x, k = self.collectData(startDate, lambdaFunc, self.colorsBars)
-
-    # x.append(endDate)
-    # x.insert(0, startDate)
-    # nPts = len(x)
-
-    # print('Start date:[%s]' % x[0])
-    # print('End date:[%s]' % x[nPts - 1])
-    # print('nPts:[%d]' % nPts)
 
     def buildPlotData(self, x, k):
         xColorKeys = k[1]
@@ -158,10 +144,22 @@ class OnOff(Device):
         k = [xByClass, xColorKeys]
         return x, k
 
-        # def plotDots(self, ax, k):
-        #     for key in k.iterkeys():
-        #         ax.plot(k[key], [0] * len(k[key]), self.colors[key], label=key)
+# def plotDots(self, ax, k):
+#     for key in k.iterkeys():
+#         ax.plot(k[key], [0] * len(k[key]), self.colors[key], label=key)
 
-        # def _Device__plotInternal(self, ax, x, k):
-        #     self.plotDots(ax, k[0])
-        #     ax.legend()
+# def _Device__plotInternal(self, ax, x, k):
+#     self.plotDots(ax, k[0])
+#     ax.legend()
+
+# def buildBarsPlot(self, ax, startDate, endDate, yHeight=0):
+#     lambdaFunc = lambda x, date: date < endDate
+#     x, k = self.collectData(startDate, lambdaFunc, self.colorsBars)
+
+# x.append(endDate)
+# x.insert(0, startDate)
+# nPts = len(x)
+
+# print('Start date:[%s]' % x[0])
+# print('End date:[%s]' % x[nPts - 1])
+# print('nPts:[%d]' % nPts)

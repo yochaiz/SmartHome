@@ -1,9 +1,12 @@
 class Plot(object):
     @staticmethod
     # Removes too close labels
-    def dateWithMinimalGap(lists, compareValFunc, width=50.0):
+    def dateWithMinimalGap(lists, compareValFunc, minGap=None, width=50.0):
         x = lists[0]  # assumes all lists are in the same length
-        minGap = round((x[len(x) - 1] - x[0]).seconds / width)
+
+        if minGap is None:
+            minGap = round((x[len(x) - 1] - x[0]).seconds / width)
+
         i = 1
         while i < len(x):
             if compareValFunc(i) < minGap:

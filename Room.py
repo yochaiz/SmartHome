@@ -5,6 +5,7 @@ from Plot import Plot
 import os
 import matplotlib.pyplot as plt
 from datetime import timedelta
+import numpy as np
 
 
 class Room:
@@ -49,7 +50,47 @@ class Room:
             ax.set_yticklabels(yLabels)
             ax.set_title("Device:[%s] \n Time Range: %s" % (key, Plot.timedeltaToText(maxDate - minDate)))
 
+        minGap = round((maxDate - minDate).seconds / 80.0)
+        self.mergeSubPlotsAxis(axArr, minGap)
+
         fig.suptitle("Room:[%s]" % self.roomName, size=16)
         # fig.subplots_adjust(hspace=1.5)
         fig.autofmt_xdate()
         plt.show()
+
+    def mergeSubPlotsAxis(self, axArr, minGap):
+        if len(axArr) <= 1:
+            return
+
+        xticks = []
+        xticklabels = []
+        for ax in axArr:
+            xticks.append(ax.get_xticks().tolist())
+            xticklabels.append(ax.get_xticklabels())
+
+        xTicksCur = xticks[0]
+        xLabelsCur = xticklabels[0]
+
+        for z in range(1, len(xticks)):
+            i = 0
+            j = 0
+            axTicks = xticks[z]
+            axLabels = xticklabels[z]
+            while i < len(axTicks):
+                while j < len(xTicksCur) and axTicks[i] > xTicksCur[j]:
+                    j += 1
+
+                if j >= len(xTicksCur) or axTicks[i] < xTicksCur[j]:
+                    xTicksCur.insert(j, axTicks[i])
+                    xLabelsCur.insert(j, axLabels[i])
+                    # xLabelsCur = np.insert(xLabelsCur, j, axLabels[i])
+
+                i += 1
+
+            res = Plot.dateWithMinimalGap([xLabelsCur, xTicksCur], lambda i: xTicksCur[i] - xTicksCur[i - 1], minGap)
+            xLabelsCur = res[0]
+            xTicksCur = res[1]
+
+        for ax in axArr:
+            ax.set_xticks(xTicksCur)
+            ax.set_xticklabels(xLabelsCur)
