@@ -4,8 +4,7 @@ from LightPoint import LightPoint
 from Plot import Plot
 import os
 import matplotlib.pyplot as plt
-from datetime import timedelta
-import numpy as np
+from datetime import timedelta, datetime
 
 
 class Room:
@@ -26,56 +25,70 @@ class Room:
                         # creates object for each file
                         self.devices[key].append(self.deviceMap[key](folderPath + '/' + filename))
 
+    def keyDateRangeSubPlot(self, key, ax, startDate, lambdaFunc):
+        ax.set_xticks([])  # clear xAxis initial values
+        yLabels = []
+        minDate, maxDate = None, None
+        for i, obj in enumerate(self.devices[key]):
+            # obj = self.devices[key][0]
+            # stDate, seqLen = obj.findSequence(10, timedelta(minutes=2))
+            # print('File:[%s] - Key:[%s] - Date:[%s] - SeqLen:[%d]' % (obj.filename, key, stDate, seqLen))
+            xAxisLabels, xAxisTicks = obj.addToPlot(ax, startDate, lambdaFunc, i - .1)
+            date1 = xAxisLabels[0]
+            date2 = xAxisLabels[len(xAxisLabels) - 1]
+            minDate = date1 if minDate is None else min(minDate, date1)
+            maxDate = date2 if maxDate is None else max(maxDate, date2)
+            yLabels.append(obj.id)
+
+        ax.set_yticks(range(len(self.devices[key])))
+        ax.set_yticklabels(yLabels)
+        ax.set_title("Device:[%s] \n Time Range: %s" % (key, Plot.timedeltaToText(maxDate - minDate)))
+
+        return xAxisLabels, xAxisTicks, minDate, maxDate
+
     def plotDateRange(self, startDate, endDate):
         lambdaFunc = lambda x, date: date < endDate
 
         nPlots = len(self.devices.keys())
         fig, axArr = plt.subplots(nPlots)
+        xAxisLabelsArr, xAxisTicksArr = [], []
+        overallMinDate = endDate
+        overallMaxDate = startDate
         for j, key in enumerate(self.devices.keys()):
             ax = axArr[j] if nPlots > 1 else axArr
-            ax.set_xticks([])  # clear xAxis initial values
-            yLabels = []
-            minDate = endDate
-            maxDate = startDate
-            for i, obj in enumerate(self.devices[key]):
-                # obj = self.devices[key][0]
-                # stDate, seqLen = obj.findSequence(10, timedelta(minutes=2))
-                # print('File:[%s] - Key:[%s] - Date:[%s] - SeqLen:[%d]' % (obj.filename, key, stDate, seqLen))
-                date1, date2 = obj.addToPlot(ax, startDate, lambdaFunc, i - .1)
-                minDate = min(minDate, date1)
-                maxDate = max(maxDate, date2)
-                yLabels.append(obj.id)
+            xAxisLabels, xAxisTicks, minDate, maxDate = self.keyDateRangeSubPlot(key, ax, startDate, lambdaFunc)
+            xAxisLabelsArr.append(xAxisLabels)
+            xAxisTicksArr.append(xAxisTicks)
+            overallMinDate = min(overallMinDate, minDate)
+            overallMaxDate = max(overallMaxDate, maxDate)
 
-            ax.set_yticks(range(len(self.devices[key])))
-            ax.set_yticklabels(yLabels)
-            ax.set_title("Device:[%s] \n Time Range: %s" % (key, Plot.timedeltaToText(maxDate - minDate)))
+        minGap = round((overallMaxDate - overallMinDate).seconds / 80.0)
+        self.mergeSubPlotsAxis(nPlots, axArr, xAxisLabelsArr, xAxisTicksArr, minGap)
 
-        minGap = round((maxDate - minDate).seconds / 80.0)
-        self.mergeSubPlotsAxis(axArr, minGap)
+        for ax in axArr:
+            jj = ax.get_xticklabels()
 
         fig.suptitle("Room:[%s]" % self.roomName, size=16)
         # fig.subplots_adjust(hspace=1.5)
         fig.autofmt_xdate()
         plt.show()
 
-    def mergeSubPlotsAxis(self, axArr, minGap):
-        if len(axArr) <= 1:
+    def plotRepeatDateRange(self, startDate, endDate, key, nRepeat):
+        if nRepeat <= 0:
             return
 
-        xticks = []
-        xticklabels = []
-        for ax in axArr:
-            xticks.append(ax.get_xticks().tolist())
-            xticklabels.append(ax.get_xticklabels())
+    def mergeSubPlotsAxis(self, nPlots, axArr, xAxisLabelsArr, xAxisTicksArr, minGap):
+        if nPlots <= 1:
+            return
 
-        xTicksCur = xticks[0]
-        xLabelsCur = xticklabels[0]
+        xTicksCur = xAxisTicksArr[0]
+        xLabelsCur = xAxisLabelsArr[0]
 
-        for z in range(1, len(xticks)):
+        for z in range(1, len(xAxisTicksArr)):
             i = 0
             j = 0
-            axTicks = xticks[z]
-            axLabels = xticklabels[z]
+            axTicks = xAxisTicksArr[z]
+            axLabels = xAxisLabelsArr[z]
             while i < len(axTicks):
                 while j < len(xTicksCur) and axTicks[i] > xTicksCur[j]:
                     j += 1

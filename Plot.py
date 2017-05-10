@@ -34,4 +34,4 @@ class Plot(object):
         if seconds > 0:
             return "[%d] Seconds" % seconds
 
-        raise ValueError("Time delta is shorter than a second")
+        return "No data to display"
