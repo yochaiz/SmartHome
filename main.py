@@ -18,6 +18,9 @@ from Room import Room
 room = Room('data/LivingRoom')
 room.plotDateRange(datetime(2016, 1, 23, 7, 0, 0), datetime(2016, 1, 23, 23, 0, 0))
 
+# room.plotRepeatDateRange(datetime(2016, 1, 23, 7, 0, 0), datetime(2016, 1, 23, 23, 0, 0), 'LightPoints', 2,
+#                          timedelta(days=7))
+
 # light = LightPoint('data\LightPoints\Devices.LightsAndAutomation.LightPoint.1.2.xml')
 # light.plotDateRange(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))
 # startDate, seqLen = light.findSequence(20, timedelta(minutes=2))

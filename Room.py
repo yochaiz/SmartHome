@@ -25,7 +25,7 @@ class Room:
                         # creates object for each file
                         self.devices[key].append(self.deviceMap[key](folderPath + '/' + filename))
 
-    def keyDateRangeSubPlot(self, key, ax, startDate, lambdaFunc):
+    def __keyDateRangeSubPlot(self, key, ax, startDate, lambdaFunc):
         ax.set_xticks([])  # clear xAxis initial values
         yLabels = []
         minDate, maxDate = None, None
@@ -42,42 +42,59 @@ class Room:
 
         ax.set_yticks(range(len(self.devices[key])))
         ax.set_yticklabels(yLabels)
-        ax.set_title("Device:[%s] \n Time Range: %s" % (key, Plot.timedeltaToText(maxDate - minDate)))
 
         return xAxisLabels, xAxisTicks, minDate, maxDate
 
-    def plotDateRange(self, startDate, endDate):
-        lambdaFunc = lambda x, date: date < endDate
+    def __genericPlot(self, dates, nPlots, iterateFunc):
+        lambdaFunc = lambda x, date: date < dates[1]
 
-        nPlots = len(self.devices.keys())
         fig, axArr = plt.subplots(nPlots)
         xAxisLabelsArr, xAxisTicksArr = [], []
-        overallMinDate = endDate
-        overallMaxDate = startDate
-        for j, key in enumerate(self.devices.keys()):
+        overallMinDate = [dates[1]]
+        overallMaxDate = [dates[0]]
+
+        def innerIterateFunc(self, j, key):
             ax = axArr[j] if nPlots > 1 else axArr
-            xAxisLabels, xAxisTicks, minDate, maxDate = self.keyDateRangeSubPlot(key, ax, startDate, lambdaFunc)
+            xAxisLabels, xAxisTicks, minDate, maxDate = self.__keyDateRangeSubPlot(key, ax, dates[0], lambdaFunc)
             xAxisLabelsArr.append(xAxisLabels)
             xAxisTicksArr.append(xAxisTicks)
-            overallMinDate = min(overallMinDate, minDate)
-            overallMaxDate = max(overallMaxDate, maxDate)
+            overallMinDate[0] = min(overallMinDate[0], minDate)
+            overallMaxDate[0] = max(overallMaxDate[0], maxDate)
+            return ax, maxDate - minDate
 
-        minGap = round((overallMaxDate - overallMinDate).seconds / 80.0)
-        self.mergeSubPlotsAxis(nPlots, axArr, xAxisLabelsArr, xAxisTicksArr, minGap)
+        iterateFunc(self, innerIterateFunc)
 
-        for ax in axArr:
-            jj = ax.get_xticklabels()
+        minGap = round((overallMaxDate[0] - overallMinDate[0]).seconds / 80.0)
+        self.__mergeSubPlotsAxis(nPlots, axArr, xAxisLabelsArr, xAxisTicksArr, minGap)
 
         fig.suptitle("Room:[%s]" % self.roomName, size=16)
-        # fig.subplots_adjust(hspace=1.5)
         fig.autofmt_xdate()
         plt.show()
 
-    def plotRepeatDateRange(self, startDate, endDate, key, nRepeat):
-        if nRepeat <= 0:
-            return
+    def plotDateRange(self, startDate, endDate):
+        def iterateFunc(self, innerIterateFunc):
+            for j, key in enumerate(self.devices.keys()):
+                ax, timeDelta = innerIterateFunc(self, j, key)
+                ax.set_title("Device:[%s] \n Time Range: %s" % (key, Plot.timedeltaToText(timeDelta)))
 
-    def mergeSubPlotsAxis(self, nPlots, axArr, xAxisLabelsArr, xAxisTicksArr, minGap):
+        nPlots = len(self.devices.keys())
+        self.__genericPlot([startDate, endDate], nPlots, iterateFunc)
+
+    def plotRepeatDateRange(self, startDate, endDate, key, nRepeat, timeGap):
+        dates = [startDate, endDate]
+        dateFormat = '%Y-%m-%d'
+
+        def iterateFunc(self, innerIterateFunc):
+            for j in range(nRepeat):
+                ax, timeDelta = innerIterateFunc(self, j, key)
+                ax.set_title("Date:[%s]-[%s] \n Time Range: %s" % (
+                    dates[0].strftime(dateFormat), dates[1].strftime(dateFormat), Plot.timedeltaToText(timeDelta)))
+                dates[0] += timeGap
+                dates[1] += timeGap
+
+        self.__genericPlot(dates, nRepeat, iterateFunc)
+
+    def __mergeSubPlotsAxis(self, nPlots, axArr, xAxisLabelsArr, xAxisTicksArr, minGap):
         if nPlots <= 1:
             return
 
@@ -96,7 +113,6 @@ class Room:
                 if j >= len(xTicksCur) or axTicks[i] < xTicksCur[j]:
                     xTicksCur.insert(j, axTicks[i])
                     xLabelsCur.insert(j, axLabels[i])
-                    # xLabelsCur = np.insert(xLabelsCur, j, axLabels[i])
 
                 i += 1
 

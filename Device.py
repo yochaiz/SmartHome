@@ -46,7 +46,7 @@ class Device:
         ax.set_xticks(xAxis)
         ax.set_xticklabels(xAxis)
 
-    def addToPlot(self, ax, startDate, lambdaFunc, pos=None):
+    def addToPlot(self, ax, startDate, lambdaFunc, pos=0):
         x, k = self.collectData(startDate, lambdaFunc)
 
         print('Start date:[%s]' % x[0])
@@ -61,6 +61,7 @@ class Device:
 
     def __plot(self, startDate, lambdaFunc):
         fig, ax = plt.subplots()
+        ax.set_xticks([])  # clear xAxis initial values
         xAxisLabels, xAxisTicks = self.addToPlot(ax, startDate, lambdaFunc)
         date1 = xAxisLabels[0]
         date2 = xAxisLabels[len(xAxisLabels) - 1]

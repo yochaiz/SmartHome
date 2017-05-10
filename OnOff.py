@@ -38,6 +38,7 @@ class OnOff(Device):
             if j >= len(xAxisTicks) or axTicks[i] < xAxisTicks[j]:
                 xAxisTicks.insert(j, axTicks[i])
                 xAxisLabels.insert(j, datetime.strptime(axLabels[i]._text, self.dateFormat))
+                # xAxisLabels.insert(j, str(axLabels[i]._text))
 
             i += 1
 
@@ -49,7 +50,8 @@ class OnOff(Device):
         self.mergeXaxis(ax.get_xticks(), ax.get_xticklabels(), xAxisTicks, xAxisLabels)
 
         # Removes too close labels
-        res = Plot.dateWithMinimalGap([xAxisLabels, xAxisTicks], lambda i: xAxisTicks[i] - xAxisTicks[i - 1])
+        minGap = round((xAxisTicks[len(xAxisTicks) - 1] - xAxisTicks[0]) / 50.0)
+        res = Plot.dateWithMinimalGap([xAxisLabels, xAxisTicks], lambda i: xAxisTicks[i] - xAxisTicks[i - 1], minGap)
         xAxisLabels = res[0]
         xAxisTicks = res[1]
 
@@ -79,6 +81,7 @@ class OnOff(Device):
             width.append(val)
             color.append(self.colorsBars[xColorKeys[i]])
             leftValues.append(lastVal)
+            # xAxisLabels.append(x[i + 1])
             xAxisLabels.append(x[i + 1])
             xAxisTicks.append(xAxisTicks[len(xAxisTicks) - 1] + val)
             # h = ax.barh(yPos, val, 0.2, color=self.colorsBars[xColorKeys[i]], edgecolor='grey', linewidth=0.5,
@@ -111,9 +114,8 @@ class OnOff(Device):
     def __plotInternal(self, ax, x, k, pos):
         self._Device__plotInternal(ax, x, k, pos)
 
-    def collectData(self, startDate, lambdaFunc, colors=None):
-        if colors is None:
-            colors = self.colors
+    def collectData(self, startDate, lambdaFunc):
+        colors = self.colors
 
         i = self._Device__skipToDate(startDate)
 
@@ -131,6 +133,7 @@ class OnOff(Device):
         while i < len(self.root):
             child = self.root[i]
             date = datetime.strptime(child.get('Time')[:-3], self.dateFormat)
+            # date = timeParseFunc(child.get('Time'))
             if lambdaFunc(x, date) is False:
                 break
 
