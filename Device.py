@@ -40,20 +40,50 @@ class Device:
     def buildPlotData(self, x, k):
         raise NotImplementedError('subclasses must override buildPlotData()!')
 
-    def __sortPlotXaxis(self, ax, x, xAxisLabels=None, xAxisTicks=None):
-        [xAxis] = Plot.dateWithMinimalGap([x], lambda i: (x[i] - x[i - 1]).seconds)
+    # def __sortPlotXaxis(self, ax, x, xAxisLabels=None, xAxisTicks=None):
+    #     [xAxis] = Plot.dateWithMinimalGap([x], lambda i: (x[i] - x[i - 1]).seconds)
+    #
+    #     ax.set_xticks(xAxis)
+    #     ax.set_xticklabels(xAxis)
 
-        ax.set_xticks(xAxis)
-        ax.set_xticklabels(xAxis)
+    def __mergeXaxis(self, axTicks, axLabels, xAxisTicks, xAxisLabels):
+        i = 0
+        j = 0
+        while i < len(axTicks):
+            while j < len(xAxisTicks) and axTicks[i] > xAxisTicks[j]:
+                j += 1
 
-    def addToPlot(self, ax, startDate, lambdaFunc, pos=0):
+            if j >= len(xAxisTicks) or axTicks[i] < xAxisTicks[j]:
+                xAxisTicks.insert(j, axTicks[i])
+                xAxisLabels.insert(j, datetime.strptime(axLabels[i]._text, self.dateFormat))
+                # xAxisLabels.insert(j, str(axLabels[i]._text))
+
+            i += 1
+
+    def __sortPlotXaxis(self, ax, x, xAxisLabels, xAxisTicks):
+        # merge labels
+        self.__mergeXaxis(ax.get_xticks(), ax.get_xticklabels(), xAxisTicks, xAxisLabels)
+
+        # Removes too close labels
+        minGap = round((xAxisTicks[len(xAxisTicks) - 1] - xAxisTicks[0]) / 50.0)
+        res = Plot.dateWithMinimalGap([xAxisLabels, xAxisTicks], lambda i: xAxisTicks[i] - xAxisTicks[i - 1], minGap)
+        xAxisLabels = res[0]
+        xAxisTicks = res[1]
+
+        ax.set_xticks(xAxisTicks)
+        ax.set_xticklabels(xAxisLabels)
+
+        bgcolor = 0.95
+        ax.set_axis_bgcolor((bgcolor, bgcolor, bgcolor))
+
+    def addToPlot(self, ax, startDate, lambdaFunc):
         x, k = self.collectData(startDate, lambdaFunc)
 
         print('Start date:[%s]' % x[0])
         print('End date:[%s]' % x[len(x) - 1])
         print('nPts:[%d]' % len(x))
 
-        xAxisLabels, xAxisTicks = self.__plotInternal(ax, x, k, pos)
+        xAxisLabels, xAxisTicks = self.__plotInternal(ax, x, k)
 
         self.__sortPlotXaxis(ax, x, xAxisLabels, xAxisTicks)
         # return x[0], x[len(x) - 1]

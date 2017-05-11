@@ -4,14 +4,15 @@ from LightPoint import LightPoint
 from Plot import Plot
 import os
 import matplotlib.pyplot as plt
-from datetime import timedelta, datetime
 
 
 class Room:
-    # deviceMap = {'AuxChannel': AuxChannel, 'ThermalProbe': ThermalProbe}
-    deviceMap = {'LightPoints': LightPoint, 'AuxChannel': AuxChannel}
+    # deviceMap = {'LightPoints': LightPoint, 'AuxChannel': AuxChannel, 'ThermalProbe': ThermalProbe}
+    deviceMap = {'LightPoints': LightPoint, 'ThermalProbe': ThermalProbe}
 
-    # deviceMap = {'AuxChannel': AuxChannel}
+    # deviceMap = {'LightPoints': LightPoint, 'AuxChannel': AuxChannel}
+    # deviceMap = {'LightPoints': LightPoint}
+    # deviceMap = {'ThermalProbe': ThermalProbe}
 
     def __init__(self, roomFolderName):
         self.roomName = roomFolderName
@@ -27,21 +28,17 @@ class Room:
 
     def __keyDateRangeSubPlot(self, key, ax, startDate, lambdaFunc):
         ax.set_xticks([])  # clear xAxis initial values
-        yLabels = []
+        ax.set_yticks([])  # clear yAxis initial values
         minDate, maxDate = None, None
         for i, obj in enumerate(self.devices[key]):
             # obj = self.devices[key][0]
             # stDate, seqLen = obj.findSequence(10, timedelta(minutes=2))
             # print('File:[%s] - Key:[%s] - Date:[%s] - SeqLen:[%d]' % (obj.filename, key, stDate, seqLen))
-            xAxisLabels, xAxisTicks = obj.addToPlot(ax, startDate, lambdaFunc, i - .1)
+            xAxisLabels, xAxisTicks = obj.addToPlot(ax, startDate, lambdaFunc)
             date1 = xAxisLabels[0]
             date2 = xAxisLabels[len(xAxisLabels) - 1]
             minDate = date1 if minDate is None else min(minDate, date1)
             maxDate = date2 if maxDate is None else max(maxDate, date2)
-            yLabels.append(obj.id)
-
-        ax.set_yticks(range(len(self.devices[key])))
-        ax.set_yticklabels(yLabels)
 
         return xAxisLabels, xAxisTicks, minDate, maxDate
 
@@ -69,6 +66,7 @@ class Room:
 
         fig.suptitle("Room:[%s]" % self.roomName, size=16)
         fig.autofmt_xdate()
+        plt.subplots_adjust(hspace=0.3)
         plt.show()
 
     def plotDateRange(self, startDate, endDate):

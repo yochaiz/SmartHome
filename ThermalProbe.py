@@ -1,5 +1,6 @@
 from Device import Device
 from datetime import datetime
+import math
 
 
 class ThermalProbe(Device):
@@ -27,13 +28,35 @@ class ThermalProbe(Device):
 
             i += 1
 
+        x.insert(0, startDate)
+        k.insert(0, k[0])
+
         return x, k
 
-    def _Device__plotInternal(self, ax, x, k):
-        ax.__plot(x, k, 'bo')
-        ax.set_ylabel('Temperature [Celsius]')
+    def buildPlotData(self, x, k):
+        xAxisTicks = [0]
 
-        return None, None
+        lastVal = 0
+        for i in range(len(x) - 1):
+            val = (x[i + 1] - x[i]).seconds
+            xAxisTicks.append(xAxisTicks[len(xAxisTicks) - 1] + val)
+            lastVal += val
+
+        return xAxisTicks
+
+    def _Device__plotInternal(self, ax, x, k):
+        xAxisTicks = self.buildPlotData(x, k)
+
+        ax.plot(xAxisTicks, k, 'o', label=self.id[self.id.rfind('.') + 1:])
+        ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+
+        ax.set_ylabel('Temperature [Celsius]')
+        nElemsY = 10
+        kUnique = sorted(list(set(k)))
+        gap = int(math.ceil(len(kUnique) / float(nElemsY)))
+        ax.set_yticks([kUnique[i] for i in range(0, len(kUnique), gap)])
+
+        return x, xAxisTicks
 
     def __plotInternal(self, ax, x, k):
         self._Device__plotInternal(ax, x, k)
