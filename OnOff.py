@@ -144,8 +144,9 @@ class OnOff(Device):
         while i < len(self.root):
             child = self.root[i]
             date = datetime.strptime(child.get('Time')[:-3], self.dateFormat)
-            # date = timeParseFunc(child.get('Time'))
-            if lambdaFunc(x, date) is False:
+
+            date = lambdaFunc(x, date)
+            if date is None:
                 break
 
             x.append(date)

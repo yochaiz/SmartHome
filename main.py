@@ -16,7 +16,7 @@ from Room import Room
 # plt.show()
 
 room = Room('data/LivingRoom')
-room.plotDateRange(datetime(2016, 1, 23, 7, 0, 0), datetime(2016, 1, 23, 23, 0, 0))
+room.plotDateRange(datetime(2016, 2, 16, 14, 30, 0), datetime(2016, 2, 16, 23, 0, 0))
 
 # room.plotRepeatDateRange(datetime(2016, 1, 23, 7, 0, 0), datetime(2016, 1, 23, 23, 0, 0), 'LightPoints', 2,
 #                          timedelta(days=7))

@@ -4,6 +4,7 @@ from LightPoint import LightPoint
 from Plot import Plot
 import os
 import matplotlib.pyplot as plt
+from datetime import timedelta
 
 
 class Room:
@@ -32,7 +33,7 @@ class Room:
         minDate, maxDate = None, None
         for i, obj in enumerate(self.devices[key]):
             # obj = self.devices[key][0]
-            # stDate, seqLen = obj.findSequence(10, timedelta(minutes=2))
+            # stDate, seqLen = obj.findSequence(100, timedelta(minutes=2))
             # print('File:[%s] - Key:[%s] - Date:[%s] - SeqLen:[%d]' % (obj.filename, key, stDate, seqLen))
             xAxisLabels, xAxisTicks = obj.addToPlot(ax, startDate, lambdaFunc)
             date1 = xAxisLabels[0]
@@ -43,7 +44,10 @@ class Room:
         return xAxisLabels, xAxisTicks, minDate, maxDate
 
     def __genericPlot(self, dates, nPlots, iterateFunc):
-        lambdaFunc = lambda x, date: date < dates[1]
+        # lambdaFunc = lambda x, date: date < dates[1]
+        endDate = dates[1]
+        lambdaFunc = lambda x, date: date if date < endDate else (
+            endDate if (len(x) == 0) or (len(x) > 0 and x[len(x) - 1] < endDate) else None)
 
         fig, axArr = plt.subplots(nPlots)
         xAxisLabelsArr, xAxisTicksArr = [], []

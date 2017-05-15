@@ -79,6 +79,7 @@ class Device:
     def addToPlot(self, ax, startDate, lambdaFunc):
         x, k = self.collectData(startDate, lambdaFunc)
 
+        print('File:[%s]' % self.filename)
         print('Start date:[%s]' % x[0])
         print('End date:[%s]' % x[len(x) - 1])
         print('nPts:[%d]' % len(x))
@@ -86,7 +87,6 @@ class Device:
         xAxisLabels, xAxisTicks = self.__plotInternal(ax, x, k)
 
         self.__sortPlotXaxis(ax, x, xAxisLabels, xAxisTicks)
-        # return x[0], x[len(x) - 1]
         return xAxisLabels, xAxisTicks
 
     def __plot(self, startDate, lambdaFunc):
@@ -100,7 +100,9 @@ class Device:
         plt.show()
 
     def plotDateRange(self, startDate, endDate):
-        lambdaFunc = lambda x, date: date < endDate
+        # lambdaFunc = lambda x, date: date < endDate
+        lambdaFunc = lambda x, date: date if date < endDate else (
+            endDate if (len(x) == 0) or (len(x) > 0 and x[len(x) - 1] < endDate) else None)
         self.__plot(startDate, lambdaFunc)
 
     def plotPtsRange(self, startDate, nPts):

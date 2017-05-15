@@ -30,7 +30,7 @@ class Amplifier(Device):
         while i < len(self.root):
             child = self.root[i]
             date = datetime.strptime(child.get('Time')[:-3], self.dateFormat)
-            if lambdaFunc(x, date) is False:
+            if lambdaFunc(x, date) != date:
                 break
 
             elem = {}
