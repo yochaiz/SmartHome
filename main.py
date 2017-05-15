@@ -6,8 +6,8 @@ from AuxChannel import AuxChannel
 from Amplifier import Amplifier
 from Microphone import Microphone
 from Room import Room
+import matplotlib.pyplot as plt
 
-# import matplotlib.pyplot as plt
 #
 # fig, ax = plt.subplots()
 # ax.barh([0.5, 1], [2, 3], height=0.2, color=['red', 'blue'], left=[2, 0], edgecolor='grey', linewidth=0.5)
@@ -15,11 +15,15 @@ from Room import Room
 # ax.set_axis_bgcolor((bgcolor, bgcolor, bgcolor))
 # plt.show()
 
-room = Room('data/LivingRoom')
-room.plotDateRange(datetime(2016, 2, 16, 14, 30, 0), datetime(2016, 2, 16, 23, 0, 0))
-
+# room = Room('data/LivingRoom')
+# room.plotDateRange(datetime(2016, 2, 16, 14, 30, 0), datetime(2016, 2, 16, 23, 0, 0))
 # room.plotRepeatDateRange(datetime(2016, 1, 23, 7, 0, 0), datetime(2016, 1, 23, 23, 0, 0), 'LightPoints', 2,
 #                          timedelta(days=7))
+
+room2 = Room('data/MasterBedroom')
+room2.plotDateRange(datetime(2016, 3, 21, 13, 00, 0), datetime(2016, 3, 21, 21, 30, 0))
+
+plt.show()
 
 # light = LightPoint('data\LightPoints\Devices.LightsAndAutomation.LightPoint.1.2.xml')
 # light.plotDateRange(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))

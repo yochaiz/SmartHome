@@ -1,7 +1,5 @@
 from datetime import datetime
 from Device import Device
-from Plot import Plot
-import matplotlib.pyplot as plt
 
 
 class OnOff(Device):
@@ -112,12 +110,17 @@ class OnOff(Device):
 
         # building legend
         legendMap = plotData[4]
-        handles, labels = [], []
+        legend = ax.get_legend()
+        labels = [] if legend is None else [str(x._text) for x in legend.texts]
+        handles = [] if legend is None else legend.legendHandles
+        # handles, labels = ax.get_legend_handles_labels()
         for key in legendMap.iterkeys():
-            handles.append(h[legendMap[key]])
-            labels.append(key)
+            if key not in labels:
+                handles.append(h[legendMap[key]])
+                labels.append(key)
 
         ax.legend(handles, labels, loc='center left', bbox_to_anchor=(1, 0.5))
+        h1,l1 = ax.get_legend_handles_labels()
         # self.__sortPlotXaxis(ax, x, xAxisLabels, xAxisTicks)
 
         return xAxisLabels, xAxisTicks

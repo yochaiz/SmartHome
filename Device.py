@@ -96,8 +96,8 @@ class Device:
         date1 = xAxisLabels[0]
         date2 = xAxisLabels[len(xAxisLabels) - 1]
         ax.set_title("[%s] \n Time Range: %s" % (self.filename, Plot.timedeltaToText(date2 - date1)))
-        plt.gcf().autofmt_xdate()
-        plt.show()
+        fig.autofmt_xdate()
+        # plt.show()
 
     def plotDateRange(self, startDate, endDate):
         # lambdaFunc = lambda x, date: date < endDate
@@ -111,7 +111,7 @@ class Device:
 
     # finds sequence in seqLen length with minGap between two neighbor elements
     # if there is no seqLen length sequence, returns the longest sequence exists
-    def findSequence(self, seqLen, minGap):
+    def findSequence(self, seqLen, minGap, maxGap=None):
         i = 0
         curSeqLen = 0
         startDate = None
@@ -126,7 +126,7 @@ class Device:
                 startDate = date
                 curDate = date
                 curSeqLen += 1
-            elif date - curDate >= minGap:
+            elif (date - curDate >= minGap) and ((maxGap is None) or (date - curDate <= maxGap)):
                 curSeqLen += 1
                 curDate = date
             else:
