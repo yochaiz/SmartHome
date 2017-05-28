@@ -15,6 +15,11 @@ class ThermalProbe(Device):
         x = []
         k = []
 
+        # update state on startDate if state exists
+        iStart = i
+        if iStart > 0:
+            i -= 1
+
         while i < len(self.root):
             child = self.root[i]
             date = datetime.strptime(child.get('Time')[:-3], self.dateFormat)
@@ -28,8 +33,12 @@ class ThermalProbe(Device):
 
             i += 1
 
-        x.insert(0, startDate)
-        k.insert(0, k[0])
+        # update state on startDate if state exists
+        if iStart > 0:
+            x[0] = startDate
+        else:
+            x.insert(0, startDate)
+            k.insert(0, k[0])
 
         return x, k
 

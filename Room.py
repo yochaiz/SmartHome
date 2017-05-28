@@ -13,8 +13,8 @@ class Room:
 
     # deviceMap = {'LightPoints': LightPoint, 'AuxChannel': AuxChannel}
     # deviceMap = {'AuxChannel': AuxChannel}
-    deviceMap = {'LightPoints': LightPoint}
-    # deviceMap = {'ThermalProbe': ThermalProbe}
+    # deviceMap = {'LightPoints': LightPoint}
+    deviceMap = {'ThermalProbe': ThermalProbe}
 
     def __init__(self, roomFolderName):
         self.roomName = roomFolderName
