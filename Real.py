@@ -6,8 +6,9 @@ import math
 class Real(Device):
     nullTemp = 'NaN'
 
-    def __init__(self, filename):
+    def __init__(self, filename, yAxisLabel):
         Device.__init__(self, filename)
+        self.yAxisLabel = yAxisLabel
 
     def collectData(self, startDate, lambdaFunc):
         i = self._Device__skipToDate(startDate)
@@ -60,11 +61,13 @@ class Real(Device):
         ax.step(xAxisTicks, k, 'o', label=self.id[self.id.rfind('.') + 1:], where='post')
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
-        ax.set_ylabel('Temperature [Celsius]')
-        nElemsY = 10
-        kUnique = sorted(list(set(k)))
-        gap = int(math.ceil(len(kUnique) / float(nElemsY)))
-        ax.set_yticks([kUnique[i] for i in range(0, len(kUnique), gap)])
+        ax.set_ylabel(self.yAxisLabel)
+
+        # # remove labels from y axis
+        # nElemsY = 10
+        # kUnique = sorted(list(set(k)))
+        # gap = int(math.ceil(len(kUnique) / float(nElemsY)))
+        # ax.set_yticks([kUnique[i] for i in range(0, len(kUnique), gap)])
 
         return x, xAxisTicks
 

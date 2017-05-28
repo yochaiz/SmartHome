@@ -86,7 +86,7 @@ class Device:
 
         return xAxisLabels, xAxisTicks
 
-    def __plot(self, startDate, lambdaFunc, axisMinGap=None):
+    def __plot(self, startDate, lambdaFunc, axisMinGap):
         fig, ax = plt.subplots()
         ax.set_xticks([])  # clear xAxis initial values
         xAxisLabels, xAxisTicks = self.addToPlot(ax, startDate, lambdaFunc, axisMinGap)
@@ -96,15 +96,15 @@ class Device:
         fig.autofmt_xdate()
         # plt.show()
 
-    def plotDateRange(self, startDate, endDate):
+    def plotDateRange(self, startDate, endDate, axisMinGap=None):
         # lambdaFunc = lambda x, date: date < endDate
         lambdaFunc = lambda x, date: date if date < endDate else (
             endDate if (len(x) == 0) or (len(x) > 0 and x[len(x) - 1] < endDate) else None)
-        self.__plot(startDate, lambdaFunc)
+        self.__plot(startDate, lambdaFunc, axisMinGap)
 
-    def plotPtsRange(self, startDate, nPts):
+    def plotPtsRange(self, startDate, nPts, axisMinGap=None):
         lambdaFunc = lambda x, date: len(x) < nPts
-        self.__plot(startDate, lambdaFunc)
+        self.__plot(startDate, lambdaFunc, axisMinGap)
 
     # finds sequence in seqLen length with minGap between two neighbor elements
     # if there is no seqLen length sequence, returns the longest sequence exists

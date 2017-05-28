@@ -1,18 +1,20 @@
 from AuxChannel import AuxChannel
 from ThermalProbe import ThermalProbe
 from LightPoint import LightPoint
+from EnergyManagement import EnergyManagement
 from Plot import Plot
 import os
 import matplotlib.pyplot as plt
 
 
 class Room:
-    # deviceMap = {'LightPoints': LightPoint, 'AuxChannel': AuxChannel, 'ThermalProbe': ThermalProbe}
+    # deviceMap = {'LightPoints': LightPoint, 'AuxChannel': AuxChannel, 'ThermalProbe': ThermalProbe,'Energy': EnergyManagement}
     # deviceMap = {'LightPoints': LightPoint, 'ThermalProbe': ThermalProbe}
     # deviceMap = {'LightPoints': LightPoint, 'AuxChannel': AuxChannel}
     # deviceMap = {'AuxChannel': AuxChannel}
     # deviceMap = {'LightPoints': LightPoint}
     deviceMap = {'ThermalProbe': ThermalProbe}
+    # deviceMap = {'Energy': EnergyManagement}
 
     def __init__(self, roomFolderName):
         self.roomName = roomFolderName
