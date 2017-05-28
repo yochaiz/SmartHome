@@ -9,11 +9,11 @@ from datetime import timedelta
 
 class Room:
     # deviceMap = {'LightPoints': LightPoint, 'AuxChannel': AuxChannel, 'ThermalProbe': ThermalProbe}
-    deviceMap = {'LightPoints': LightPoint, 'ThermalProbe': ThermalProbe}
+    # deviceMap = {'LightPoints': LightPoint, 'ThermalProbe': ThermalProbe}
 
     # deviceMap = {'LightPoints': LightPoint, 'AuxChannel': AuxChannel}
     # deviceMap = {'LightPoints': LightPoint}
-    # deviceMap = {'ThermalProbe': ThermalProbe}
+    deviceMap = {'ThermalProbe': ThermalProbe}
 
     def __init__(self, roomFolderName):
         self.roomName = roomFolderName

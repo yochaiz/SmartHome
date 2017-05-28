@@ -47,7 +47,8 @@ class ThermalProbe(Device):
     def _Device__plotInternal(self, ax, x, k):
         xAxisTicks = self.buildPlotData(x, k)
 
-        ax.plot(xAxisTicks, k, 'o', label=self.id[self.id.rfind('.') + 1:])
+        # ax.plot(xAxisTicks, k, 'o', label=self.id[self.id.rfind('.') + 1:])
+        ax.step(xAxisTicks, k, 'o', label=self.id[self.id.rfind('.') + 1:], where='post')
         ax.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 
         ax.set_ylabel('Temperature [Celsius]')

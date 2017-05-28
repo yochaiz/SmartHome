@@ -17,11 +17,12 @@ import matplotlib.pyplot as plt
 
 # room = Room('data/LivingRoom')
 # room.plotDateRange(datetime(2016, 2, 16, 14, 30, 0), datetime(2016, 2, 16, 23, 0, 0))
+# room.plotDateRange(datetime(2016, 2, 19, 21, 00, 0), datetime(2016, 2, 21, 13, 30, 0))
 # room.plotRepeatDateRange(datetime(2016, 1, 23, 7, 0, 0), datetime(2016, 1, 23, 23, 0, 0), 'LightPoints', 2,
 #                          timedelta(days=7))
 
 room2 = Room('data/MasterBedroom')
-room2.plotDateRange(datetime(2016, 3, 21, 13, 00, 0), datetime(2016, 3, 21, 21, 30, 0))
+room2.plotDateRange(datetime(2016, 2, 19, 21, 00, 0), datetime(2016, 2, 21, 13, 30, 0))
 
 plt.show()
 

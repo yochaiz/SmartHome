@@ -74,7 +74,7 @@ class Device:
         ax.set_xticklabels(xAxisLabels)
 
         bgcolor = 0.95
-        ax.set_axis_bgcolor((bgcolor, bgcolor, bgcolor))
+        ax.set_facecolor((bgcolor, bgcolor, bgcolor))
 
     def addToPlot(self, ax, startDate, lambdaFunc):
         x, k = self.collectData(startDate, lambdaFunc)
