@@ -13,8 +13,9 @@ class Room:
     # deviceMap = {'LightPoints': LightPoint, 'AuxChannel': AuxChannel}
     # deviceMap = {'AuxChannel': AuxChannel}
     # deviceMap = {'LightPoints': LightPoint}
-    deviceMap = {'ThermalProbe': ThermalProbe}
+    # deviceMap = {'ThermalProbe': ThermalProbe}
     # deviceMap = {'Energy': EnergyManagement}
+    deviceMap = {'LightPoints': LightPoint, 'Energy': EnergyManagement}
 
     def __init__(self, roomFolderName):
         self.roomName = roomFolderName
@@ -30,7 +31,7 @@ class Room:
 
     def __keyDateRangeSubPlot(self, key, ax, startDate, lambdaFunc, axisMinGap):
         ax.set_xticks([])  # clear xAxis initial values
-        ax.set_yticks([])  # clear yAxis initial values
+        # ax.set_yticks([])  # clear yAxis initial values
         minDate, maxDate = None, None
         for i, obj in enumerate(self.devices[key]):
             # obj = self.devices[key][0]
@@ -58,13 +59,17 @@ class Room:
 
         def innerIterateFunc(self, j, key):
             ax = axArr[j] if nPlots > 1 else axArr
-            xAxisLabels, xAxisTicks, minDate, maxDate = self.__keyDateRangeSubPlot(key, ax, dates[0], lambdaFunc,
-                                                                                   axisMinGap)
-            xAxisLabelsArr.append(xAxisLabels)
-            xAxisTicksArr.append(xAxisTicks)
-            overallMinDate[0] = min(overallMinDate[0], minDate)
-            overallMaxDate[0] = max(overallMaxDate[0], maxDate)
-            return ax, maxDate - minDate
+            try:
+                xAxisLabels, xAxisTicks, minDate, maxDate = self.__keyDateRangeSubPlot(key, ax, dates[0], lambdaFunc,
+                                                                                       axisMinGap)
+                xAxisLabelsArr.append(xAxisLabels)
+                xAxisTicksArr.append(xAxisTicks)
+                overallMinDate[0] = min(overallMinDate[0], minDate)
+                overallMaxDate[0] = max(overallMaxDate[0], maxDate)
+                return ax, Plot.timedeltaToText(maxDate - minDate)
+
+            except ValueError as e:
+                return ax, e.message
 
         iterateFunc(self, innerIterateFunc)
 
@@ -82,7 +87,7 @@ class Room:
         def iterateFunc(self, innerIterateFunc):
             for j, key in enumerate(self.devices.keys()):
                 ax, timeDelta = innerIterateFunc(self, j, key)
-                ax.set_title("Device:[%s] \n Time Range: %s" % (key, Plot.timedeltaToText(timeDelta)))
+                ax.set_title("Device:[%s] \n Time Range: %s" % (key, timeDelta))
 
         nPlots = len(self.devices.keys())
         self.__genericPlot([startDate, endDate], nPlots, iterateFunc, axisMinGap)
@@ -95,7 +100,8 @@ class Room:
             for j in range(nRepeat):
                 ax, timeDelta = innerIterateFunc(self, j, key)
                 ax.set_title("Date:[%s]-[%s] \n Time Range: %s" % (
-                    dates[0].strftime(dateFormat), dates[1].strftime(dateFormat), Plot.timedeltaToText(timeDelta)))
+                    dates[0].strftime(dateFormat), dates[1].strftime(dateFormat), timeDelta))
+
                 dates[0] += timeGap
                 dates[1] += timeGap
 

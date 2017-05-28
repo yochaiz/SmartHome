@@ -34,6 +34,9 @@ class Real(Device):
 
             i += 1
 
+        if len(x) <= 0:
+            raise ValueError('Time range has no data')
+
         # update state on startDate if state exists
         if iStart > 0:
             x[0] = startDate

@@ -89,12 +89,15 @@ class Device:
     def __plot(self, startDate, lambdaFunc, axisMinGap):
         fig, ax = plt.subplots()
         ax.set_xticks([])  # clear xAxis initial values
-        xAxisLabels, xAxisTicks = self.addToPlot(ax, startDate, lambdaFunc, axisMinGap)
-        date1 = xAxisLabels[0]
-        date2 = xAxisLabels[len(xAxisLabels) - 1]
-        ax.set_title("[%s] \n Time Range: %s" % (self.filename, Plot.timedeltaToText(date2 - date1)))
-        fig.autofmt_xdate()
-        # plt.show()
+        try:
+            xAxisLabels, xAxisTicks = self.addToPlot(ax, startDate, lambdaFunc, axisMinGap)
+            date1 = xAxisLabels[0]
+            date2 = xAxisLabels[len(xAxisLabels) - 1]
+            ax.set_title("[%s] \n Time Range: %s" % (self.filename, Plot.timedeltaToText(date2 - date1)))
+            fig.autofmt_xdate()
+            # plt.show()
+        except ValueError as e:
+            ax.set_title("[%s] \n Time Range: [%s]" % (self.filename, e.message))
 
     def plotDateRange(self, startDate, endDate, axisMinGap=None):
         # lambdaFunc = lambda x, date: date < endDate
