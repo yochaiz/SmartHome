@@ -40,12 +40,6 @@ class Device:
     def buildPlotData(self, x, k):
         raise NotImplementedError('subclasses must override buildPlotData()!')
 
-    # def __sortPlotXaxis(self, ax, x, xAxisLabels=None, xAxisTicks=None):
-    #     [xAxis] = Plot.dateWithMinimalGap([x], lambda i: (x[i] - x[i - 1]).seconds)
-    #
-    #     ax.set_xticks(xAxis)
-    #     ax.set_xticklabels(xAxis)
-
     def __mergeXaxis(self, axTicks, axLabels, xAxisTicks, xAxisLabels):
         i = 0
         j = 0
@@ -60,23 +54,22 @@ class Device:
 
             i += 1
 
-    def __sortPlotXaxis(self, ax, x, xAxisLabels, xAxisTicks):
+    def __sortPlotXaxis(self, ax, x, xAxisLabels, xAxisTicks, axisMinGap):
         # merge labels
         self.__mergeXaxis(ax.get_xticks(), ax.get_xticklabels(), xAxisTicks, xAxisLabels)
 
         # Removes too close labels
-        minGap = round((xAxisTicks[len(xAxisTicks) - 1] - xAxisTicks[0]) / 50.0)
-        res = Plot.dateWithMinimalGap([xAxisLabels, xAxisTicks], lambda i: xAxisTicks[i] - xAxisTicks[i - 1], minGap)
+        if axisMinGap is None:
+            axisMinGap = round((xAxisTicks[-1] - xAxisTicks[0]) / 50.0)
+        res = Plot.dateWithMinimalGap([xAxisLabels, xAxisTicks], lambda i: xAxisTicks[i] - xAxisTicks[i - 1],
+                                      axisMinGap)
         xAxisLabels = res[0]
         xAxisTicks = res[1]
 
         ax.set_xticks(xAxisTicks)
         ax.set_xticklabels(xAxisLabels)
 
-        bgcolor = 0.95
-        ax.set_facecolor((bgcolor, bgcolor, bgcolor))
-
-    def addToPlot(self, ax, startDate, lambdaFunc):
+    def addToPlot(self, ax, startDate, lambdaFunc, axisMinGap=None):
         x, k = self.collectData(startDate, lambdaFunc)
 
         print('File:[%s]' % self.filename)
@@ -86,13 +79,17 @@ class Device:
 
         xAxisLabels, xAxisTicks = self.__plotInternal(ax, x, k)
 
-        self.__sortPlotXaxis(ax, x, xAxisLabels, xAxisTicks)
+        self.__sortPlotXaxis(ax, x, xAxisLabels, xAxisTicks, axisMinGap)
+
+        bgcolor = 0.95
+        ax.set_facecolor((bgcolor, bgcolor, bgcolor))
+
         return xAxisLabels, xAxisTicks
 
-    def __plot(self, startDate, lambdaFunc):
+    def __plot(self, startDate, lambdaFunc, axisMinGap=None):
         fig, ax = plt.subplots()
         ax.set_xticks([])  # clear xAxis initial values
-        xAxisLabels, xAxisTicks = self.addToPlot(ax, startDate, lambdaFunc)
+        xAxisLabels, xAxisTicks = self.addToPlot(ax, startDate, lambdaFunc, axisMinGap)
         date1 = xAxisLabels[0]
         date2 = xAxisLabels[len(xAxisLabels) - 1]
         ax.set_title("[%s] \n Time Range: %s" % (self.filename, Plot.timedeltaToText(date2 - date1)))
@@ -144,3 +141,9 @@ class Device:
             return startDate, seqLen
 
         return maxSeqStartDate, maxSeqLen
+
+        # def __sortPlotXaxis(self, ax, x, xAxisLabels=None, xAxisTicks=None):
+        #     [xAxis] = Plot.dateWithMinimalGap([x], lambda i: (x[i] - x[i - 1]).seconds)
+        #
+        #     ax.set_xticks(xAxis)
+        #     ax.set_xticklabels(xAxis)

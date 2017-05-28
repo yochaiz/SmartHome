@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 #                          timedelta(days=7))
 
 room2 = Room('data/MasterBedroom')
-room2.plotDateRange(datetime(2016, 2, 19, 21, 00, 0), datetime(2016, 2, 21, 13, 30, 0))
+room2.plotDateRange(datetime(2016, 2, 19, 21, 00, 0), datetime(2016, 2, 21, 13, 30, 0), timedelta(minutes=1).seconds)
 
 plt.show()
 
