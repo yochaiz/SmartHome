@@ -92,9 +92,14 @@ class OnOff(Device):
         for key in colors.iterkeys():
             xByClass[key] = []
 
-        x.append(startDate)
-        xColorKeys.append(self.nullValue)
-        xByClass[self.nullValue].append(startDate)
+        # update state on startDate if state exists
+        iStart = i
+        if iStart > 0:
+            i -= 1
+        else:
+            x.append(startDate)
+            xColorKeys.append(self.nullValue)
+            xByClass[self.nullValue].append(startDate)
 
         while i < len(self.root):
             child = self.root[i]
@@ -110,6 +115,10 @@ class OnOff(Device):
             key = child.text
             xByClass[key].append(date)
             xColorKeys.append(key)
+
+        # update state on startDate if state exists
+        if iStart > 0:
+            x[0] = startDate
 
         k = [xByClass, xColorKeys]
         return x, k
