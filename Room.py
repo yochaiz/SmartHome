@@ -12,8 +12,9 @@ class Room:
     # deviceMap = {'LightPoints': LightPoint, 'ThermalProbe': ThermalProbe}
 
     # deviceMap = {'LightPoints': LightPoint, 'AuxChannel': AuxChannel}
-    # deviceMap = {'LightPoints': LightPoint}
-    deviceMap = {'ThermalProbe': ThermalProbe}
+    # deviceMap = {'AuxChannel': AuxChannel}
+    deviceMap = {'LightPoints': LightPoint}
+    # deviceMap = {'ThermalProbe': ThermalProbe}
 
     def __init__(self, roomFolderName):
         self.roomName = roomFolderName
@@ -36,7 +37,7 @@ class Room:
             stDate, seqLen = obj.findSequence(100, timedelta(minutes=2), timedelta(hours=2))
             print('File:[%s] - Key:[%s] - Date:[%s] - SeqLen:[%d]' % (obj.filename, key, stDate, seqLen))
             xAxisLabels, xAxisTicks = obj.addToPlot(ax, startDate, lambdaFunc)
-            h1 , l1 = ax.get_legend_handles_labels()
+            h1, l1 = ax.get_legend_handles_labels()
             date1 = xAxisLabels[0]
             date2 = xAxisLabels[len(xAxisLabels) - 1]
             minDate = date1 if minDate is None else min(minDate, date1)

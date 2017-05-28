@@ -5,59 +5,11 @@ from Device import Device
 class OnOff(Device):
     nullValue = "null"
 
-    def __init__(self, filename, nullColorDot, dotColors, nullColorBar, barColors):
+    def __init__(self, filename, nullColor, colors):
         super(OnOff, self).__init__(filename)
 
-        self.nullColorDot = nullColorDot
-        self.colorsDots = {self.nullValue: nullColorDot, '0': dotColors[0], '1': dotColors[1]}
-
-        self.nullColorBar = nullColorBar
-        self.colorsBars = {self.nullValue: nullColorBar, '0': barColors[0], '1': barColors[1]}
-
-        self.nullColor = self.nullColorBar
-        self.colors = self.colorsBars
-        # self.colors = self.colorsBars
-
-    def setPlotDots(self):
-        self.nullColor = self.nullColorDot
-        self.colors = self.colorsDots
-
-    def setPlotBars(self):
-        self.nullColor = self.nullColorBar
-        self.colors = self.colorsBars
-
-    # def __mergeXaxis(self, axTicks, axLabels, xAxisTicks, xAxisLabels):
-    #     i = 0
-    #     j = 0
-    #     while i < len(axTicks):
-    #         while j < len(xAxisTicks) and axTicks[i] > xAxisTicks[j]:
-    #             j += 1
-    #
-    #         if j >= len(xAxisTicks) or axTicks[i] < xAxisTicks[j]:
-    #             xAxisTicks.insert(j, axTicks[i])
-    #             xAxisLabels.insert(j, datetime.strptime(axLabels[i]._text, self.dateFormat))
-    #             # xAxisLabels.insert(j, str(axLabels[i]._text))
-    #
-    #         i += 1
-    #
-    # def __sortPlotXaxis(self, ax, x, xAxisLabels, xAxisTicks):
-    #     self._Device__sortPlotXaxis(ax, x, xAxisLabels, xAxisTicks)
-    #
-    # def _Device__sortPlotXaxis(self, ax, x, xAxisLabels, xAxisTicks):
-    #     # merge labels
-    #     self.__mergeXaxis(ax.get_xticks(), ax.get_xticklabels(), xAxisTicks, xAxisLabels)
-    #
-    #     # Removes too close labels
-    #     minGap = round((xAxisTicks[len(xAxisTicks) - 1] - xAxisTicks[0]) / 50.0)
-    #     res = Plot.dateWithMinimalGap([xAxisLabels, xAxisTicks], lambda i: xAxisTicks[i] - xAxisTicks[i - 1], minGap)
-    #     xAxisLabels = res[0]
-    #     xAxisTicks = res[1]
-    #
-    #     ax.set_xticks(xAxisTicks)
-    #     ax.set_xticklabels(xAxisLabels)
-    #
-    #     bgcolor = 0.95
-    #     ax.set_axis_bgcolor((bgcolor, bgcolor, bgcolor))
+        self.nullColor = nullColor
+        self.colors = {self.nullValue: nullColor, '0': colors[0], '1': colors[1]}
 
     def buildPlotData(self, x, k):
         xColorKeys = k[1]
@@ -77,7 +29,7 @@ class OnOff(Device):
         for i in range(len(x) - 1):
             val = (x[i + 1] - x[i]).seconds
             width.append(val)
-            color.append(self.colorsBars[xColorKeys[i]])
+            color.append(self.colors[xColorKeys[i]])
             leftValues.append(lastVal)
             # xAxisLabels.append(x[i + 1])
             xAxisLabels.append(x[i + 1])
@@ -120,7 +72,7 @@ class OnOff(Device):
                 labels.append(key)
 
         ax.legend(handles, labels, loc='center left', bbox_to_anchor=(1, 0.5))
-        h1,l1 = ax.get_legend_handles_labels()
+        h1, l1 = ax.get_legend_handles_labels()
         # self.__sortPlotXaxis(ax, x, xAxisLabels, xAxisTicks)
 
         return xAxisLabels, xAxisTicks
@@ -161,6 +113,60 @@ class OnOff(Device):
 
         k = [xByClass, xColorKeys]
         return x, k
+
+# def __init__(self, filename, nullColorDot, dotColors, nullColorBar, barColors):
+#     super(OnOff, self).__init__(filename)
+#
+#     self.nullColorDot = nullColorDot
+#     self.colorsDots = {self.nullValue: nullColorDot, '0': dotColors[0], '1': dotColors[1]}
+#
+#     self.nullColorBar = nullColorBar
+#     self.colorsBars = {self.nullValue: nullColorBar, '0': barColors[0], '1': barColors[1]}
+#
+#     self.nullColor = self.nullColorBar
+#     self.colors = self.colorsBars
+#     # self.colors = self.colorsBars
+
+# def setPlotDots(self):
+#     self.nullColor = self.nullColorDot
+#     self.colors = self.colorsDots
+#
+# def setPlotBars(self):
+#     self.nullColor = self.nullColorBar
+#     self.colors = self.colorsBars
+
+# def __mergeXaxis(self, axTicks, axLabels, xAxisTicks, xAxisLabels):
+#     i = 0
+#     j = 0
+#     while i < len(axTicks):
+#         while j < len(xAxisTicks) and axTicks[i] > xAxisTicks[j]:
+#             j += 1
+#
+#         if j >= len(xAxisTicks) or axTicks[i] < xAxisTicks[j]:
+#             xAxisTicks.insert(j, axTicks[i])
+#             xAxisLabels.insert(j, datetime.strptime(axLabels[i]._text, self.dateFormat))
+#             # xAxisLabels.insert(j, str(axLabels[i]._text))
+#
+#         i += 1
+#
+# def __sortPlotXaxis(self, ax, x, xAxisLabels, xAxisTicks):
+#     self._Device__sortPlotXaxis(ax, x, xAxisLabels, xAxisTicks)
+#
+# def _Device__sortPlotXaxis(self, ax, x, xAxisLabels, xAxisTicks):
+#     # merge labels
+#     self.__mergeXaxis(ax.get_xticks(), ax.get_xticklabels(), xAxisTicks, xAxisLabels)
+#
+#     # Removes too close labels
+#     minGap = round((xAxisTicks[len(xAxisTicks) - 1] - xAxisTicks[0]) / 50.0)
+#     res = Plot.dateWithMinimalGap([xAxisLabels, xAxisTicks], lambda i: xAxisTicks[i] - xAxisTicks[i - 1], minGap)
+#     xAxisLabels = res[0]
+#     xAxisTicks = res[1]
+#
+#     ax.set_xticks(xAxisTicks)
+#     ax.set_xticklabels(xAxisLabels)
+#
+#     bgcolor = 0.95
+#     ax.set_axis_bgcolor((bgcolor, bgcolor, bgcolor))
 
 # def plotDots(self, ax, k):
 #     for key in k.iterkeys():
