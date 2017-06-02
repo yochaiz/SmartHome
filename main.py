@@ -23,7 +23,7 @@ import matplotlib.pyplot as plt
 #                          timedelta(days=7))
 
 room2 = Room('data/MasterBedroom')
-room2.plotDateRange(datetime(2016, 2, 19, 21, 00, 0), datetime(2016, 2, 21, 13, 30, 0), timedelta(minutes=30).seconds)
+room2.plotDateRange(datetime(2016, 2, 19, 21, 00, 0), datetime(2016, 2, 21, 13, 30, 0), timedelta(minutes=1).seconds)
 
 # probe = ThermalProbe('data/ThermalProbe/Devices.ClimateControl.ThermalProbe.1.xml')
 # probe.plotDateRange(datetime(2016, 2, 15, 8, 00, 45), datetime(2016, 2, 15, 21, 30, 53))
