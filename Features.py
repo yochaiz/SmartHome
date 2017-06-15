@@ -30,8 +30,19 @@ class Features(object):
         df = pd.read_csv(dstFile)
         headers = df.columns.values.tolist()
         print(headers)
-        j = 1
+        jStart = 1
+
+        j = jStart
         headerDate = datetime.strptime(headers[j], Features.dateFormat)
+        # skip columns we can't fill with data because they before 1st valid date
+        child = root[i]
+        dateStr = child.get('Time')[:-3]
+        date = datetime.strptime(dateStr, Features.dateFormat)
+        while date > headerDate:
+            j += 1
+            headerDate = datetime.strptime(headers[j], Features.dateFormat)
+
+        cutColsIndex = j
 
         prevDate = None
         while i < len(root):
@@ -41,6 +52,7 @@ class Features(object):
             if child.text == 'null':
                 child.text = 'NaN'
 
+            # column already exist for this file
             if dateStr == prevDate:
                 i += 1
                 continue
@@ -68,7 +80,6 @@ class Features(object):
                     # print('[%d] - [%d]' % (j, len(headers)))
                     # print('[%s] - [%s] - [%s]' % (headers[j], date, headerDate))
                     headerDate = datetime.strptime(headers[j], Features.dateFormat)
-                    # print('** [%s] - [%s]' % (date, headerDate))
                     records.append(records[-1])
 
                 if date < headerDate:
@@ -82,8 +93,16 @@ class Features(object):
             records.append(float(child.text))
             i += 1
 
+        # there are columns to cut
+        if cutColsIndex > jStart:
+            print(df.shape)
+            df = df.drop(df.columns[jStart:cutColsIndex], axis=1)
+            del headers[jStart:cutColsIndex]
+            print(df.shape)
+
         dfNew = pd.DataFrame.from_records([records], columns=headers)
         df = df.append(dfNew)
+
         return df
 
     @staticmethod
