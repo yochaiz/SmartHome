@@ -38,9 +38,14 @@ class Features(object):
             dateStr = child.get('Time')[:-3]
             date = datetime.strptime(dateStr, Features.dateFormat)
 
-            print('[%s] - [%s]' % (date, headerDate))
+            # print('[%s] - [%s]' % (date, headerDate))
 
             if headerDate is None:
+                # check if header already exist and skip it for does
+                if dateStr == headers[-1]:
+                    i += 1
+                    continue
+
                 headers.append(dateStr)
             elif date == headerDate:
                 j += 1
@@ -49,21 +54,23 @@ class Features(object):
             elif date < headerDate:
                 df.insert(j, dateStr, df.iloc[:, j - 1])
                 headers.insert(j, dateStr)
-                print('Added [%s] column at position [%d]' % (dateStr, j))
+                # print('Added [%s] column at position [%d]' % (dateStr, j))
 
                 j += 1
                 headerDate = datetime.strptime(headers[j], Features.dateFormat)
             else:
                 while date > headerDate:
                     j += 1
+                    # print('[%d] - [%d]' % (j, len(headers)))
+                    # print('[%s] - [%s] - [%s]' % (headers[j], date, headerDate))
                     headerDate = datetime.strptime(headers[j], Features.dateFormat)
-                    print('** [%s] - [%s]' % (date, headerDate))
+                    # print('** [%s] - [%s]' % (date, headerDate))
                     records.append(records[-1])
 
                 if date < headerDate:
                     df.insert(j, dateStr, df.iloc[:, j - 1])
                     headers.insert(j, dateStr)
-                    print('Added [%s] column at position [%d]' % (dateStr, j))
+                    # print('Added [%s] column at position [%d]' % (dateStr, j))
 
                 j += 1
                 headerDate = datetime.strptime(headers[j], Features.dateFormat)
@@ -78,8 +85,8 @@ class Features(object):
                 dfNew = pd.DataFrame.from_records([records], columns=headers)
                 df = df.append(dfNew)
 
-            print(df.columns.values)
-            print(records)
+            # print(df.columns.values)
+            # print(records)
             print('#headers:[%d] - #records:[%d]' % (len(df.columns.values), len(records)))
             df = df.fillna(method='ffill', axis=1)  # fill with previous value in row
             df.to_csv(f, header=True, index=False)
@@ -87,8 +94,10 @@ class Features(object):
         print('Done !')
 
 
-Features.writeToCSV('data/ThermalProbe/gg.xml', 'data/features.csv')
-Features.writeToCSV('data/ThermalProbe/vv.xml', 'data/features.csv')
+# Features.writeToCSV('data/ThermalProbe/Devices.ClimateControl.ThermalProbe.1.xml', 'data/features.csv')
+Features.writeToCSV('data/ThermalProbe/Devices.ClimateControl.ThermalProbe.3.xml', 'data/features.csv')
+# Features.writeToCSV('data/ThermalProbe/gg.xml', 'data/features.csv')
+# Features.writeToCSV('data/ThermalProbe/vv.xml', 'data/features.csv')
 # Features.writeToCSV('data/ThermalProbe/Devices.ClimateControl.ThermalProbe.1.xml', 'data/features.csv')
 
 
