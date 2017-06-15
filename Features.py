@@ -8,51 +8,55 @@ class Features(object):
     dateFormat = '%Y-%m-%d %H:%M:%S'
 
     @staticmethod
-    def writeToCSV(srcFile, dstFile):
-        print('writeToCSV:')
-        df = None
-        records, headers = [srcFile], ['filename']
-        headerDate = None
-
-        emptyFile = not os.path.isfile(dstFile)
-        if not emptyFile:
-            df = pd.read_csv(dstFile)
-            headers = df.columns.values.tolist()
-            print(headers)
-            j = 1
-            headerDate = datetime.strptime(headers[j], Features.dateFormat)
-
-        root = Et.parse(srcFile).getroot()
-        # at the moment we decide to skip values until the 1st value which isn't NaN
-        i = 0
+    def writeToEmptyFile(root, records, headers, i):
         while i < len(root):
             child = root[i]
-            if child.text != 'NaN':
-                break
+            dateStr = child.get('Time')[:-3]
+            # date = datetime.strptime(dateStr, Features.dateFormat)
+            if child.text == 'null':
+                child.text = 'NaN'
+
+            if dateStr != headers[-1]:
+                headers.append(dateStr)
+                records.append(float(child.text))
 
             i += 1
 
+        df = pd.DataFrame.from_records([records], columns=headers)
+        return df
+
+    @staticmethod
+    def writeToExistingFile(dstFile, root, records, i):
+        df = pd.read_csv(dstFile)
+        headers = df.columns.values.tolist()
+        print(headers)
+        j = 1
+        headerDate = datetime.strptime(headers[j], Features.dateFormat)
+
+        prevDate = None
         while i < len(root):
-            # for i, child in enumerate(root):
             child = root[i]
             dateStr = child.get('Time')[:-3]
             date = datetime.strptime(dateStr, Features.dateFormat)
+            if child.text == 'null':
+                child.text = 'NaN'
 
-            # print('[%s] - [%s]' % (date, headerDate))
+            if dateStr == prevDate:
+                i += 1
+                continue
 
-            if headerDate is None:
-                # check if header already exist and skip it for does
-                if dateStr == headers[-1]:
-                    i += 1
-                    continue
+            prevDate = dateStr
 
-                headers.append(dateStr)
-            elif date == headerDate:
+            if date == headerDate:
                 j += 1
                 if j < len(headers):
                     headerDate = datetime.strptime(headers[j], Features.dateFormat)
             elif date < headerDate:
-                df.insert(j, dateStr, df.iloc[:, j - 1])
+                try:
+                    df.insert(j, dateStr, df.iloc[:, j - 1])
+                except ValueError:
+                    print('[%s] - [%s]' % (date, headerDate))
+                    break
                 headers.insert(j, dateStr)
                 # print('Added [%s] column at position [%d]' % (dateStr, j))
 
@@ -78,24 +82,45 @@ class Features(object):
             records.append(float(child.text))
             i += 1
 
-        with open(dstFile, 'w') as f:
-            if emptyFile:
-                df = pd.DataFrame.from_records([records], columns=headers)
-            else:
-                dfNew = pd.DataFrame.from_records([records], columns=headers)
-                df = df.append(dfNew)
+        dfNew = pd.DataFrame.from_records([records], columns=headers)
+        df = df.append(dfNew)
+        return df
 
-            # print(df.columns.values)
-            # print(records)
+    @staticmethod
+    def writeToCSV(srcFile, dstFile):
+        print('writeToCSV:')
+        records, headers = [srcFile], ['filename']
+
+        root = Et.parse(srcFile).getroot()
+        # at the moment we decide to skip values until the 1st value which isn't NaN or null
+        i = 0
+        valueFlag = False
+        while i < len(root):
+            child = root[i]
+            valueFlag = (child.text != 'NaN') and (child.text != 'null')
+            if valueFlag is True:
+                break
+
+            i += 1
+
+        emptyFile = not os.path.isfile(dstFile)
+        if emptyFile is True:
+            df = Features.writeToEmptyFile(root, records, headers, i)
+        else:
+            df = Features.writeToExistingFile(dstFile, root, records, i)
+
+        with open(dstFile, 'w') as f:
             print('#headers:[%d] - #records:[%d]' % (len(df.columns.values), len(records)))
             df = df.fillna(method='ffill', axis=1)  # fill with previous value in row
             df.to_csv(f, header=True, index=False)
 
-        print('Done !')
+            print('Done !')
 
 
+Features.writeToCSV('data/LightPoints/Devices.LightsAndAutomation.LightPoint.1.2.xml', 'data/LP.csv')
+Features.writeToCSV('data/LightPoints/Devices.LightsAndAutomation.LightPoint.1.3.xml', 'data/LP.csv')
 # Features.writeToCSV('data/ThermalProbe/Devices.ClimateControl.ThermalProbe.1.xml', 'data/features.csv')
-Features.writeToCSV('data/ThermalProbe/Devices.ClimateControl.ThermalProbe.3.xml', 'data/features.csv')
+# Features.writeToCSV('data/ThermalProbe/Devices.ClimateControl.ThermalProbe.3.xml', 'data/features.csv')
 # Features.writeToCSV('data/ThermalProbe/gg.xml', 'data/features.csv')
 # Features.writeToCSV('data/ThermalProbe/vv.xml', 'data/features.csv')
 # Features.writeToCSV('data/ThermalProbe/Devices.ClimateControl.ThermalProbe.1.xml', 'data/features.csv')
