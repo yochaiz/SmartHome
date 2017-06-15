@@ -29,7 +29,6 @@ class Features(object):
     def writeToExistingFile(dstFile, root, records, i):
         df = pd.read_csv(dstFile)
         headers = df.columns.values.tolist()
-        print(headers)
         jStart = 1
 
         j = jStart
@@ -88,17 +87,16 @@ class Features(object):
                     # print('Added [%s] column at position [%d]' % (dateStr, j))
 
                 j += 1
-                headerDate = datetime.strptime(headers[j], Features.dateFormat)
+                if j < len(headers):
+                    headerDate = datetime.strptime(headers[j], Features.dateFormat)
 
             records.append(float(child.text))
             i += 1
 
         # there are columns to cut
         if cutColsIndex > jStart:
-            print(df.shape)
             df = df.drop(df.columns[jStart:cutColsIndex], axis=1)
             del headers[jStart:cutColsIndex]
-            print(df.shape)
 
         dfNew = pd.DataFrame.from_records([records], columns=headers)
         df = df.append(dfNew)
@@ -136,8 +134,8 @@ class Features(object):
             print('Done !')
 
 
-Features.writeToCSV('data/LightPoints/Devices.LightsAndAutomation.LightPoint.1.2.xml', 'data/LP.csv')
-Features.writeToCSV('data/LightPoints/Devices.LightsAndAutomation.LightPoint.1.3.xml', 'data/LP.csv')
+# Features.writeToCSV('data/LightPoints/Devices.LightsAndAutomation.LightPoint.1.2.xml', 'data/LP.csv')
+# Features.writeToCSV('data/LightPoints/Devices.LightsAndAutomation.LightPoint.1.3.xml', 'data/LP.csv')
 # Features.writeToCSV('data/ThermalProbe/Devices.ClimateControl.ThermalProbe.1.xml', 'data/features.csv')
 # Features.writeToCSV('data/ThermalProbe/Devices.ClimateControl.ThermalProbe.3.xml', 'data/features.csv')
 # Features.writeToCSV('data/ThermalProbe/gg.xml', 'data/features.csv')
