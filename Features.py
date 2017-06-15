@@ -23,7 +23,18 @@ class Features(object):
             headerDate = datetime.strptime(headers[j], Features.dateFormat)
 
         root = Et.parse(srcFile).getroot()
-        for i, child in enumerate(root):
+        # at the moment we decide to skip values until the 1st value which isn't NaN
+        i = 0
+        while i < len(root):
+            child = root[i]
+            if child.text != 'NaN':
+                break
+
+            i += 1
+
+        while i < len(root):
+            # for i, child in enumerate(root):
+            child = root[i]
             dateStr = child.get('Time')[:-3]
             date = datetime.strptime(dateStr, Features.dateFormat)
 
@@ -57,10 +68,8 @@ class Features(object):
                 j += 1
                 headerDate = datetime.strptime(headers[j], Features.dateFormat)
 
-            # if child.text == 'NaN':
-            #     child.text = ''
-
-            records.append(child.text)
+            records.append(float(child.text))
+            i += 1
 
         with open(dstFile, 'w') as f:
             if emptyFile:
@@ -72,38 +81,39 @@ class Features(object):
             print(df.columns.values)
             print(records)
             print('#headers:[%d] - #records:[%d]' % (len(df.columns.values), len(records)))
-            # df = df.fillna(method='ffill',axis=1) # fill with previous value in row
+            df = df.fillna(method='ffill', axis=1)  # fill with previous value in row
             df.to_csv(f, header=True, index=False)
 
         print('Done !')
-
-        # @staticmethod
-        # def writeToCSV(srcFile, dstFile):
-        #     print('writeToCSV:')
-        #     # df = pd.read_csv(dstFile)
-        #     with open(dstFile, 'w') as f:
-        #         root = Et.parse(srcFile).getroot()
-        #         records, headers = [srcFile], ['filename']
-        #         for i, child in enumerate(root):
-        #             date = child.get('Time')[:-3]
-        #
-        #             if date != headers[-1]:
-        #                 records.append(child.text)
-        #                 headers.append(date)
-        #             else:
-        #                 print('[%s] already exists as header' % date)
-        #
-        #         # del headers[0]
-        #         df = pd.DataFrame.from_records([records], columns=headers)
-        #         df.to_csv(f)
-        #
-        #     # df2 = pd.DataFrame.from_records([records], columns=headers)
-        #     # dfNew = df.append(df2, ignore_index=True)
-        #     # # print(df)
-        #     # print(dfNew)
-        #     # # df.to_csv(dfNew, header=False)
 
 
 Features.writeToCSV('data/ThermalProbe/gg.xml', 'data/features.csv')
 Features.writeToCSV('data/ThermalProbe/vv.xml', 'data/features.csv')
 # Features.writeToCSV('data/ThermalProbe/Devices.ClimateControl.ThermalProbe.1.xml', 'data/features.csv')
+
+
+# @staticmethod
+# def writeToCSV(srcFile, dstFile):
+#     print('writeToCSV:')
+#     # df = pd.read_csv(dstFile)
+#     with open(dstFile, 'w') as f:
+#         root = Et.parse(srcFile).getroot()
+#         records, headers = [srcFile], ['filename']
+#         for i, child in enumerate(root):
+#             date = child.get('Time')[:-3]
+#
+#             if date != headers[-1]:
+#                 records.append(child.text)
+#                 headers.append(date)
+#             else:
+#                 print('[%s] already exists as header' % date)
+#
+#         # del headers[0]
+#         df = pd.DataFrame.from_records([records], columns=headers)
+#         df.to_csv(f)
+#
+#     # df2 = pd.DataFrame.from_records([records], columns=headers)
+#     # dfNew = df.append(df2, ignore_index=True)
+#     # # print(df)
+#     # print(dfNew)
+#     # # df.to_csv(dfNew, header=False)
