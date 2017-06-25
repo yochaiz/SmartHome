@@ -21,8 +21,6 @@ filenames = copy(X.iloc[:, 0])
 for i in range(len(filenames)):
     filenames[i] = filenames[i][-7:-4]
 
-print(filenames)
-
 # remove filename column
 X = X.drop(X.columns[0], axis=1)
 print(X.shape)
