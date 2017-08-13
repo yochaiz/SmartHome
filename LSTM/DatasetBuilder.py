@@ -3,7 +3,6 @@ from datetime import datetime, timedelta
 import logging
 import numpy as np
 from XmlFile import XmlFile
-import pandas as pd
 import h5py
 
 
@@ -114,9 +113,8 @@ class DatasetBuilder(object):
         nSamples = 400000
         print('nSamples:[%d]' % nSamples)
 
-        xSet = self.xDataFile.create_dataset("chunked", (nSamples, seqLen, len(self.headers)),
-                                             chunks=(self.batchSize, seqLen, len(self.headers)))
-        ySet = self.yDataFile.create_dataset("chunked", (nSamples, 11), chunks=(self.batchSize, 11))
+        xSet = self.xDataFile.create_dataset("default", (nSamples, seqLen, len(self.headers)))
+        ySet = self.yDataFile.create_dataset("default", (nSamples, 11))
 
         # collect data
         sampleIdx = 0
