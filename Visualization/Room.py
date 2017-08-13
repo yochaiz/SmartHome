@@ -10,8 +10,8 @@ import matplotlib.pyplot as plt
 class Room:
     # deviceMap = {'LightPoints': LightPoint, 'AuxChannel': AuxChannel, 'ThermalProbe': ThermalProbe,'Energy': EnergyManagement}
     # deviceMap = {'LightPoints': LightPoint, 'ThermalProbe': ThermalProbe}
-    # deviceMap = {'LightPoints': LightPoint, 'AuxChannel': AuxChannel}
-    deviceMap = {'AuxChannel': AuxChannel}
+    deviceMap = {'LightPoints': LightPoint, 'AuxChannel': AuxChannel}
+    # deviceMap = {'AuxChannel': AuxChannel}
     # deviceMap = {'LightPoints': LightPoint}
     # deviceMap = {'ThermalProbe': ThermalProbe}
     # deviceMap = {'Energy': EnergyManagement}
