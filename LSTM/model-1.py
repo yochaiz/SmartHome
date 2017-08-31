@@ -43,8 +43,7 @@ outputSize = y.shape[1]
 assert (x.shape[0] == y.shape[0])  # same number of samples & labels
 
 model = Sequential()
-model.add(
-    LSTM(outputSize, activation='sigmoid', dropout=0.2, recurrent_dropout=0.2, input_shape=(seqLen, nInputFeatures)))
+model.add(LSTM(outputSize, activation='sigmoid', dropout=0.2, recurrent_dropout=0.2, input_shape=(seqLen, nInputFeatures)))
 print(model.summary())
 model.compile(loss='binary_crossentropy', optimizer='adam', metrics=['accuracy'])
 model.save(__file__[:-3] + '.h5')

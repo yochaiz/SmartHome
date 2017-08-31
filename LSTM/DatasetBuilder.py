@@ -107,8 +107,8 @@ class DatasetBuilder(object):
         print('Start date:[%s] - [%s], lastDate:[%s]' % (date, date.weekday(), lastDate))
 
         import time
-        t1 = time.mktime(date.timetuple())
-        t2 = time.mktime(lastDate.timetuple())
+        # t1 = time.mktime(date.timetuple())
+        # t2 = time.mktime(lastDate.timetuple())
         # nSamples = int(t2 - t1) / 60
         nSamples = 400000
         print('nSamples:[%d]' % nSamples)
