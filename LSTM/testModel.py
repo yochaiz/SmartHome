@@ -17,7 +17,7 @@ fname = 'model-1.h5'
 model = load_model(fname)
 
 x = loadHdf5('x.hdf5')
-i = 241672
+i = 5400
 print(x[i])
 x = np.array(x)
 y = loadHdf5('y.hdf5')
