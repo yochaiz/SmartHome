@@ -3,8 +3,10 @@ from keras.layers import LSTM
 import h5py
 import os
 import numpy as np
+from ExperimentLogger import ExperimentLogger
 
-os.environ["CUDA_VISIBLE_DEVICES"] = "0"
+# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 def loadHdf5(fname):
@@ -42,6 +44,8 @@ outputSize = y.shape[1]
 
 assert (x.shape[0] == y.shape[0])  # same number of samples & labels
 
+logger = ExperimentLogger().getLogger()
+
 model = Sequential()
 model.add(LSTM(outputSize, activation='sigmoid', dropout=0.2, recurrent_dropout=0.2, input_shape=(seqLen, nInputFeatures)))
 print(model.summary())
@@ -50,5 +54,6 @@ model.save(__file__[:-3] + '.h5')
 
 xTrain, yTrain, xTest, yTest = splitData(x, y, 0.2)
 
-model.fit(xTrain, yTrain, epochs=1, batch_size=32, shuffle=True, validation_data=(xTest, yTest))
+scores = model.fit(xTrain, yTrain, epochs=1, batch_size=32, shuffle=True, validation_data=(xTest, yTest))
+logger.info(scores.history)
 model.save(__file__[:-3] + '.h5')
