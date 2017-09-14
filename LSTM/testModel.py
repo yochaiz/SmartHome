@@ -4,6 +4,7 @@ import h5py
 import os
 import json
 import matplotlib.pyplot as plt
+from datetime import datetime, timedelta
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
@@ -134,8 +135,8 @@ def loadROC(fname, threshold):
     return res, x, y, yPrediction
 
 
-def plot(startIdx, endIdx, y, yPrediction):
-    colorLabels = [['T:[off]-P:[off]','T:[off]-P:[on]'],['T:[on]-P:[off]','T:[on]-P:[on]']]
+def plot(ax, startIdx, endIdx, y, yPrediction, colorLambdaFunc, label, startDate):
+    colorLabels = [['T:[off]-P:[off]', 'T:[off]-P:[on]'], ['T:[on]-P:[off]', 'T:[on]-P:[on]']]
     colors = [['r', 'k'], ['b', 'g']]
     lastVal = 0
     val = 1
@@ -143,28 +144,48 @@ def plot(startIdx, endIdx, y, yPrediction):
     color = []
     leftValues = []
     legendMap = {}
+    xticks = ax.get_xticks().tolist()
+    xticklabels = ax.get_xticklabels()
     for idx in range(startIdx, endIdx + 1):
         width.append(val)
-        color.append(colors[int(y[idx])][int(yPrediction[idx])])
+        yValue = int(y[idx])
+        yPredValue = int(yPrediction[idx])
+        color.append(colorLambdaFunc(colors, yValue, yPredValue))
         leftValues.append(lastVal)
         lastVal += val
-        legendMap[colorLabels[int(y[idx])][int(yPrediction[idx])]] = idx - startIdx
+        legendMap[colorLabels[yValue][yPredValue]] = idx - startIdx
+        if (len(color) >= 2) and (color[-1] != color[-2]) and ((len(xticks) == 0) or ((idx - startIdx) - xticks[-1] >= 5)):
+            xticks.append(idx - startIdx)
+            newDate = startDate + timedelta(minutes=idx)
+            xticklabels.append(newDate)
+
+    ax.set_xticks(xticks)
+    ax.set_xticklabels(xticklabels)
 
     height = 0.2
     plotData = [width, height, color, leftValues]
 
-    fig, ax = plt.subplots()
-    pos = 0.5 - (plotData[1] / 2.0)
-    ax.set_title('True label vs. Prediction')
-    h = ax.barh([pos] * len(plotData[0]), plotData[0], height=plotData[1], color=plotData[2], left=plotData[3],
-            edgecolor='grey', linewidth=0.5)
+    yticks = ax.get_yticks().tolist()
+    yticklabels = ax.get_yticklabels()
+    pos = len(yticks)
+    yticks.append(pos)
+    pos -= (plotData[1] / 2.0)
+    yticklabels.append(label)
+    ax.set_yticks(yticks)
+    ax.set_yticklabels(yticklabels)
 
-    handles = []
-    labels = []
+    h = ax.barh([pos] * len(plotData[0]), plotData[0], height=plotData[1], color=plotData[2], left=plotData[3],
+                edgecolor='grey', linewidth=0.5)
+
+    legend = ax.get_legend()
+    labels = [] if legend is None else [x._text for x in legend.texts]
+    handles = [] if legend is None else legend.legendHandles
     for key in legendMap.iterkeys():
-        handles.append(h[legendMap[key]])
-        labels.append(key)
-    ax.legend(handles, labels, loc=2)
+        if key not in labels:
+            handles.append(h[legendMap[key]])
+            labels.append(key)
+    # ax.legend(handles, labels, loc='upper right')
+    ax.legend(handles, labels)
 
 
 fname = 'model-1.h5'
@@ -188,15 +209,34 @@ if yPrediction is None:
         x = np.array(x)
     yPrediction = loadModelPredictions(fname, threshold, x, y)
 
-for r in res:
+rocColorLambdaFunc = lambda colors, yValue, yPredValue: colors[yValue][yPredValue]
+trueColorLambdaFunc = lambda colors, yValue, yPredValue: colors[yValue][yValue]
+predictColorLambdaFunc = lambda colors, yValue, yPredValue: colors[yPredValue][yPredValue]
+
+fig, ax = plt.subplots()
+ax.set_xticks([])
+ax.set_xticklabels([])
+ax.set_yticks([])
+ax.set_yticklabels([])
+
+intrvl = 100
+dateFormat = '%Y-%m-%d %H:%M:%S'
+startDate = datetime(2016, 1, 22, 22, 36)
+for i, r in enumerate(res):
     for key in r:
         if ('Idx' in key) and (len(r[key]) > 0):
             i = 7
             idx = r[key][i]
-            plot(idx, idx + 100, y[:, i], yPrediction[:, i])
+            print(idx)
+            curDate = startDate + timedelta(minutes=idx)
+            plot(ax, idx - intrvl, idx + intrvl, y[:, i], yPrediction[:, i], rocColorLambdaFunc, 'ROC', startDate)
+            plot(ax, idx - intrvl, idx + intrvl, y[:, i], yPrediction[:, i], trueColorLambdaFunc, 'True', startDate)
+            plot(ax, idx - intrvl, idx + intrvl, y[:, i], yPrediction[:, i], predictColorLambdaFunc, 'Prediction', startDate)
             break
     break
 
+ax.set_title('True label vs. Prediction')
+fig.autofmt_xdate()
 plt.show()
 
 print('\nDone !')
