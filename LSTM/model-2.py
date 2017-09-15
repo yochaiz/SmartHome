@@ -5,6 +5,7 @@ import os
 import numpy as np
 from ExperimentLogger import ExperimentLogger
 
+
 # os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 # os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
@@ -37,7 +38,6 @@ x = np.array(x)
 nSamples = x.shape[0]
 seqLen = x.shape[1]
 nInputFeatures = x.shape[2]
-print(x[0])
 
 y = loadHdf5('y-1-minute.h5')
 y = np.array(y)
@@ -55,6 +55,8 @@ model.save(__file__[:-3] + '.h5')
 
 xTrain, yTrain, xTest, yTest = splitData(x, y, 0.2)
 
-scores = model.fit(xTrain, yTrain, epochs=1, batch_size=32, shuffle=True, validation_data=(xTest, yTest))
-logger.info(scores.history)
-model.save(__file__[:-3] + '.h5')
+nEpochs = 50
+for i in range(nEpochs):
+    scores = model.fit(xTrain, yTrain, epochs=1, batch_size=32, shuffle=True, validation_data=(xTest, yTest))
+    logger.info('[{}]: {}'.format(i, scores.history))
+    model.save(__file__[:-3] + '.h5')

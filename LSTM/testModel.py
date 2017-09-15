@@ -5,6 +5,7 @@ import os
 import json
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
+from ExperimentLogger import ExperimentLogger
 
 os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
 os.environ["CUDA_VISIBLE_DEVICES"] = "2"
@@ -23,15 +24,15 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 def loadHdf5(fname):
     f = h5py.File(fname, 'r')
     x = f['default']
-    print('[{}] data shape:{}'.format(fname, x.shape))
+    logger.info('[{}] data shape:{}'.format(fname, x.shape))
     return x
 
 
 def predictSingleSample(model, x, y, i):
-    print('Model prediction:')
-    print(model.predict(x[i].reshape((1, x[i].shape[0], x[i].shape[1]))))
-    print('Real label:')
-    print(y[i])
+    logger.info('Model prediction:')
+    logger.info(model.predict(x[i].reshape((1, x[i].shape[0], x[i].shape[1]))))
+    logger.info('Real label:')
+    logger.info(y[i])
 
 
 def thresholdPrediction(model, x, threshold, yPrediction):
@@ -46,19 +47,19 @@ def thresholdPrediction(model, x, threshold, yPrediction):
         yPrediction[i, :] = yPredicted
 
         if i % 1000 == 0:
-            print(i)
+            logger.info(i)
 
 
-def loadModelPredictions(fname, threshold, x, y):
+def loadModelPredictions(folderName, fname, threshold, x, y):
     model = load_model(fname)
-    yPredictionFileName = 'yPrediction-{}-{}'.format(threshold, fname)
+    yPredictionFileName = '{}yPrediction-{}-{}'.format(folderName,threshold, fname)
     if not os.path.exists(yPredictionFileName):
-        print('{} not found, creating it').format(yPredictionFileName)
+        logger.info('{} not found, creating it'.format(yPredictionFileName))
         yPredictionFile = h5py.File(yPredictionFileName, 'w')
         yPrediction = yPredictionFile.create_dataset("default", y.shape)
         thresholdPrediction(model, x, threshold, yPrediction)
     else:
-        print('{} found, loading it').format(yPredictionFileName)
+        logger.info('{} found, loading it'.format(yPredictionFileName))
         yPrediction = loadHdf5(yPredictionFileName)
         yPrediction = np.array(yPrediction)
 
@@ -86,7 +87,7 @@ def calcROC(y, yPrediction):
     for i in range(len(y)):
         # for i in range(10):
         if i % 10000 == 0:
-            print(i)
+            logger.info(i)
 
         _y = y[i]
         _yPred = yPrediction[i]
@@ -107,19 +108,19 @@ def calcROC(y, yPrediction):
     return res
 
 
-def loadROC(fname, threshold):
-    rocFileName = 'roc-{}.json'.format(fname)
+def loadROC(folderName, fname, threshold):
+    rocFileName = '{}roc-{}.json'.format(folderName, fname)
     x = None
     y = None
     yPrediction = None
     if not os.path.exists(rocFileName):
-        x = loadHdf5('x.h5')
+        x = loadHdf5('x-1-minute.h5')
         x = np.array(x)
-        y = loadHdf5('y.h5')
+        y = loadHdf5('y-1-minute.h5')
         y = np.array(y)
-        yPrediction = loadModelPredictions(fname, threshold, x, y)
+        yPrediction = loadModelPredictions(folderName, fname, threshold, x, y)
 
-        print('{} not found, creating it').format(rocFileName)
+        logger.info('{} not found, creating it'.format(rocFileName))
         with open(rocFileName, 'w') as rocFile:
             res = calcROC(y, yPrediction)
             jRes = []
@@ -128,7 +129,7 @@ def loadROC(fname, threshold):
 
             json.dump(jRes, rocFile)
     else:
-        print('{} found, loading it').format(rocFileName)
+        logger.info('{} found, loading it'.format(rocFileName))
         with open(rocFileName, 'r') as rocFile:
             res = json.load(rocFile)
 
@@ -188,55 +189,73 @@ def plot(ax, startIdx, endIdx, y, yPrediction, colorLambdaFunc, label, startDate
     ax.legend(handles, labels)
 
 
-fname = 'model-1.h5'
+fname = 'model-2.h5'
+folderName = 'testModel/' + fname + '/'
+logger = ExperimentLogger(folderName).getLogger()
 threshold = 0.7
-res, x, y, yPrediction = loadROC(fname, threshold)
+res, x, y, yPrediction = loadROC(folderName, fname, threshold)
 
 for i, r in enumerate(res):
     str = '[{}]:\t'.format(i)
     for key in r:
         if not 'Idx' in key:
             str += '{}:[{}] \t\t'.format(key, r[key])
-    print(str)
+    logger.info(str)
 
 if y is None:
-    y = loadHdf5('y.h5')
+    y = loadHdf5('y-1-minute.h5')
     y = np.array(y)
 
 if yPrediction is None:
     if x is None:
-        x = loadHdf5('x.h5')
+        x = loadHdf5('x-1-minute.h5')
         x = np.array(x)
-    yPrediction = loadModelPredictions(fname, threshold, x, y)
+    yPrediction = loadModelPredictions(folderName, fname, threshold, x, y)
 
 rocColorLambdaFunc = lambda colors, yValue, yPredValue: colors[yValue][yPredValue]
 trueColorLambdaFunc = lambda colors, yValue, yPredValue: colors[yValue][yValue]
 predictColorLambdaFunc = lambda colors, yValue, yPredValue: colors[yPredValue][yPredValue]
 
-fig, ax = plt.subplots()
-ax.set_xticks([])
-ax.set_xticklabels([])
-ax.set_yticks([])
-ax.set_yticklabels([])
-
 intrvl = 100
 dateFormat = '%Y-%m-%d %H:%M:%S'
 startDate = datetime(2016, 1, 22, 22, 36)
+
+falseWindowSize = 10
+falseWindowGap = 20
+minWindowLength = 300
+
 for i, r in enumerate(res):
     for key in r:
         if ('Idx' in key) and (len(r[key]) > 0):
-            i = 7
-            idx = r[key][i]
-            print(idx)
-            curDate = startDate + timedelta(minutes=idx)
-            plot(ax, idx - intrvl, idx + intrvl, y[:, i], yPrediction[:, i], rocColorLambdaFunc, 'ROC', startDate)
-            plot(ax, idx - intrvl, idx + intrvl, y[:, i], yPrediction[:, i], trueColorLambdaFunc, 'True', startDate)
-            plot(ax, idx - intrvl, idx + intrvl, y[:, i], yPrediction[:, i], predictColorLambdaFunc, 'Prediction', startDate)
-            break
-    break
+            j = 0
+            while j < len(r[key]):
+                curWindowLength = 0
+                curFalseWindowSize = min(falseWindowSize, len(r[key]) - j - 1)
+                startIdx = r[key][j]
+                curGap = r[key][j + curFalseWindowSize] - r[key][j]
+                j += 1
+                while (j + curFalseWindowSize < len(r[key])) and (curGap <= falseWindowGap):
+                    curWindowLength += 1
+                    curGap = r[key][j + curFalseWindowSize] - r[key][j]
+                    j += 1
 
-ax.set_title('True label vs. Prediction')
-fig.autofmt_xdate()
+                if curWindowLength >= minWindowLength:
+                    fig, ax = plt.subplots()
+                    ax.set_xticks([])
+                    ax.set_xticklabels([])
+                    ax.set_yticks([])
+                    ax.set_yticklabels([])
+
+                    curInterval = max(intrvl, curWindowLength + curFalseWindowSize)
+                    logger.info('i:[{}] - startIdx:[{}] - curWindowLength:[{}] - curInterval:[{}]'.format(i, startIdx, curWindowLength, curInterval))
+                    plot(ax, startIdx - curInterval, startIdx + curInterval, y[:, i], yPrediction[:, i], rocColorLambdaFunc, 'ROC', startDate)
+                    plot(ax, startIdx - curInterval, startIdx + curInterval, y[:, i], yPrediction[:, i], trueColorLambdaFunc, 'True', startDate)
+                    plot(ax, startIdx - curInterval, startIdx + curInterval, y[:, i], yPrediction[:, i], predictColorLambdaFunc, 'Prediction', startDate)
+
+                    ax.set_title('True label vs. Prediction - Light:[{}] - StartDate:[{}]'.format(i, startDate + timedelta(minutes=startIdx)))
+                    fig.autofmt_xdate()
+                    plt.show()
+
 plt.show()
 
-print('\nDone !')
+logger.info('\nDone !')

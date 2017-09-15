@@ -4,14 +4,15 @@ import logging
 import numpy as np
 from XmlFile import XmlFile
 import h5py
+from ExperimentLogger import ExperimentLogger
 
 
 class DatasetBuilder(object):
     folders = {'AuxChannel', 'LightPoints'}
     dateFormat = '%Y-%m-%d %H:%M:%S'
     batchSize = 32
-    xDataFile = h5py.File('x.hdf5', 'w')
-    yDataFile = h5py.File('y.hdf5', 'w')
+    xDataFile = h5py.File('x-1-second.h5', 'w')
+    yDataFile = h5py.File('y-1-second.h5', 'w')
 
     def updateFilesPosition(self, startDate):
         for deviceFolder in self.data:
@@ -47,8 +48,10 @@ class DatasetBuilder(object):
                 if date < endDate:
                     endDate = date
 
-        startDate = startDate.replace(second=0, microsecond=0)
-        endDate = endDate.replace(second=0, microsecond=0)
+        startDate = startDate.replace(microsecond=0)
+        endDate = endDate.replace(microsecond=0)
+        # startDate = startDate.replace(second=0, microsecond=0)
+        # endDate = endDate.replace(second=0, microsecond=0)
 
         # update positions for all files
         self.updateFilesPosition(startDate)
@@ -62,7 +65,7 @@ class DatasetBuilder(object):
             self.headers.append(filename)
 
     def buildState(self, date, endDate):
-        state = np.array([date.weekday(), date.hour, date.minute])
+        state = np.array([date.weekday(), date.hour, date.minute, date.second])
         for deviceFolder in self.data:
             for device in self.data[deviceFolder]:
                 histogram = np.array([0, 0])  # counts device states in given interval [date,endDate]
@@ -86,7 +89,7 @@ class DatasetBuilder(object):
         return state  # returns row vector
 
     def build(self, folderPath, seqLen):
-        self.headers = ['Day of week', 'Hour', 'Minutes']
+        self.headers = ['Day of week', 'Hour', 'Minute', 'Second']
         self.data = {}
         for f in self.folders:
             self.collectFiles(folderPath, f)
@@ -101,17 +104,17 @@ class DatasetBuilder(object):
 
         # set initial start date, 0 is Monday
         date, lastDate = self.getInitialDateRange()
-        interval = timedelta(minutes=1)
+        interval = timedelta(seconds=1)
         lastDate += interval  # last date in XMLs
         endDate = date + interval  # interval end date
-        print('Start date:[%s] - [%s], lastDate:[%s]' % (date, date.weekday(), lastDate))
+        logger.info('Start date:[%s] - [%s], lastDate:[%s]' % (date, date.weekday(), lastDate))
 
         import time
         # t1 = time.mktime(date.timetuple())
         # t2 = time.mktime(lastDate.timetuple())
         # nSamples = int(t2 - t1) / 60
-        nSamples = 400000
-        print('nSamples:[%d]' % nSamples)
+        nSamples = 24000000
+        logger.info('nSamples:[%d]' % nSamples)
 
         xSet = self.xDataFile.create_dataset("default", (nSamples, seqLen, len(self.headers)))
         ySet = self.yDataFile.create_dataset("default", (nSamples, 11))
@@ -127,9 +130,13 @@ class DatasetBuilder(object):
             date = endDate
             endDate += interval
 
+        lightPointsStartIdx = 7
         y = self.buildState(date, endDate)
         xSet[sampleIdx, :, :] = x
-        ySet[sampleIdx, :] = y[0, 6:]  # output should predict the probability for each LightPoint to be turned on
+        ySet[sampleIdx, :] = y[0, lightPointsStartIdx:]  # output should predict the probability for each LightPoint to be turned on
+
+        logger.info(xSet[sampleIdx, :, :])
+        logger.info(ySet[sampleIdx, :])
 
         sampleIdx += 1
 
@@ -141,13 +148,15 @@ class DatasetBuilder(object):
 
             y = self.buildState(date, endDate)
             xSet[sampleIdx, :, :] = x
-            ySet[sampleIdx, :] = y[0, 6:]  # output should predict the probability for each LightPoint to be turned on
+            ySet[sampleIdx, :] = y[0, lightPointsStartIdx:]  # output should predict the probability for each LightPoint to be turned on
 
             sampleIdx += 1
+            if sampleIdx % 10000 == 0:
+                logger.info(sampleIdx)
 
-        print('Done !')
+            logger.info('Done !')
 
-
+logger = ExperimentLogger().getLogger()
 b = DatasetBuilder()
 # logging.basicConfig(level=logging.DEBUG)
 b.build('../data/LivingRoom', 10)
