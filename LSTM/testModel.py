@@ -52,7 +52,7 @@ def thresholdPrediction(model, x, threshold, yPrediction):
 
 def loadModelPredictions(folderName, fname, threshold, x, y):
     model = load_model(fname)
-    yPredictionFileName = '{}yPrediction-{}-{}'.format(folderName,threshold, fname)
+    yPredictionFileName = '{}yPrediction-{}-{}'.format(folderName, threshold, fname)
     if not os.path.exists(yPredictionFileName):
         logger.info('{} not found, creating it'.format(yPredictionFileName))
         yPredictionFile = h5py.File(yPredictionFileName, 'w')
@@ -147,6 +147,13 @@ def plot(ax, startIdx, endIdx, y, yPrediction, colorLambdaFunc, label, startDate
     legendMap = {}
     xticks = ax.get_xticks().tolist()
     xticklabels = ax.get_xticklabels()
+    xAxisGap = (endIdx - startIdx) / 20
+
+    xticksIsEmpty = len(xticks) == 0
+    if xticksIsEmpty:
+        xticks.append(0)
+        newDate = startDate + timedelta(minutes=startIdx)
+        xticklabels.append(newDate)
     for idx in range(startIdx, endIdx + 1):
         width.append(val)
         yValue = int(y[idx])
@@ -155,10 +162,15 @@ def plot(ax, startIdx, endIdx, y, yPrediction, colorLambdaFunc, label, startDate
         leftValues.append(lastVal)
         lastVal += val
         legendMap[colorLabels[yValue][yPredValue]] = idx - startIdx
-        if (len(color) >= 2) and (color[-1] != color[-2]) and ((len(xticks) == 0) or ((idx - startIdx) - xticks[-1] >= 5)):
+        if (len(color) >= 2) and (color[-1] != color[-2]) and ((len(xticks) == 0) or ((idx - startIdx) - xticks[-1] >= xAxisGap)):
             xticks.append(idx - startIdx)
             newDate = startDate + timedelta(minutes=idx)
             xticklabels.append(newDate)
+
+    if xticksIsEmpty:
+        xticks.append(endIdx - startIdx)
+        newDate = startDate + timedelta(minutes=endIdx)
+        xticklabels.append(newDate)
 
     ax.set_xticks(xticks)
     ax.set_xticklabels(xticklabels)
@@ -222,7 +234,7 @@ startDate = datetime(2016, 1, 22, 22, 36)
 
 falseWindowSize = 10
 falseWindowGap = 20
-minWindowLength = 300
+minWindowLength = 100
 
 for i, r in enumerate(res):
     for key in r:
@@ -240,13 +252,13 @@ for i, r in enumerate(res):
                     j += 1
 
                 if curWindowLength >= minWindowLength:
+                    curInterval = max(intrvl, curWindowLength + curFalseWindowSize)
                     fig, ax = plt.subplots()
                     ax.set_xticks([])
                     ax.set_xticklabels([])
                     ax.set_yticks([])
                     ax.set_yticklabels([])
 
-                    curInterval = max(intrvl, curWindowLength + curFalseWindowSize)
                     logger.info('i:[{}] - startIdx:[{}] - curWindowLength:[{}] - curInterval:[{}]'.format(i, startIdx, curWindowLength, curInterval))
                     plot(ax, startIdx - curInterval, startIdx + curInterval, y[:, i], yPrediction[:, i], rocColorLambdaFunc, 'ROC', startDate)
                     plot(ax, startIdx - curInterval, startIdx + curInterval, y[:, i], yPrediction[:, i], trueColorLambdaFunc, 'True', startDate)
