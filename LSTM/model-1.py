@@ -1,12 +1,12 @@
+import os
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
+os.environ["CUDA_VISIBLE_DEVICES"] = "5"
+
 from keras.models import Sequential
 from keras.layers import LSTM
 import h5py
-import os
 import numpy as np
 from ExperimentLogger import ExperimentLogger
-
-# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
 
 
 def loadHdf5(fname):
@@ -45,7 +45,7 @@ outputSize = y.shape[1]
 
 assert (x.shape[0] == y.shape[0])  # same number of samples & labels
 
-logger = ExperimentLogger().getLogger()
+logger = ExperimentLogger('results/' + __file__[:-3] + '/').getLogger()
 
 model = Sequential()
 model.add(LSTM(outputSize, activation='sigmoid', dropout=0.2, recurrent_dropout=0.2, input_shape=(seqLen, nInputFeatures)))

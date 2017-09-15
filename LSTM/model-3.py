@@ -1,14 +1,12 @@
+import os
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"   # see issue #152
+os.environ["CUDA_VISIBLE_DEVICES"] = "5"
+
 from keras.models import Sequential
 from keras.layers import LSTM
 import h5py
-import os
 import numpy as np
 from ExperimentLogger import ExperimentLogger
-
-
-# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-# os.environ["CUDA_VISIBLE_DEVICES"] = "1"
-
 
 def loadHdf5(fname):
     f = h5py.File(fname, 'r')
