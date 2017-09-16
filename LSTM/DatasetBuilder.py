@@ -10,9 +10,9 @@ from ExperimentLogger import ExperimentLogger
 class DatasetBuilder(object):
     folders = {'AuxChannel', 'LightPoints'}
     dateFormat = '%Y-%m-%d %H:%M:%S'
-    batchSize = 32
-    xDataFile = h5py.File('x-1-second.h5', 'w')
-    yDataFile = h5py.File('y-1-second.h5', 'w')
+    batchSize = 1024
+    xDataFile = h5py.File('x-1-second-seqLen-600.h5', 'w')
+    yDataFile = h5py.File('y-1-second-seqLen-600.h5', 'w')
 
     def updateFilesPosition(self, startDate):
         for deviceFolder in self.data:
@@ -154,9 +154,9 @@ class DatasetBuilder(object):
             if sampleIdx % 10000 == 0:
                 logger.info(sampleIdx)
 
-            logger.info('Done !')
+        logger.info('Done !')
 
-logger = ExperimentLogger().getLogger()
+logger = ExperimentLogger('results/db/').getLogger()
 b = DatasetBuilder()
 # logging.basicConfig(level=logging.DEBUG)
-b.build('../data/LivingRoom', 10)
+b.build('../data/LivingRoom', 600)

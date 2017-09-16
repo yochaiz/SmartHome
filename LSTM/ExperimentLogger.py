@@ -12,10 +12,10 @@ class ExperimentLogger(object):
 
     def getLogger(self):
         now = datetime.now()
-        dirName = 'D-{}-{}-H-{}-{}'.format(now.day, now.month, now.hour, now.minute)
-        if not os.path.exists(self.rootDir + dirName):
-            os.makedirs(self.rootDir + dirName)
+        self.dirName = 'D-{}-{}-H-{}-{}'.format(now.day, now.month, now.hour, now.minute)
+        if not os.path.exists(self.rootDir + self.dirName):
+            os.makedirs(self.rootDir + self.dirName)
 
         # initialize logger
-        logging.basicConfig(level=logging.INFO, filename=self.rootDir + dirName + '/info.log')
+        logging.basicConfig(level=logging.INFO, filename=self.rootDir + self.dirName + '/info.log')
         return logging.getLogger(__name__)
