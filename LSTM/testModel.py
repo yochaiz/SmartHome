@@ -1,14 +1,15 @@
+import os
+
+os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
+os.environ["CUDA_VISIBLE_DEVICES"] = "5"
+
 from keras.models import load_model
 import numpy as np
 import h5py
-import os
 import json
 import matplotlib.pyplot as plt
 from datetime import datetime, timedelta
 from ExperimentLogger import ExperimentLogger
-
-os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-os.environ["CUDA_VISIBLE_DEVICES"] = "2"
 
 
 # from keras.backend.tensorflow_backend import set_session
@@ -38,7 +39,7 @@ def predictSingleSample(model, x, y, i):
 def thresholdPrediction(model, x, threshold, yPrediction):
     for i in range(len(x)):
         # for i in range(1):
-        yPredicted = model.predict(x[i].reshape((1, x[i].shape[0], x[i].shape[1])))
+        yPredicted = model.predict(x[i].reshape((1, x[i].shape[0], x[i].shape[1], 1)))
         yPredicted = yPredicted[0]
 
         yPredicted[yPredicted >= threshold] = 1
@@ -201,7 +202,7 @@ def plot(ax, startIdx, endIdx, y, yPrediction, colorLambdaFunc, label, startDate
     ax.legend(handles, labels)
 
 
-fname = 'model-2.h5'
+fname = 'model-6.h5'
 folderName = 'testModel/' + fname + '/'
 logger = ExperimentLogger(folderName).getLogger()
 threshold = 0.7
@@ -214,60 +215,60 @@ for i, r in enumerate(res):
             str += '{}:[{}] \t\t'.format(key, r[key])
     logger.info(str)
 
-if y is None:
-    y = loadHdf5('y-1-minute.h5')
-    y = np.array(y)
+# if y is None:
+#     y = loadHdf5('y-1-minute.h5')
+#     y = np.array(y)
+#
+# if yPrediction is None:
+#     if x is None:
+#         x = loadHdf5('x-1-minute.h5')
+#         x = np.array(x)
+#     yPrediction = loadModelPredictions(folderName, fname, threshold, x, y)
 
-if yPrediction is None:
-    if x is None:
-        x = loadHdf5('x-1-minute.h5')
-        x = np.array(x)
-    yPrediction = loadModelPredictions(folderName, fname, threshold, x, y)
-
-rocColorLambdaFunc = lambda colors, yValue, yPredValue: colors[yValue][yPredValue]
-trueColorLambdaFunc = lambda colors, yValue, yPredValue: colors[yValue][yValue]
-predictColorLambdaFunc = lambda colors, yValue, yPredValue: colors[yPredValue][yPredValue]
-
-intrvl = 100
-dateFormat = '%Y-%m-%d %H:%M:%S'
-startDate = datetime(2016, 1, 22, 22, 36)
-
-falseWindowSize = 10
-falseWindowGap = 20
-minWindowLength = 100
-
-for i, r in enumerate(res):
-    for key in r:
-        if ('Idx' in key) and (len(r[key]) > 0):
-            j = 0
-            while j < len(r[key]):
-                curWindowLength = 0
-                curFalseWindowSize = min(falseWindowSize, len(r[key]) - j - 1)
-                startIdx = r[key][j]
-                curGap = r[key][j + curFalseWindowSize] - r[key][j]
-                j += 1
-                while (j + curFalseWindowSize < len(r[key])) and (curGap <= falseWindowGap):
-                    curWindowLength += 1
-                    curGap = r[key][j + curFalseWindowSize] - r[key][j]
-                    j += 1
-
-                if curWindowLength >= minWindowLength:
-                    curInterval = max(intrvl, curWindowLength + curFalseWindowSize)
-                    fig, ax = plt.subplots()
-                    ax.set_xticks([])
-                    ax.set_xticklabels([])
-                    ax.set_yticks([])
-                    ax.set_yticklabels([])
-
-                    logger.info('i:[{}] - startIdx:[{}] - curWindowLength:[{}] - curInterval:[{}]'.format(i, startIdx, curWindowLength, curInterval))
-                    plot(ax, startIdx - curInterval, startIdx + curInterval, y[:, i], yPrediction[:, i], rocColorLambdaFunc, 'ROC', startDate)
-                    plot(ax, startIdx - curInterval, startIdx + curInterval, y[:, i], yPrediction[:, i], trueColorLambdaFunc, 'True', startDate)
-                    plot(ax, startIdx - curInterval, startIdx + curInterval, y[:, i], yPrediction[:, i], predictColorLambdaFunc, 'Prediction', startDate)
-
-                    ax.set_title('True label vs. Prediction - Light:[{}] - StartDate:[{}]'.format(i, startDate + timedelta(minutes=startIdx)))
-                    fig.autofmt_xdate()
-                    plt.show()
-
-plt.show()
+# rocColorLambdaFunc = lambda colors, yValue, yPredValue: colors[yValue][yPredValue]
+# trueColorLambdaFunc = lambda colors, yValue, yPredValue: colors[yValue][yValue]
+# predictColorLambdaFunc = lambda colors, yValue, yPredValue: colors[yPredValue][yPredValue]
+#
+# intrvl = 100
+# dateFormat = '%Y-%m-%d %H:%M:%S'
+# startDate = datetime(2016, 1, 22, 22, 36)
+#
+# falseWindowSize = 10
+# falseWindowGap = 20
+# minWindowLength = 100
+#
+# for i, r in enumerate(res):
+#     for key in r:
+#         if ('Idx' in key) and (len(r[key]) > 0):
+#             j = 0
+#             while j < len(r[key]):
+#                 curWindowLength = 0
+#                 curFalseWindowSize = min(falseWindowSize, len(r[key]) - j - 1)
+#                 startIdx = r[key][j]
+#                 curGap = r[key][j + curFalseWindowSize] - r[key][j]
+#                 j += 1
+#                 while (j + curFalseWindowSize < len(r[key])) and (curGap <= falseWindowGap):
+#                     curWindowLength += 1
+#                     curGap = r[key][j + curFalseWindowSize] - r[key][j]
+#                     j += 1
+#
+#                 if curWindowLength >= minWindowLength:
+#                     curInterval = max(intrvl, curWindowLength + curFalseWindowSize)
+#                     fig, ax = plt.subplots()
+#                     ax.set_xticks([])
+#                     ax.set_xticklabels([])
+#                     ax.set_yticks([])
+#                     ax.set_yticklabels([])
+#
+#                     logger.info('i:[{}] - startIdx:[{}] - curWindowLength:[{}] - curInterval:[{}]'.format(i, startIdx, curWindowLength, curInterval))
+#                     plot(ax, startIdx - curInterval, startIdx + curInterval, y[:, i], yPrediction[:, i], rocColorLambdaFunc, 'ROC', startDate)
+#                     plot(ax, startIdx - curInterval, startIdx + curInterval, y[:, i], yPrediction[:, i], trueColorLambdaFunc, 'True', startDate)
+#                     plot(ax, startIdx - curInterval, startIdx + curInterval, y[:, i], yPrediction[:, i], predictColorLambdaFunc, 'Prediction', startDate)
+#
+#                     ax.set_title('True label vs. Prediction - Light:[{}] - StartDate:[{}]'.format(i, startDate + timedelta(minutes=startIdx)))
+#                     fig.autofmt_xdate()
+#                     plt.show()
+#
+# plt.show()
 
 logger.info('\nDone !')
