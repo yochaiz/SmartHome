@@ -5,7 +5,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "6"
 
 from keras.models import Sequential
 from keras.layers import LSTM, Conv2D, Reshape, Dense
-from Model import Model
+from ..Model import Model
 
 folderName = 'results/' + __file__[:-3] + '/'
 m = Model(folderName, 'x-1-second.h5', 'y-1-second.h5')

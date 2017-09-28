@@ -5,7 +5,7 @@ os.environ["CUDA_VISIBLE_DEVICES"] = "5"
 
 from keras.models import Sequential
 from keras.layers import LSTM, Conv2D, Reshape, Dense
-from Model import Model
+from ..Model import Model
 
 
 def dataPrepFunc(x, y):
