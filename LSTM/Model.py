@@ -2,10 +2,13 @@ from ExperimentLogger import ExperimentLogger
 import h5py
 import numpy as np
 import os
+from keras.backend.tensorflow_backend import set_session
+import tensorflow as tf
+import json
 
 
 class Model:
-    def __init__(self, folderName, dataFolderName, dataPrepFunc):
+    def __init__(self, folderName, dataFolderName, dataPrepFunc, gpuNum, gpuFraction):
         self.folderName = folderName
         self.dataFolderName = dataFolderName
         self.logObj = ExperimentLogger(folderName)
@@ -21,8 +24,19 @@ class Model:
 
         assert (self.x.shape[0] == self.y.shape[0])  # same number of samples & labels
 
+        self.gpuNum = gpuNum
+        self.gpuFraction = gpuFraction
+
         self.model = None
         self.perm = None
+
+        self.createConfigFile()
+
+    def createConfigFile(self):
+        config = {}
+        config['dataFolderName'] = self.dataFolderName
+        with open('config.json', 'w') as f:
+            json.dump(config, f)
 
     def loadData(self):
         xFname = '{}/x-{}.h5'.format(self.dataFolderName, self.fileIdx)
@@ -66,6 +80,11 @@ class Model:
         self.saveModel()
 
     def train(self, testRatio, nEpochs, batchSize):
+        # limit memory precentage usage
+        config = tf.ConfigProto()
+        config.gpu_options.per_process_gpu_memory_fraction = self.gpuFraction
+        set_session(tf.Session(config=config))
+
         self.logger.info('Training with testRatio:[{}] - nEpochs:[{}] - batchSize:[{}]'.format(testRatio, nEpochs, batchSize))
 
         opt = {'loss': None, 'Epoch': -1}
