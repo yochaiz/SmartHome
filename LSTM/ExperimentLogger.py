@@ -9,13 +9,19 @@ class ExperimentLogger(object):
     def __init__(self, rootDir):
         self.rootDir = rootDir
 
-
-    def getLogger(self):
-        now = datetime.now()
-        self.dirName = 'D-{}-{}-H-{}-{}'.format(now.day, now.month, now.hour, now.minute)
-        if not os.path.exists(self.rootDir + self.dirName):
-            os.makedirs(self.rootDir + self.dirName)
+    def __getLogger(self, folderName):
+        if not os.path.exists(folderName):
+            os.makedirs(folderName)
 
         # initialize logger
-        logging.basicConfig(level=logging.INFO, filename=self.rootDir + self.dirName + '/info.log')
+        logging.basicConfig(level=logging.INFO, filename=folderName + '/info.log')
         return logging.getLogger(__name__)
+
+    def getBasicLogger(self):
+        return self.__getLogger(self.rootDir)
+
+    def getLoggerWithTime(self):
+        now = datetime.now()
+        dirName = 'D-{}-{}-H-{}-{}'.format(now.day, now.month, now.hour, now.minute)
+
+        return self.__getLogger(self.rootDir + dirName)

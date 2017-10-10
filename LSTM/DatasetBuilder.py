@@ -12,6 +12,9 @@ from abc import ABCMeta, abstractmethod
 class TimeResolution(object):
     __metaclass__ = ABCMeta
 
+    def __init__(self, val):
+        self.value = val
+
     @abstractmethod
     def resetDate(self, date):
         raise NotImplementedError('subclasses must override [{}]'.format(__name__))
@@ -38,8 +41,8 @@ class TimeResolution(object):
 
 
 class MinuteResolution(TimeResolution):
-    def __init__(self):
-        super(MinuteResolution, self).__init__()
+    def __init__(self, val):
+        super(MinuteResolution, self).__init__(val)
 
     def resetDate(self, date):
         return date.replace(second=0, microsecond=0)
@@ -51,18 +54,18 @@ class MinuteResolution(TimeResolution):
         return ['Day of week', 'Hour', 'Minute']
 
     def interval(self):
-        return timedelta(minutes=1)
+        return timedelta(minutes=self.value)
 
     def toString(self):
-        return '1-minute'
+        return '{}-minute'.format(self.value)
 
     def lightPointStartIdx(self):
         return 6
 
 
 class SecondResolution(TimeResolution):
-    def __init__(self):
-        super(SecondResolution, self).__init__()
+    def __init__(self, val):
+        super(SecondResolution, self).__init__(val)
 
     def resetDate(self, date):
         return date.replace(microsecond=0)
@@ -74,10 +77,10 @@ class SecondResolution(TimeResolution):
         return ['Day of week', 'Hour', 'Minute', 'Second']
 
     def interval(self):
-        return timedelta(seconds=1)
+        return timedelta(seconds=self.value)
 
     def toString(self):
-        return '1-second'
+        return '{}-second'.format(self.value)
 
     def lightPointStartIdx(self):
         return 7
@@ -86,26 +89,30 @@ class SecondResolution(TimeResolution):
 class DatasetBuilder(object):
     folders = {'AuxChannel', 'LightPoints'}
     dateFormat = '%Y-%m-%d %H:%M:%S'
-    batchSize = 1024
+
+    # batchSize = 1024
 
     def __init__(self, args):
-        if args.second is True:
-            assert (args.minute is False)
-            self.timeRes = SecondResolution()
+        if args.second is not None:
+            assert (args.minute is None)
+            self.timeRes = SecondResolution(args.second)
         else:
-            assert (args.second is False)
-            self.timeRes = MinuteResolution()
+            assert (args.second is None)
+            self.timeRes = MinuteResolution(args.minute)
 
-        # self.xDataFile = h5py.File(args.xName, 'w')
-        # self.yDataFile = h5py.File(args.yName, 'w')
-        self.parentFolderName = 'datasets'
+        self.parentFolderName = args.dstFolder
         self.folderName = '{}/{}-seqLen-{}'.format(self.parentFolderName, self.timeRes.toString(), args.seqLen)
         if not os.path.exists(self.folderName):
             os.makedirs(self.folderName)
-        # self.xDataFile = h5py.File('{}/x-{}-seqLen-{}'.format(self.parentFolderName, self.timeRes.toString(), args.seqLen), 'w')
-        # self.yDataFile = h5py.File('{}/y-{}-seqLen-{}'.format(self.parentFolderName, self.timeRes.toString(), args.seqLen), 'w')
+        else:
+            print('Folder [{}] already exists, please remove it and run again'.format(self.folderName))
+            exit(0)
+
+        self.seqLen = args.seqLen
         self.nSamples = args.nSamples
-        self.nSamplesPerFile = 50000
+        self.nSamplesPerFile = args.nSamplesPerFile
+
+        self.logger = ExperimentLogger(self.folderName).getBasicLogger()
 
     def updateFilesPosition(self, startDate):
         for deviceFolder in self.data:
@@ -184,7 +191,7 @@ class DatasetBuilder(object):
         state = state.reshape((1, state.shape[0]))
         return state  # returns row vector
 
-    def build(self, folderPath, seqLen):
+    def build(self, folderPath):
         self.headers = self.timeRes.headerPrefix()
         # self.headers = ['Day of week', 'Hour', 'Minute', 'Second']
         self.data = {}
@@ -205,19 +212,19 @@ class DatasetBuilder(object):
         # interval = timedelta(seconds=1)
         lastDate += interval  # last date in XMLs
         endDate = date + interval  # interval end date
-        logger.info('Start date:[%s] - [%s], lastDate:[%s]' % (date, date.weekday(), lastDate))
+        self.logger.info('Start date:[%s] - [%s], lastDate:[%s]' % (date, date.weekday(), lastDate))
 
         import time
         # t1 = time.mktime(date.timetuple())
         # t2 = time.mktime(lastDate.timetuple())
         # nSamples = int(t2 - t1) / 60
         # self.nSamples = 24000000
-        logger.info('nSamples:[%d]' % self.nSamples)
+        self.logger.info('nSamples:[%d]' % self.nSamples)
 
         fileID = 1
         xDataFile = h5py.File('{}/x-{}.h5'.format(self.folderName, fileID), 'w')
         yDataFile = h5py.File('{}/y-{}.h5'.format(self.folderName, fileID), 'w')
-        xSet = xDataFile.create_dataset("default", (self.nSamplesPerFile, seqLen, len(self.headers)))
+        xSet = xDataFile.create_dataset("default", (self.nSamplesPerFile, self.seqLen, len(self.headers)))
         ySet = yDataFile.create_dataset("default", (self.nSamplesPerFile, 11))
         fileID += 1
 
@@ -225,8 +232,8 @@ class DatasetBuilder(object):
         fileSampleIdx = 0
         totalSamplesCounter = 0
         # x is equivalent to sentence, it is a seqLen length sentence built from words (states)
-        x = np.ndarray(shape=(seqLen, len(self.headers)))
-        for i in range(seqLen):
+        x = np.ndarray(shape=(self.seqLen, len(self.headers)))
+        for i in range(self.seqLen):
             # state is equivalent to word in sentence, it is its vector representation
             state = self.buildState(date, endDate)
             x[i, :] = state
@@ -238,8 +245,8 @@ class DatasetBuilder(object):
         xSet[fileSampleIdx, :, :] = x
         ySet[fileSampleIdx, :] = y[0, lightPointsStartIdx:]  # output should predict the probability for each LightPoint to be turned on
 
-        logger.info(xSet[fileSampleIdx, :, :])
-        logger.info(ySet[fileSampleIdx, :])
+        self.logger.info(xSet[fileSampleIdx, :, :])
+        self.logger.info(ySet[fileSampleIdx, :])
 
         fileSampleIdx += 1
         totalSamplesCounter += 1
@@ -253,7 +260,7 @@ class DatasetBuilder(object):
                 yDataFile.close()
                 xDataFile = h5py.File('{}/x-{}.h5'.format(self.folderName, fileID), 'w')
                 yDataFile = h5py.File('{}/y-{}.h5'.format(self.folderName, fileID), 'w')
-                xSet = xDataFile.create_dataset("default", (self.nSamplesPerFile, seqLen, len(self.headers)))
+                xSet = xDataFile.create_dataset("default", (self.nSamplesPerFile, self.seqLen, len(self.headers)))
                 ySet = yDataFile.create_dataset("default", (self.nSamplesPerFile, 11))
                 fileID += 1
 
@@ -269,27 +276,20 @@ class DatasetBuilder(object):
             fileSampleIdx += 1
             totalSamplesCounter += 1
             if totalSamplesCounter % 10000 == 0:
-                logger.info(totalSamplesCounter)
+                self.logger.info(totalSamplesCounter)
 
-        logger.info('Done !')
+        self.logger.info('Done !')
 
 
 parser = argparse.ArgumentParser(description='Build dataset based on arguments.')
-# parser.add_argument("xName", type=str, help="x set filename")
-# parser.add_argument("yName", type=str, help="y set filename")
-parser.add_argument("seqLen", type=int, help="Sample sequence length")
-parser.add_argument("nSamples", type=int, help="Number of samples in dataset")
+parser.add_argument("seqLen", type=int, choices=range(1, 1001), metavar='seqLen:[1-1,000]', help="Sample sequence length")
+parser.add_argument("nSamples", type=int, choices=range(1, 100000001), metavar='nSamples:[1-100,000,000]', help="Number of samples in dataset")
+parser.add_argument("--nSamplesPerFile", type=int, default=50000, choices=range(1, 1000001), metavar='[1-1,000,000]', help="Number of samples per dataset file")
+parser.add_argument("--dstFolder", type=str, default='datasets', help="Dataset parent folder location")
 group = parser.add_mutually_exclusive_group(required=True)
-group.add_argument("--second", action='store_true', help="Samples time resolution is 1 second")
-group.add_argument("--minute", action='store_true', help="Samples time resolution is 1 minute")
+group.add_argument("--second", type=int, choices=range(1, 1000001), metavar='[1-1,000,000]', help="Samples time resolution is 1 second")
+group.add_argument("--minute", type=int, choices=range(1, 1000001), metavar='[1-1,000,000]', help="Samples time resolution is 1 minute")
 args = parser.parse_args()
 
-logger = ExperimentLogger('results/db/').getLogger()
 b = DatasetBuilder(args)
-# logging.basicConfig(level=logging.DEBUG)
-
-maxSeqLen = 1000
-if args.seqLen < 1 or args.seqLen > maxSeqLen:
-    raise ValueError('Sequence length should be in range[{}-{}]'.format(1, maxSeqLen))
-
-b.build('../data/LivingRoom', args.seqLen)
+b.build('../data/LivingRoom')
