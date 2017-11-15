@@ -1,7 +1,5 @@
 import argparse
 import os
-# import tensorflow as tf
-# from keras.backend.tensorflow_backend import set_session
 import logging
 import matplotlib.pyplot as plt
 import json
@@ -17,17 +15,29 @@ def plot(info):
         plt.show()
 
 
-def createJSON(jsonFullFname):
+def addToInfo(info, key, value):
+    logger.info('Adding key [{}] to info'.format(key))
+    info[key] = value
+    return info
+
+
+def loadInfo(jsonFullFname, info):
+    keys = {'scores': extractScoresFromFile, 'minGameScore': extractMinGameScoreFromFile}
+    infoModified = False
+
     fname = 'info.log'
     fnameFullPath = '{}/{}'.format(args.folderName, fname)
-    info = None
     if os.path.exists(fnameFullPath):
         with open(fnameFullPath, 'r') as f:
-            minGameScore = extractMinGameScoreFromFile(f)
-            scores = extractScoresFromFile(f)
-            info = {'scores': scores, 'minGameScore': minGameScore}
-            with open(jsonFullFname, 'w') as fw:
-                json.dump(info, fw)
+            for key, func in keys.iteritems():
+                if key not in info:
+                    info = addToInfo(info, key, func(f))
+                    infoModified = True
+
+            if infoModified is True:
+                logger.info('Writing to [{}]'.format(jsonFullFname))
+                with open(jsonFullFname, 'w') as fw:
+                    json.dump(info, fw)
 
     return info
 
@@ -61,22 +71,12 @@ def extractScoresFromFile(file):
 
     return scores
 
+    # parse arguments
 
-# parse arguments
+
 parser = argparse.ArgumentParser(description='test model on dataset')
 parser.add_argument("folderName", type=str, help="Folder name where the model for testing is located")
-# parser.add_argument("gpuNum", type=int, help="GPU # to run on")
-# parser.add_argument("--gpuFrac", type=float, default=0.3, help="GPU memory fraction")
 args = parser.parse_args()
-
-# # init GPU
-# os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-# os.environ["CUDA_VISIBLE_DEVICES"] = str(args.gpuNum)
-#
-# # limit memory precentage usage
-# config = tf.ConfigProto()
-# config.gpu_options.per_process_gpu_memory_fraction = args.gpuFrac
-# set_session(tf.Session(config=config))
 
 # initialize logger
 logging.basicConfig(level=logging.INFO, filename=args.folderName + '/plot.log')
@@ -85,13 +85,12 @@ logger.info('args:[{}]'.format(args))
 
 jsonFname = 'info.json'
 jsonFullFname = '{}/{}'.format(args.folderName, jsonFname)
-info = None
+info = {}
+
 if os.path.exists(jsonFullFname):
     with open(jsonFullFname, 'r') as f:
-        logger.info('File [{}] exists, loading its data'.format(jsonFname))
+        logger.info('File [{}] exists, loading ...'.format(jsonFname))
         info = json.load(f)
-else:
-    logger.info('File [{}] does not exist, collecting its data'.format(jsonFname))
-    info = createJSON(jsonFullFname)
 
+info = loadInfo(jsonFullFname, info)
 plot(info)
