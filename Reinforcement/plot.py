@@ -3,6 +3,7 @@ import os
 import logging
 import matplotlib.pyplot as plt
 import json
+from Functions import loadInfoFile
 
 
 def plot(info, folderName):
@@ -22,8 +23,7 @@ def addToInfo(info, key, value):
     return info
 
 
-def loadInfo(jsonFullFname, info):
-    keys = {'scores': extractScoresFromFile, 'minGameScore': extractMinGameScoreFromFile}
+def loadPlotInfo(jsonFullFname, info, keys):
     infoModified = False
 
     fname = 'info.log'
@@ -84,14 +84,7 @@ logging.basicConfig(level=logging.INFO, filename=args.folderName + '/plot.log')
 logger = logging.getLogger(__name__)
 logger.info('args:[{}]'.format(args))
 
-jsonFname = 'info.json'
-jsonFullFname = '{}/{}'.format(args.folderName, jsonFname)
-info = {}
-
-if os.path.exists(jsonFullFname):
-    with open(jsonFullFname, 'r') as f:
-        logger.info('File [{}] exists, loading ...'.format(jsonFname))
-        info = json.load(f)
-
-info = loadInfo(jsonFullFname, info)
+info, jsonFullFname = loadInfoFile(args.folderName,logger)
+keys = {'scores': extractScoresFromFile, 'minGameScore': extractMinGameScoreFromFile}
+info = loadPlotInfo(jsonFullFname, info, keys)
 plot(info, args.folderName)

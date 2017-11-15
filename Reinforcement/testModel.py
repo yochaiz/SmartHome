@@ -6,6 +6,7 @@ import tensorflow as tf
 from keras.backend.tensorflow_backend import set_session
 import logging
 import json
+from Functions import loadInfoFile
 
 
 def infoToLogger(logger, info):
@@ -64,7 +65,12 @@ for _ in range(nActions):
     states[pos:(pos + len(mins)), 1] = mins
     pos += len(mins)
 
-info = {'totalAcc': {}, 'accuracyPerHour': {}}
+# info = {'totalAcc': {}, 'accuracyPerHour': {}}
+info, jsonFullFname = loadInfoFile(args.folderName, logger)
+newKeys = ['accuracyPerHour', 'totalAcc']
+for key in newKeys:
+    info[key] = {}
+
 totalCounter = 0
 # predict each hour
 for h in range(nHours):
@@ -85,7 +91,7 @@ for h in range(nHours):
 info['totalAcc']['Quantity'] = totalCounter
 info['totalAcc']['Ratio'] = totalCounter / (float(len(mins)) * nHours)
 
-with open('{}/info.json'.format(args.folderName), 'w') as f:
+with open(jsonFullFname, 'w') as f:
     json.dump(info, f)
 
 infoToLogger(logger, info)
