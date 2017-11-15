@@ -5,13 +5,14 @@ import matplotlib.pyplot as plt
 import json
 
 
-def plot(info):
+def plot(info, folderName):
     if info is not None:
         plt.plot(info['scores'], 'bo')
         plt.plot([info['minGameScore']] * len(info['scores']), 'r--')
         plt.xlabel('Game no.')
         plt.ylabel('Score')
-        plt.legend(['Game score', 'min Game Score'], bbox_to_anchor=(0., 1.02, 1., .102), loc=3, ncol=2, mode="expand", borderaxespad=0.)
+        plt.title('[{}]'.format(folderName))
+        plt.legend(['Game score', 'min Game Score'], bbox_to_anchor=(0., 1.02, 1., .102), loc=2, ncol=2, mode="expand", borderaxespad=0.)
         plt.show()
 
 
@@ -93,4 +94,4 @@ if os.path.exists(jsonFullFname):
         info = json.load(f)
 
 info = loadInfo(jsonFullFname, info)
-plot(info)
+plot(info, args.folderName)
