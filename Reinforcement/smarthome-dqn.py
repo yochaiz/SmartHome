@@ -11,13 +11,16 @@ import logging
 import argparse
 from keras.backend.tensorflow_backend import set_session
 import tensorflow as tf
+from Functions import loadInfoFile
+import json
 
 
 class DQNAgent:
-    def __init__(self, state_size, action_size):
+    def __init__(self, state_size, action_size, dequeLen=1000):
         self.state_size = state_size
         self.action_size = action_size
-        self.memory = deque(maxlen=1000)
+        self.dequeLen = dequeLen
+        self.memory = deque(maxlen=dequeLen)
         self.gamma = 0.95  # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.01
@@ -60,7 +63,7 @@ class DQNAgent:
 
     def replay(self, batch_size):
         # Sample minibatch from the memory
-        minibatch = random.sample(self.memory, batch_size)
+        minibatch = random.sample(self.memory, min(batch_size, len(self.memory)))
         loss = 0
 
         # Extract informations from each memory
@@ -115,12 +118,14 @@ class Policy:
     # the rest of the day, the light is OFF.
     # state structure: [Hour,Minute,Light state {1=on,0=off}]
     # possible actions: ['Don't change status' , 'Change light status' (i.e. turn it on if off)]
-    startTime = time(hour=6, minute=0)
-    endTime = time(hour=18, minute=0)
+    # startTime = time(hour=6, minute=0)
+    # endTime = time(hour=18, minute=0)
 
-    def __init__(self):
+    def __init__(self, startTime, endTime):
         self.stateSize = 3
         self.actionSize = 2
+        self.startTime = startTime
+        self.endTime = endTime
 
     @staticmethod
     def calcMinutesGap(time1, time2):
@@ -216,14 +221,14 @@ group.add_argument("--random", action='store_true', help="Init random state for 
 args = parser.parse_args()
 
 # init result directory
-rootDir = 'results/'
+rootDir = 'results'
 now = datetime.now()
-dirName = 'D-{}-{}-H-{}-{}'.format(now.day, now.month, now.hour, now.minute)
+dirName = '{}/D-{}-{}-H-{}-{}'.format(rootDir, now.day, now.month, now.hour, now.minute)
 if not os.path.exists(dirName):
-    os.makedirs(rootDir + dirName)
+    os.makedirs(dirName)
 
 # initialize logger
-logging.basicConfig(level=logging.INFO, filename=rootDir + dirName + '/info.log')
+logging.basicConfig(level=logging.INFO, filename=dirName + '/info.log')
 logger = logging.getLogger(__name__)
 
 # init GPU
@@ -237,29 +242,40 @@ set_session(tf.Session(config=config))
 
 logger.info('args:[{}]'.format(args))
 
+# init info json file
+info, jsonFullFname = loadInfoFile(dirName, logger)
+info['args'] = vars(args)
+
 # initialize policy and the agent
-policy = Policy()
-logger.info('startTime:[{}] - endTime:[{}]'.format(Policy.startTime, Policy.endTime))
+policy = Policy(time(hour=6, minute=0), time(hour=18, minute=0))
+info['policy'] = vars(policy)
+info['policy']['startTime'] = str(info['policy']['startTime'])
+info['policy']['endTime'] = str(info['policy']['endTime'])
 state_size = policy.stateSize
 logger.info('state_size:[{}]'.format(state_size))
 action_size = policy.actionSize
 logger.info('action_size:[{}]'.format(action_size))
 agent = DQNAgent(state_size, action_size)
+info['agent'] = vars(agent)
+del info['agent']['model']
+del info['agent']['memory']
 attributes = vars(agent)
 logger.info(', '.join("%s:[%s]" % item for item in attributes.items()))
 
 # each game length is 5 hours (300 minutes)
 settings = Settings(0.85, 50, 500, 128)
+info['settings'] = vars(settings)
 attributes = vars(settings)
 logger.info(', '.join("%s:[%s]" % item for item in attributes.items()))
+
+with open(jsonFullFname, 'w') as f:
+    json.dump(info, f)
 
 # done = False
 
 # initialize number of games
-# GAMES = 5000
 curSequence = 0
 # Iterate the game
-# for g in range(GAMES):
 g = 0
 stateTime = time(hour=8, minute=0)
 stateTimeDelta = timedelta(minutes=17)
@@ -300,23 +316,14 @@ while curSequence < settings.minGameSequence:
         # make next_state the new current state for the next frame.
         state = next_state
 
-        # if done:
-        # print("episode: {}/{}, score: {}, e: {:.2}".format(g, GAMES, time_t, agent.epsilon))
-        # break
-
-    # logger.info(
-    #     "episode: {}/{}, {}, score: [{}/{}], success:[{}], e: {:.2}".format(g, GAMES, initState, score, gameMinutesLength, (score / float(gameMinutesLength)), agent.epsilon))
-
     if score >= settings.minGameScore:
         curSequence += 1
     else:
         curSequence = 0
 
     loss = 'No training'
-    if (len(agent.memory) > settings.batch_size) and (curSequence < settings.minGameSequence):
+    if curSequence < settings.minGameSequence:
         loss = agent.replay(settings.batch_size)
-        # if e % 10 == 0:
-        #     agent.save("./save/cartpole-dqn.h5")
 
     logger.info(
         "episode: {}, state: {}, score: [{}], loss:[{}], sequence:[{}], random actions:[{}], e:[{:.2}]".format(g, initState, score, loss, curSequence, numOfRandomActions,
