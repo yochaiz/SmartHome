@@ -240,8 +240,6 @@ config = tf.ConfigProto()
 config.gpu_options.per_process_gpu_memory_fraction = args.gpuFrac
 set_session(tf.Session(config=config))
 
-logger.info('args:[{}]'.format(args))
-
 # init info json file
 info, jsonFullFname = loadInfoFile(dirName, logger)
 info['args'] = vars(args)
@@ -252,22 +250,18 @@ info['policy'] = vars(policy)
 info['policy']['startTime'] = str(info['policy']['startTime'])
 info['policy']['endTime'] = str(info['policy']['endTime'])
 state_size = policy.stateSize
-logger.info('state_size:[{}]'.format(state_size))
 action_size = policy.actionSize
-logger.info('action_size:[{}]'.format(action_size))
+
 agent = DQNAgent(state_size, action_size)
 info['agent'] = vars(agent)
 del info['agent']['model']
 del info['agent']['memory']
-attributes = vars(agent)
-logger.info(', '.join("%s:[%s]" % item for item in attributes.items()))
 
 # each game length is 5 hours (300 minutes)
 settings = Settings(0.85, 50, 500, 128)
 info['settings'] = vars(settings)
-attributes = vars(settings)
-logger.info(', '.join("%s:[%s]" % item for item in attributes.items()))
 
+logger.info('info:[{}]'.format(info))
 with open(jsonFullFname, 'w') as f:
     json.dump(info, f)
 
