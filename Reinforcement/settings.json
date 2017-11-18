@@ -1,0 +1,8 @@
+{
+  "minGameScoreRatio": 0.85,
+  "minGameSequence": 500,
+  "gameMinutesLength": 500,
+  "batchSize": 128,
+  "dequeSize": 10000,
+  "trainSetSize": 10000
+}

@@ -19,7 +19,6 @@ class DQNAgent:
     def __init__(self, state_size, action_size, dequeLen=1000):
         self.state_size = state_size
         self.action_size = action_size
-        self.dequeLen = dequeLen
         self.memory = deque(maxlen=dequeLen)
         self.gamma = 0.95  # discount rate
         self.epsilon = 1.0  # exploration rate
@@ -61,42 +60,71 @@ class DQNAgent:
         # Pick the action based on the predicted reward
         return np.argmax(act_values[0]), 0
 
-    def replay(self, batch_size):
-        # Sample minibatch from the memory
-        minibatch = random.sample(self.memory, min(batch_size, len(self.memory)))
-        loss = 0
+    def replay(self, trainSetSize, batchSize):
+        # Sample trainSet from the memory
+        trainSet = random.sample(self.memory, min(trainSetSize, len(self.memory)))
 
-        # Extract informations from each memory
-        for state, action, reward, next_state in minibatch:
-            # print('state:{}, action:[{}], reward:[{}], next_state:{}'.format(state, action, reward, next_state))
-            # target = reward
-            # if not done:
-            #     target = (reward + self.gamma * np.amax(self.model.predict(next_state)[0]))
+        # loss = 0
 
-            # predict the future discounted reward
-            # jj = self.model.predict(next_state)
-            # print(jj)
-            # jj = jj[0]
-            # print(jj)
-            input = next_state.astype(float)
-            input[0][0] /= 24.0
-            input[0][1] /= 60.0
-            target = (reward + self.gamma * np.amax(self.model.predict(input)))
-            # print('target:[{}]'.format(target))
-            # make the agent to approximately map the current state to future discounted reward. We'll call that target_f
-            input = state.astype(float)
-            input[0][0] /= 24.0
-            input[0][1] /= 60.0
-            target_f = self.model.predict(input)
-            # print('target_f:{}'.format(target_f))
-            target_f[0][action] = target
-            # print('target_f:{}'.format(target_f))
+        def normalizeFeatures(input):
+            input = input.astype(float)
+            input[0] /= 24.0
+            input[1] /= 60.0
+            return input
 
-            # Train the Neural Net with the state and target_f
-            scores = self.model.fit(input, target_f, epochs=1, verbose=0)
-            loss += scores.history['loss'][0]
+        trainState = []
+        trainAction = []
+        trainNextState = []
+        trainReward = []
+        for state, action, reward, next_state in trainSet:
+            trainState.append(normalizeFeatures(state[0]))
+            trainAction.append(action)
+            trainNextState.append(normalizeFeatures(next_state[0]))
+            trainReward.append(reward)
 
-        loss /= batch_size
+        trainState = np.array(trainState)
+        trainNextState = np.array(trainNextState)
+        trainReward = np.array(trainReward)
+
+        target = trainReward + (self.gamma * np.amax(self.model.predict(trainNextState), axis=1))
+        target_f = self.model.predict(trainState)
+        for i in range(len(target_f)):
+            target_f[i, trainAction[i]] = target[i]
+
+        scores = self.model.fit(trainState, target_f, batch_size=batchSize, epochs=1)
+        loss = scores.history['loss'][0]
+
+        # # Extract informations from each memory
+        # for state, action, reward, next_state in trainSet:
+        #     # print('state:{}, action:[{}], reward:[{}], next_state:{}'.format(state, action, reward, next_state))
+        #     # target = reward
+        #     # if not done:
+        #     #     target = (reward + self.gamma * np.amax(self.model.predict(next_state)[0]))
+        #
+        #     # predict the future discounted reward
+        #     # jj = self.model.predict(next_state)
+        #     # print(jj)
+        #     # jj = jj[0]
+        #     # print(jj)
+        #     input = next_state.astype(float)
+        #     input[0][0] /= 24.0
+        #     input[0][1] /= 60.0
+        #     target = (reward + self.gamma * np.amax(self.model.predict(input)))
+        #     # print('target:[{}]'.format(target))
+        #     # make the agent to approximately map the current state to future discounted reward. We'll call that target_f
+        #     input = state.astype(float)
+        #     input[0][0] /= 24.0
+        #     input[0][1] /= 60.0
+        #     target_f = self.model.predict(input)
+        #     # print('target_f:{}'.format(target_f))
+        #     target_f[0][action] = target
+        #     # print('target_f:{}'.format(target_f))
+        #
+        #     # Train the Neural Net with the state and target_f
+        #     scores = self.model.fit(input, target_f, epochs=1, verbose=0)
+        #     loss += scores.history['loss'][0]
+        #
+        # loss /= trainSetSize
 
         # update epsilon value
         if self.epsilon > self.epsilon_min:
@@ -107,9 +135,11 @@ class DQNAgent:
     def load(self, name):
         self.model.load_weights(name)
 
-    def save(self, name):
+    def save(self, dirName):
+        fullPath = '{}/model.h5'.format(dirName)
+        logger.info('Saving model as [{}]'.format(fullPath))
         # self.model.save_weights(name)
-        self.model.save(name)
+        self.model.save(fullPath)
 
 
 class Policy:
@@ -203,18 +233,20 @@ class Policy:
         return state
 
 
-class Settings:
-    def __init__(self, minGameScoreRatio, minGameSequence, gameMinutesLength, batch_size):
-        self.minGameScore = int(minGameScoreRatio * gameMinutesLength)
-        self.minGameSequence = minGameSequence
-        self.gameMinutesLength = gameMinutesLength
-        self.batch_size = batch_size
+# class Settings:
+#     def __init__(self, minGameScoreRatio, minGameSequence, gameMinutesLength, trainSetSize, batch_size):
+#         self.minGameScore = int(minGameScoreRatio * gameMinutesLength)
+#         self.minGameSequence = minGameSequence
+#         self.gameMinutesLength = gameMinutesLength
+#         self.trainSetSize = trainSetSize
+#         self.batch_size = batch_size
 
 
 # parse arguments
 parser = argparse.ArgumentParser(description='test model on dataset')
 parser.add_argument("gpuNum", type=int, help="GPU # to run on")
 parser.add_argument("--gpuFrac", type=float, default=0.3, help="GPU memory fraction")
+parser.add_argument("--settings", type=str, default='settings.json', help="Settings JSON file")
 group = parser.add_mutually_exclusive_group(required=True)
 group.add_argument("--sequential", action='store_true', help="Init sequential state for a new game")
 group.add_argument("--random", action='store_true', help="Init random state for a new game")
@@ -223,7 +255,7 @@ args = parser.parse_args()
 # init result directory
 rootDir = 'results'
 now = datetime.now()
-dirName = '{}/D-{}-{}-H-{}-{}'.format(rootDir, now.day, now.month, now.hour, now.minute)
+dirName = '{}/D-{}-{}-H-{}-{}={}'.format(rootDir, now.day, now.month, now.hour, now.minute, now.second)
 if not os.path.exists(dirName):
     os.makedirs(dirName)
 
@@ -246,24 +278,33 @@ info['args'] = vars(args)
 
 # initialize policy and the agent
 policy = Policy(time(hour=6, minute=0), time(hour=18, minute=0))
-info['policy'] = vars(policy)
+info['policy'] = dict(vars(policy))  # make dict copy
 info['policy']['startTime'] = str(info['policy']['startTime'])
 info['policy']['endTime'] = str(info['policy']['endTime'])
 state_size = policy.stateSize
 action_size = policy.actionSize
 
-agent = DQNAgent(state_size, action_size)
-info['agent'] = vars(agent)
+settings = None
+with open(args.settings, 'r') as f:
+    settings = json.load(f)
+
+minGameScore = int(settings['minGameScoreRatio'] * settings['gameMinutesLength'])
+info['settings'] = settings
+
+agent = DQNAgent(state_size, action_size, settings['dequeSize'])
+info['agent'] = dict(vars(agent))  # make dict copy
 del info['agent']['model']
 del info['agent']['memory']
 
-# each game length is 5 hours (300 minutes)
-settings = Settings(0.85, 50, 500, 128)
-info['settings'] = vars(settings)
+# settings = Settings(minGameScoreRatio=0.85, minGameSequence=500, gameMinutesLength=500, batch_size=128, trainSetSize=agent.dequeLen)
+# info['settings'] = vars(settings)
 
 logger.info('info:[{}]'.format(info))
 with open(jsonFullFname, 'w') as f:
     json.dump(info, f)
+
+# save init model
+agent.save(dirName)
 
 # done = False
 
@@ -273,7 +314,7 @@ curSequence = 0
 g = 0
 stateTime = time(hour=8, minute=0)
 stateTimeDelta = timedelta(minutes=17)
-while curSequence < settings.minGameSequence:
+while curSequence < settings['minGameSequence']:
     g += 1
     # reset state in the beginning of each game
     # state = np.array([13, 30, 0])
@@ -293,7 +334,7 @@ while curSequence < settings.minGameSequence:
     # time_t represents each minute of the game
     score = 0
     numOfRandomActions = 0
-    for time_t in range(settings.gameMinutesLength):
+    for time_t in range(settings['gameMinutesLength']):
         # Decide action
         action, isRandom = agent.act(state)
         numOfRandomActions += isRandom
@@ -310,19 +351,17 @@ while curSequence < settings.minGameSequence:
         # make next_state the new current state for the next frame.
         state = next_state
 
-    if score >= settings.minGameScore:
+    if score >= minGameScore:
         curSequence += 1
     else:
         curSequence = 0
 
     loss = 'No training'
-    if curSequence < settings.minGameSequence:
-        loss = agent.replay(settings.batch_size)
+    if curSequence < settings['minGameSequence']:
+        loss = agent.replay(settings['trainSetSize'], settings['batchSize'])
 
     logger.info(
         "episode: {}, state: {}, score: [{}], loss:[{}], sequence:[{}], random actions:[{}], e:[{:.2}]".format(g, initState, score, loss, curSequence, numOfRandomActions,
                                                                                                                agent.epsilon))
-
-modelName = 'model.h5'
-logger.info('Saving model as [{}]'.format(rootDir + dirName + '/' + modelName))
-agent.save(rootDir + dirName + '/' + modelName)
+# save model
+agent.save(dirName)
