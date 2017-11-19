@@ -5,7 +5,7 @@ from collections import deque
 from keras.models import Sequential
 from keras.layers import Dense
 import os
-from datetime import time, timedelta, datetime, date
+from datetime import time, timedelta, datetime
 from random import randint
 import logging
 import argparse
@@ -157,17 +157,17 @@ class Policy:
         self.startTime = startTime
         self.endTime = endTime
 
-    @staticmethod
-    def calcMinutesGap(time1, time2):
-        if time1 > time2:
-            endTime = time1
-            startTime = time2
-        else:
-            endTime = time2
-            startTime = time1
-
-        duration = datetime.combine(date.min, endTime) - datetime.combine(date.min, startTime)
-        return duration.seconds / 60
+    # @staticmethod
+    # def calcMinutesGap(time1, time2):
+    #     if time1 > time2:
+    #         endTime = time1
+    #         startTime = time2
+    #     else:
+    #         endTime = time2
+    #         startTime = time1
+    #
+    #     duration = datetime.combine(date.min, endTime) - datetime.combine(date.min, startTime)
+    #     return duration.seconds / 60
 
     # perform action
     def step(self, state, action):
@@ -232,6 +232,22 @@ class Policy:
 
         return state
 
+    def toJSON(self):
+        res = vars(self)
+        res['Labels'] = []
+        res['Labels'].append({
+            'startTime': str((datetime(year=1900, month=1, day=1, hour=self.startTime.hour, minute=self.startTime.minute) + timedelta(minutes=1)).time()),
+            'endTime': str((datetime(year=1900, month=1, day=1, hour=self.endTime.hour, minute=self.endTime.minute) + timedelta(minutes=1)).time()),
+            'label': 1
+        })
+        res['Labels'].append({
+            'startTime': str((datetime(year=1900, month=1, day=1, hour=self.endTime.hour, minute=self.endTime.minute) + timedelta(minutes=2)).time()),
+            'endTime': str((datetime(year=1900, month=1, day=1, hour=self.startTime.hour, minute=self.startTime.minute) + timedelta(minutes=2)).time()),
+            'label': 0
+        })
+
+        return res
+
 
 # class Settings:
 #     def __init__(self, minGameScoreRatio, minGameSequence, gameMinutesLength, trainSetSize, batch_size):
@@ -255,7 +271,7 @@ args = parser.parse_args()
 # init result directory
 rootDir = 'results'
 now = datetime.now()
-dirName = '{}/D-{}-{}-H-{}-{}={}'.format(rootDir, now.day, now.month, now.hour, now.minute, now.second)
+dirName = '{}/D-{}-{}-H-{}-{}-{}'.format(rootDir, now.day, now.month, now.hour, now.minute, now.second)
 if not os.path.exists(dirName):
     os.makedirs(dirName)
 
@@ -278,9 +294,10 @@ info['args'] = vars(args)
 
 # initialize policy and the agent
 policy = Policy(time(hour=6, minute=0), time(hour=18, minute=0))
-info['policy'] = dict(vars(policy))  # make dict copy
-info['policy']['startTime'] = str(info['policy']['startTime'])
-info['policy']['endTime'] = str(info['policy']['endTime'])
+info['policy'] = policy.toJSON()
+# info['policy'] = dict(vars(policy))  # make dict copy
+# info['policy']['startTime'] = str(info['policy']['startTime'])
+# info['policy']['endTime'] = str(info['policy']['endTime'])
 state_size = policy.stateSize
 action_size = policy.actionSize
 
