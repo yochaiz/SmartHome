@@ -1,0 +1,5 @@
+INFO:__main__:args:[Namespace(folderName='results/D-13-11-H-19-1')]
+INFO:__main__:File [info.json] exists, loading ...
+INFO:__main__:Adding key [minGameScore] to info
+INFO:__main__:Adding key [scores] to info
+INFO:__main__:Writing to [results/D-13-11-H-19-1/info.json]

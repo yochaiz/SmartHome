@@ -1,0 +1,99 @@
+INFO:__main__:args:[Namespace(folderName='results/D-13-11-H-19-1/', gpuFrac=0.3, gpuNum=4)]
+INFO:__main__:_________________________________________________________________
+INFO:__main__:Layer (type)                 Output Shape              Param #   
+INFO:__main__:=================================================================
+INFO:__main__:dense_1 (Dense)              (None, 128)               512       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_2 (Dense)              (None, 64)                8256      
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_3 (Dense)              (None, 32)                2080      
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_4 (Dense)              (None, 16)                528       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_5 (Dense)              (None, 8)                 136       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_6 (Dense)              (None, 2)                 18        
+INFO:__main__:=================================================================
+INFO:__main__:Total params: 11,530
+INFO:__main__:Trainable params: 11,530
+INFO:__main__:Non-trainable params: 0
+INFO:__main__:_________________________________________________________________
+INFO:__main__:Results:
+INFO:__main__:======================
+INFO:__main__:Total: Mistakes:[694.0] 		 Ratio:[0.481944444444]
+INFO:__main__:
+
+INFO:__main__:Hour:[0] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:Hour:[1] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:Hour:[2] 		 Mistakes:[29.0] 		 Ratio:[0.483333333333]
+INFO:__main__:Hour:[3] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[4] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[5] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[6] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[7] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[8] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[9] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[10] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[11] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[12] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[13] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[14] 		 Mistakes:[81.0] 		 Ratio:[1.35]
+INFO:__main__:Hour:[15] 		 Mistakes:[120.0] 		 Ratio:[2.0]
+INFO:__main__:Hour:[16] 		 Mistakes:[120.0] 		 Ratio:[2.0]
+INFO:__main__:Hour:[17] 		 Mistakes:[120.0] 		 Ratio:[2.0]
+INFO:__main__:Hour:[18] 		 Mistakes:[92.0] 		 Ratio:[1.53333333333]
+INFO:__main__:Hour:[19] 		 Mistakes:[6.0] 		 Ratio:[0.1]
+INFO:__main__:Hour:[20] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[21] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[22] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[23] 		 Mistakes:[6.0] 		 Ratio:[0.1]
+INFO:__main__:args:[Namespace(folderName='results/D-13-11-H-19-1/', gpuFrac=0.3, gpuNum=6)]
+INFO:__main__:_________________________________________________________________
+INFO:__main__:Layer (type)                 Output Shape              Param #   
+INFO:__main__:=================================================================
+INFO:__main__:dense_1 (Dense)              (None, 128)               512       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_2 (Dense)              (None, 64)                8256      
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_3 (Dense)              (None, 32)                2080      
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_4 (Dense)              (None, 16)                528       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_5 (Dense)              (None, 8)                 136       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_6 (Dense)              (None, 2)                 18        
+INFO:__main__:=================================================================
+INFO:__main__:Total params: 11,530
+INFO:__main__:Trainable params: 11,530
+INFO:__main__:Non-trainable params: 0
+INFO:__main__:_________________________________________________________________
+INFO:__main__:File [info.json] exists, loading ...
+INFO:__main__:Results:
+INFO:__main__:======================
+INFO:__main__:Total: Mistakes:[290.0] 		 Ratio:[0.201388888889]
+INFO:__main__:
+
+INFO:__main__:Hour:[0] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:Hour:[1] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:Hour:[2] 		 Mistakes:[29.0] 		 Ratio:[0.483333333333]
+INFO:__main__:Hour:[3] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[4] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[5] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[6] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[7] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[8] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[9] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[10] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[11] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[12] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[13] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[14] 		 Mistakes:[39.0] 		 Ratio:[0.65]
+INFO:__main__:Hour:[15] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[16] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[17] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[18] 		 Mistakes:[90.0] 		 Ratio:[1.5]
+INFO:__main__:Hour:[19] 		 Mistakes:[6.0] 		 Ratio:[0.1]
+INFO:__main__:Hour:[20] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[21] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[22] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[23] 		 Mistakes:[6.0] 		 Ratio:[0.1]

@@ -1,0 +1,142 @@
+INFO:__main__:args:[Namespace(folderName='results/D-14-11-H-21-24/', gpuFrac=0.3, gpuNum=3)]
+INFO:__main__:_________________________________________________________________
+INFO:__main__:Layer (type)                 Output Shape              Param #   
+INFO:__main__:=================================================================
+INFO:__main__:dense_1 (Dense)              (None, 128)               512       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_2 (Dense)              (None, 64)                8256      
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_3 (Dense)              (None, 32)                2080      
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_4 (Dense)              (None, 16)                528       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_5 (Dense)              (None, 8)                 136       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_6 (Dense)              (None, 2)                 18        
+INFO:__main__:=================================================================
+INFO:__main__:Total params: 11,530
+INFO:__main__:Trainable params: 11,530
+INFO:__main__:Non-trainable params: 0
+INFO:__main__:_________________________________________________________________
+INFO:__main__:File [info.json] exists, loading ...
+INFO:__main__:args:[Namespace(folderName='results/D-14-11-H-21-24/', gpuFrac=0.3, gpuNum=3)]
+INFO:__main__:_________________________________________________________________
+INFO:__main__:Layer (type)                 Output Shape              Param #   
+INFO:__main__:=================================================================
+INFO:__main__:dense_1 (Dense)              (None, 128)               512       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_2 (Dense)              (None, 64)                8256      
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_3 (Dense)              (None, 32)                2080      
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_4 (Dense)              (None, 16)                528       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_5 (Dense)              (None, 8)                 136       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_6 (Dense)              (None, 2)                 18        
+INFO:__main__:=================================================================
+INFO:__main__:Total params: 11,530
+INFO:__main__:Trainable params: 11,530
+INFO:__main__:Non-trainable params: 0
+INFO:__main__:_________________________________________________________________
+INFO:__main__:File [info.json] exists, loading ...
+INFO:__main__:args:[Namespace(folderName='results/D-14-11-H-21-24/', gpuFrac=0.3, gpuNum=3)]
+INFO:__main__:_________________________________________________________________
+INFO:__main__:Layer (type)                 Output Shape              Param #   
+INFO:__main__:=================================================================
+INFO:__main__:dense_1 (Dense)              (None, 128)               512       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_2 (Dense)              (None, 64)                8256      
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_3 (Dense)              (None, 32)                2080      
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_4 (Dense)              (None, 16)                528       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_5 (Dense)              (None, 8)                 136       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_6 (Dense)              (None, 2)                 18        
+INFO:__main__:=================================================================
+INFO:__main__:Total params: 11,530
+INFO:__main__:Trainable params: 11,530
+INFO:__main__:Non-trainable params: 0
+INFO:__main__:_________________________________________________________________
+INFO:__main__:File [info.json] exists, loading ...
+INFO:__main__:Results:
+INFO:__main__:======================
+INFO:__main__:Total: Mistakes:[1698.0] 		 Ratio:[1.17916666667]
+INFO:__main__:
+
+INFO:__main__:Hour:[0] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[1] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[2] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[3] 		 Mistakes:[9.0] 		 Ratio:[0.15]
+INFO:__main__:Hour:[4] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:Hour:[5] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:Hour:[6] 		 Mistakes:[109.0] 		 Ratio:[1.81666666667]
+INFO:__main__:Hour:[7] 		 Mistakes:[120.0] 		 Ratio:[2.0]
+INFO:__main__:Hour:[8] 		 Mistakes:[120.0] 		 Ratio:[2.0]
+INFO:__main__:Hour:[9] 		 Mistakes:[120.0] 		 Ratio:[2.0]
+INFO:__main__:Hour:[10] 		 Mistakes:[120.0] 		 Ratio:[2.0]
+INFO:__main__:Hour:[11] 		 Mistakes:[120.0] 		 Ratio:[2.0]
+INFO:__main__:Hour:[12] 		 Mistakes:[120.0] 		 Ratio:[2.0]
+INFO:__main__:Hour:[13] 		 Mistakes:[120.0] 		 Ratio:[2.0]
+INFO:__main__:Hour:[14] 		 Mistakes:[120.0] 		 Ratio:[2.0]
+INFO:__main__:Hour:[15] 		 Mistakes:[120.0] 		 Ratio:[2.0]
+INFO:__main__:Hour:[16] 		 Mistakes:[90.0] 		 Ratio:[1.5]
+INFO:__main__:Hour:[17] 		 Mistakes:[16.0] 		 Ratio:[0.266666666667]
+INFO:__main__:Hour:[18] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[19] 		 Mistakes:[34.0] 		 Ratio:[0.566666666667]
+INFO:__main__:Hour:[20] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:Hour:[21] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:Hour:[22] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:Hour:[23] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:args:[Namespace(folderName='results/D-14-11-H-21-24/', gpuFrac=0.3, gpuNum=6)]
+INFO:__main__:_________________________________________________________________
+INFO:__main__:Layer (type)                 Output Shape              Param #   
+INFO:__main__:=================================================================
+INFO:__main__:dense_1 (Dense)              (None, 128)               512       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_2 (Dense)              (None, 64)                8256      
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_3 (Dense)              (None, 32)                2080      
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_4 (Dense)              (None, 16)                528       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_5 (Dense)              (None, 8)                 136       
+INFO:__main__:_________________________________________________________________
+INFO:__main__:dense_6 (Dense)              (None, 2)                 18        
+INFO:__main__:=================================================================
+INFO:__main__:Total params: 11,530
+INFO:__main__:Trainable params: 11,530
+INFO:__main__:Non-trainable params: 0
+INFO:__main__:_________________________________________________________________
+INFO:__main__:File [info.json] exists, loading ...
+INFO:__main__:Results:
+INFO:__main__:======================
+INFO:__main__:Total: Mistakes:[550.0] 		 Ratio:[0.381944444444]
+INFO:__main__:
+
+INFO:__main__:Hour:[0] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[1] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[2] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[3] 		 Mistakes:[9.0] 		 Ratio:[0.15]
+INFO:__main__:Hour:[4] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:Hour:[5] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:Hour:[6] 		 Mistakes:[11.0] 		 Ratio:[0.183333333333]
+INFO:__main__:Hour:[7] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[8] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[9] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[10] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[11] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[12] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[13] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[14] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[15] 		 Mistakes:[0.0] 		 Ratio:[0.0]
+INFO:__main__:Hour:[16] 		 Mistakes:[30.0] 		 Ratio:[0.5]
+INFO:__main__:Hour:[17] 		 Mistakes:[104.0] 		 Ratio:[1.73333333333]
+INFO:__main__:Hour:[18] 		 Mistakes:[2.0] 		 Ratio:[0.0333333333333]
+INFO:__main__:Hour:[19] 		 Mistakes:[34.0] 		 Ratio:[0.566666666667]
+INFO:__main__:Hour:[20] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:Hour:[21] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:Hour:[22] 		 Mistakes:[60.0] 		 Ratio:[1.0]
+INFO:__main__:Hour:[23] 		 Mistakes:[60.0] 		 Ratio:[1.0]
