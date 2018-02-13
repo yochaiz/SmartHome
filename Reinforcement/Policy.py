@@ -5,8 +5,8 @@ from abc import ABCMeta, abstractmethod
 class Policy:
     __metaclass__ = ABCMeta
 
-    actionValues = [0, 1]
-    nActions = len(actionValues)
+    #actionValues = [0, 1]
+    #nActions = len(actionValues)
 
     def __init__(self):
         pass
