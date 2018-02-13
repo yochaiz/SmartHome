@@ -135,8 +135,8 @@ class DQNAgent:
         # self.model.save_weights(name)
         self.model.save(fullPath)
 
-    # convert class object to printable dictionary
-    def toDictionary(self):
+    # convert class object to JSON serializable
+    def toJSON(self):
         var = dict(vars(self))  # make dict copy
         keysToDelete = []
         for key, val in var.iteritems():
