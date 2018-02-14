@@ -31,7 +31,7 @@ def collectDeviceSingleDayData(device, day, timeFormat):
     return data
 
 
-def plotDeviceSingleDay(device, day, timeFormat):
+def plotDataForDeviceSingleDay(device, day, timeFormat):
     timeData = collectDeviceSingleDayData(device, day, timeFormat)
 
     curTime = datetime.strptime("00:00", policy["Time format"])
@@ -83,12 +83,12 @@ def plotDeviceSingleDay(device, day, timeFormat):
     return plotData
 
 
-def plotDeviceMultipleDays(device, timeFormat, days):
+def plotDataForDeviceMultipleDays(device, timeFormat, days):
     # 1st day does not need shift, just get values
-    plotData = plotDeviceSingleDay(device, days[0], timeFormat)
+    plotData = plotDataForDeviceSingleDay(device, days[0], timeFormat)
     # following days require shift
     for dayID in range(1, len(days)):
-        dayPlotData = plotDeviceSingleDay(device, days[dayID], timeFormat)
+        dayPlotData = plotDataForDeviceSingleDay(device, days[dayID], timeFormat)
 
         # width and color array do not need shift
         for i in [0, 2]:
@@ -105,24 +105,41 @@ def plotDeviceMultipleDays(device, timeFormat, days):
     return plotData
 
 
+def plotPolicy(policy):
+    days = [6]
+    # days.extend(range(6))
+
+    fig, ax = plt.subplots()
+    fig.autofmt_xdate()
+
+    yLabels = []
+    yTicks = []
+
+    for deviceID, name in enumerate(policy["Devices"]):
+        device = policy[str(deviceID)]
+        plotData = plotDataForDeviceMultipleDays(device, policy["Time format"], days)
+
+        ax.barh([deviceID] * len(plotData[0]), plotData[0], height=plotData[1], color=plotData[2], left=plotData[3][:-1])
+
+        yLabels.append(name)
+        yTicks.append(deviceID + (plotData[1] / 2))
+
+    ax.set_xticks(plotData[3])
+    ax.set_xticklabels(plotData[4])
+    ax.set_yticks(yTicks)
+    ax.set_yticklabels(yLabels)
+
+    return ax
+
+
+
 # TODO: validate json, no overlap between time intervals
+# TODO: sort xlabels for multiple devices (by merge sort, both arrays are sorted)
 
 policyFilename = '../Week_policies/policy1.json'
 policy = loadPolicy(policyFilename)
 
-deviceID = 0
-dayID = 4
-device = policy[str(deviceID)]
-# plotData = plotDeviceSingleDay(device, 0, policy["Time format"])
-# plotData1 = plotDeviceSingleDay(device, 1, policy["Time format"])
-# plotData1[0] = [(v + plotData[0][-1]) for v in plotData1[0]]
-plotData = plotDeviceMultipleDays(device, policy["Time format"], [6, 0, 1, 2, 3, 4, 5])
+ax = plotPolicy(policy)
 
-fig, ax = plt.subplots()
-fig.autofmt_xdate()
-
-ax.barh([0.5] * len(plotData[0]), plotData[0], height=plotData[1], color=plotData[2], left=plotData[3][:-1])
-ax.set_xticks(plotData[3])
-ax.set_xticklabels(plotData[4])
-ax.set_title('Device:[{}]'.format(policy["Devices"][deviceID]))
+# ax.set_title('Device:[{}]'.format(policy["Devices"][deviceID]))
 plt.show()
