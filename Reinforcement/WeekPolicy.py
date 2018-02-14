@@ -29,9 +29,6 @@ class WeekPolicy(Policy):
     #  Bathroom light, Living room light1, Living room light2, Hallway light,
     #  Entrance light, Boiler]
 
-    outputTitle = ['Room light1', 'Room light2', 'Room light3 (backdoor)', 'Kitchen light', 'Toilets light', 'Bathroom light', 'Living room light1',
-                   'Living room light2', 'Hallway light', 'Entrance light', 'Boiler']
-
     inputTitle = ['Weekday', 'Hour', 'Minute']
     stateStartIdx = len(inputTitle)
     inputTitle.extend(outputTitle)
@@ -54,37 +51,6 @@ class WeekPolicy(Policy):
     #### days: array of days the device should be ON.
     #### times: array of time interval during these days that the device should be ON.
     ##### each time interval in times is a tuple (startTime , endTime)
-
-    policy = {}
-    policy[0] = [
-        {
-            'days': weekdays,
-            'times': [(time(8, 0), time(8, 59)),
-                      (time(20, 30), time(23, 59)),
-                      (time(0, 0), time(0, 29))]
-        },
-        {
-            'days': [4],
-            'times': [(time(9, 30), time(13, 29))]
-        }
-    ]
-    policy[1] = [
-        {
-            'days': weekdays,
-            'times': [(time(8, 30), time(8, 59)),
-                      (time(20, 30), time(21, 29))]
-        },
-        {
-            'days': [4],
-            'times': [(time(10, 0), time(13, 29))]
-        }
-    ]
-    policy[2] = [
-        {
-            'days': weekdays,
-            'times': [(time(0, 30), time(1, 10))]
-        }
-    ]
 
 
 def __init__(self):
