@@ -7,7 +7,40 @@ def loadPolicy(fname):
     with open(fname, 'r') as f:
         policy = json.load(f)
 
+    validatePolicy(policy)
     return policy
+
+
+def validatePolicy(policy):
+    nDays = len(policy["days"])
+    for i in range(len(policy["Devices"])):
+        device = policy[str(i)]
+        daysArray = [[] for j in range(nDays)]
+
+        for timeDict in device:
+            if type(timeDict["days"]) is list:
+                days = timeDict["days"]
+            elif type(timeDict["days"]) is unicode:  # predefined array in JSON
+                days = policy[timeDict["days"]]
+            else:
+                raise ValueError("Unknown days key value")
+
+            for day in days:
+                daysArray[day].extend(timeDict["times"])
+
+        # sort time ranges for easier compare
+        for j in range(len(daysArray)):
+            daysArray[j] = sorted(daysArray[j], key=lambda t: datetime.strptime(t[0], policy["Time format"]))
+
+        for array in daysArray:
+            for j in range(len(array) - 1):
+                tCur = array[j]
+                tNext = array[j + 1]
+                if tCur[1] > tNext[0]:  # endTime is bigger than next range startTime
+                    raise ValueError(
+                        'Validation failed for device [{}], ID:[{}], time ranges: [{}] - [{}]'.format(policy["Devices"][i], i, tCur, tNext))
+
+    return True
 
 
 # Given a device times dictionary and a specific day, collect all the time ranges of the specific day
@@ -45,14 +78,14 @@ def plotDataForDeviceSingleDay(device, day, timeFormat):
         endTime = datetime.strptime(t[1], policy["Time format"])
 
         if curTime < startTime:
-            timeOn = (startTime - curTime).seconds
+            timeOn = int((startTime - curTime).total_seconds())
             width.append(timeOn)
             xAxisTicks.append(lastVal)
             lastVal += timeOn
             color.append('k')  # device is off
             xAxisLabels.append(curTime.strftime(policy["Time format"]))
 
-        timeOn = (endTime - startTime + timedelta(minutes=1)).seconds
+        timeOn = int((endTime - startTime + timedelta(minutes=1)).total_seconds())
         width.append(timeOn)
         xAxisTicks.append(lastVal)
         xAxisLabels.append(t[0])
@@ -69,7 +102,7 @@ def plotDataForDeviceSingleDay(device, day, timeFormat):
         xAxisLabels.append(endTime.strftime(policy["Time format"]))
         xAxisTicks.append(lastVal)
 
-        timeOn = (endTime - curTime + timedelta(minutes=1)).seconds
+        timeOn = int((endTime - curTime + timedelta(minutes=1)).total_seconds())
         lastVal += timeOn
         width.append(timeOn)
         color.append('k')  # device is off
@@ -105,15 +138,51 @@ def plotDataForDeviceMultipleDays(device, timeFormat, days):
     return plotData
 
 
-def plotPolicy(policy):
-    days = [6]
-    # days.extend(range(6))
+# list1 is array of arrays: [ticks, labels]
+# list2 is the same
+def mergeSortXaxis(list1, list2):
+    i, j = 0, 0
+    mergedTicks, mergedLabels = [None], []
+    ticks1, ticks2 = list1[0], list2[0]
 
+    while (i < len(ticks1)) and (j < len(ticks2)):
+        if ticks1[i] <= ticks2[j]:
+            if ticks1[i] != mergedTicks[-1]:
+                mergedTicks.append(ticks1[i])
+                mergedLabels.append(list1[1][i])
+            i += 1
+
+        elif ticks2[j] < ticks1[i]:
+            if ticks2[j] != mergedTicks[-1]:
+                mergedTicks.append(ticks2[j])
+                mergedLabels.append(list2[1][j])
+            j += 1
+
+    while i < len(ticks1):
+        if ticks1[i] != mergedTicks[-1]:
+            mergedTicks.append(ticks1[i])
+            mergedLabels.append(list1[1][i])
+        i += 1
+
+    while j < len(ticks2):
+        if ticks2[j] != mergedTicks[-1]:
+            mergedTicks.append(ticks2[j])
+            mergedLabels.append(list2[1][j])
+        j += 1
+
+    mergedTicks = mergedTicks[1:]  # remove dummy object
+    return mergedTicks, mergedLabels
+
+
+def plotPolicy(policy, days):
     fig, ax = plt.subplots()
     fig.autofmt_xdate()
 
-    yLabels = []
-    yTicks = []
+    if type(days) is not list:  # predefined days array in JSON
+        days = policy[days]
+
+    yLabels, yTicks = [], []
+    xLabels, xTicks = [], []
 
     for deviceID, name in enumerate(policy["Devices"]):
         device = policy[str(deviceID)]
@@ -123,23 +192,19 @@ def plotPolicy(policy):
 
         yLabels.append(name)
         yTicks.append(deviceID + (plotData[1] / 2))
+        xTicks, xLabels = mergeSortXaxis([xTicks, xLabels], [plotData[3], plotData[4]])
 
-    ax.set_xticks(plotData[3])
-    ax.set_xticklabels(plotData[4])
+    ax.set_xticks(xTicks)
+    ax.set_xticklabels(xLabels)
     ax.set_yticks(yTicks)
     ax.set_yticklabels(yLabels)
+    ax.set_title('Devices:[All] - Days:{}'.format(days))
 
     return ax
-
-
-
-# TODO: validate json, no overlap between time intervals
-# TODO: sort xlabels for multiple devices (by merge sort, both arrays are sorted)
 
 policyFilename = '../Week_policies/policy1.json'
 policy = loadPolicy(policyFilename)
 
-ax = plotPolicy(policy)
+ax = plotPolicy(policy, "weekend")
 
-# ax.set_title('Device:[{}]'.format(policy["Devices"][deviceID]))
 plt.show()
