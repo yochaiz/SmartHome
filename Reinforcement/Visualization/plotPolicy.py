@@ -1,6 +1,7 @@
 import json
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
+import argparse
 
 
 def loadPolicy(fname):
@@ -174,6 +175,21 @@ def mergeSortXaxis(list1, list2):
     return mergedTicks, mergedLabels
 
 
+# remove values that are too close
+def spaceXaxis(xTicks, xLabels):
+    minDiff = 300  # value in seconds, i.e. 5 minutes
+    i = 1
+    while i < len(xTicks):
+        diff = xTicks[i] - xTicks[i - 1]
+        if diff < minDiff:
+            del xTicks[i]
+            del xLabels[i]
+        else:
+            i += 1
+
+    return xTicks, xLabels
+
+
 def plotPolicy(policy, days):
     fig, ax = plt.subplots()
     fig.autofmt_xdate()
@@ -194,6 +210,7 @@ def plotPolicy(policy, days):
         yTicks.append(deviceID + (plotData[1] / 2))
         xTicks, xLabels = mergeSortXaxis([xTicks, xLabels], [plotData[3], plotData[4]])
 
+    xTicks, xLabels = spaceXaxis(xTicks, xLabels)
     ax.set_xticks(xTicks)
     ax.set_xticklabels(xLabels)
     ax.set_yticks(yTicks)
@@ -202,9 +219,31 @@ def plotPolicy(policy, days):
 
     return ax
 
-policyFilename = '../Week_policies/policy1.json'
-policy = loadPolicy(policyFilename)
 
-ax = plotPolicy(policy, "weekend")
+# parse arguments
+def parseArguments():
+    parser = argparse.ArgumentParser(description='Plot policy')
+    parser.add_argument("policyFile", type=str, help="Policy JSON file path")
+    parser.add_argument("days", type=int, choices=range(-3, 7),
+                        help="Days of policy to plot: 0-Monday, 1-Tuesday, 2-Wednesday, 3-Thursday, 4-Friday, 5-Saturday, 6-Sunday, (-1)-full week, (-2)-weekdays, (-3)-weekend")
+
+    args = parser.parse_args()
+    # convert args.days
+    if args.days == -1:
+        args.days = range(7)
+    elif args.days >= 0:
+        args.days = [args.days]
+    elif args.days == -2:
+        args.days = "weekdays"
+    else:
+        args.days = "weekend"
+
+    return args
+
+
+args = parseArguments()
+policy = loadPolicy(args.policyFile)
+
+ax = plotPolicy(policy, args.days)
 
 plt.show()
