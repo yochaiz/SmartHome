@@ -1,52 +1,15 @@
-import json
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import argparse
+from os import sys, path
 
-
-def loadPolicy(fname):
-    with open(fname, 'r') as f:
-        policy = json.load(f)
-
-    validatePolicy(policy)
-    return policy
-
-
-def validatePolicy(policy):
-    nDays = len(policy["days"])
-    for i in range(len(policy["Devices"])):
-        device = policy[str(i)]
-        daysArray = [[] for j in range(nDays)]
-
-        for timeDict in device:
-            if type(timeDict["days"]) is list:
-                days = timeDict["days"]
-            elif type(timeDict["days"]) is unicode:  # predefined array in JSON
-                days = policy[timeDict["days"]]
-            else:
-                raise ValueError("Unknown days key value")
-
-            for day in days:
-                daysArray[day].extend(timeDict["times"])
-
-        # sort time ranges for easier compare
-        for j in range(len(daysArray)):
-            daysArray[j] = sorted(daysArray[j], key=lambda t: datetime.strptime(t[0], policy["Time format"]))
-
-        for array in daysArray:
-            for j in range(len(array) - 1):
-                tCur = array[j]
-                tNext = array[j + 1]
-                if tCur[1] > tNext[0]:  # endTime is bigger than next range startTime
-                    raise ValueError(
-                        'Validation failed for device [{}], ID:[{}], time ranges: [{}] - [{}]'.format(policy["Devices"][i], i, tCur, tNext))
-
-    return True
+sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+from WeekPolicy import WeekPolicy
 
 
 # Given a device times dictionary and a specific day, collect all the time ranges of the specific day
 # time ranges are returned SORTED
-def collectDeviceSingleDayData(device, day, timeFormat):
+def collectDeviceSingleDayData(policy, device, day, timeFormat):
     data = []
 
     for timeDict in device:
@@ -65,8 +28,8 @@ def collectDeviceSingleDayData(device, day, timeFormat):
     return data
 
 
-def plotDataForDeviceSingleDay(device, day, timeFormat):
-    timeData = collectDeviceSingleDayData(device, day, timeFormat)
+def plotDataForDeviceSingleDay(policy, device, day, timeFormat):
+    timeData = collectDeviceSingleDayData(policy, device, day, timeFormat)
 
     curTime = datetime.strptime("00:00", policy["Time format"])
     lastVal = 0
@@ -117,12 +80,12 @@ def plotDataForDeviceSingleDay(device, day, timeFormat):
     return plotData
 
 
-def plotDataForDeviceMultipleDays(device, timeFormat, days):
+def plotDataForDeviceMultipleDays(policy, device, timeFormat, days):
     # 1st day does not need shift, just get values
-    plotData = plotDataForDeviceSingleDay(device, days[0], timeFormat)
+    plotData = plotDataForDeviceSingleDay(policy, device, days[0], timeFormat)
     # following days require shift
     for dayID in range(1, len(days)):
-        dayPlotData = plotDataForDeviceSingleDay(device, days[dayID], timeFormat)
+        dayPlotData = plotDataForDeviceSingleDay(policy, device, days[dayID], timeFormat)
 
         # width and color array do not need shift
         for i in [0, 2]:
@@ -190,6 +153,8 @@ def spaceXaxis(xTicks, xLabels):
     return xTicks, xLabels
 
 
+# policy - policy as JSON
+# days - array of days as integers
 def plotPolicy(policy, days):
     fig, ax = plt.subplots()
     fig.autofmt_xdate()
@@ -202,7 +167,7 @@ def plotPolicy(policy, days):
 
     for deviceID, name in enumerate(policy["Devices"]):
         device = policy[str(deviceID)]
-        plotData = plotDataForDeviceMultipleDays(device, policy["Time format"], days)
+        plotData = plotDataForDeviceMultipleDays(policy, device, policy["Time format"], days)
 
         ax.barh([deviceID] * len(plotData[0]), plotData[0], height=plotData[1], color=plotData[2], left=plotData[3][:-1])
 
@@ -242,8 +207,8 @@ def parseArguments():
 
 
 args = parseArguments()
-policy = loadPolicy(args.policyFile)
+policy = WeekPolicy(args.policyFile)
 
-ax = plotPolicy(policy, args.days)
+ax = plotPolicy(policy.policyJSON, args.days)
 
 plt.show()
