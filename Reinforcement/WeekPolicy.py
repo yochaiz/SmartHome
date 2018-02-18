@@ -30,8 +30,9 @@ class WeekPolicy(Policy):
     #  Bathroom light, Living room light1, Living room light2, Hallway light,
     #  Entrance light, Boiler]
 
-    # inputTitle = ['Weekday', 'Hour', 'Minute']
-    # stateStartIdx = len(inputTitle)
+    inputDateTitle = ['Weekday', 'Hour', 'Minute']
+    stateDevicesStartIdx = len(inputDateTitle)
+
     # inputTitle.extend(outputTitle)
 
     # inputSize = len(inputTitle)
@@ -55,6 +56,7 @@ class WeekPolicy(Policy):
 
     def __init__(self, fname):
         self.policyJSON = self.loadPolicyFromJSON(fname)
+        self.nDevices = len(self.policyJSON["Devices"])
 
     @staticmethod
     def loadPolicyFromJSON(fname):
@@ -72,14 +74,13 @@ class WeekPolicy(Policy):
             daysArray = [[] for j in range(nDays)]
 
             for timeDict in device:
-                if type(timeDict["days"]) is list:
-                    days = timeDict["days"]
-                elif type(timeDict["days"]) is unicode:  # predefined array in JSON
-                    days = policy[timeDict["days"]]
-                else:
-                    raise ValueError("Unknown days key value")
+                if type(timeDict["days"]) is unicode:  # replace predefined array in JSON with actual array for future simplicity
+                    timeDict["days"] = policy[timeDict["days"]]
 
-                for day in days:
+                # sort timeDict by startTime
+                timeDict["times"] = sorted(timeDict["times"], key=lambda t: datetime.strptime(t[0], policy["Time format"]))
+
+                for day in timeDict["days"]:
                     daysArray[day].extend(timeDict["times"])
 
             # sort time ranges for easier compare
@@ -104,7 +105,7 @@ class WeekPolicy(Policy):
 
     def buildNextState(self, nextDate, state, action):
         # update states (without date part)
-        newState = (np.logical_xor(state[self.stateStartIdx:], action).astype(int))
+        newState = (np.logical_xor(state[self.stateDevicesStartIdx:], action).astype(int))
 
         # create updated state (with date part)
         nextState = np.array([nextDate.weekday(), nextDate.hour, nextDate.minute])
@@ -112,8 +113,32 @@ class WeekPolicy(Policy):
 
         return nextState
 
-    def calculateReward(self):
-        reward = 0
+    def buildExpectedState(self, nextDate):
+        state = np.array([])
+        for i in range(self.nDevices):
+            device = self.policyJSON[str(i)]
+            deviceState = 0
+            for timeDict in device:
+                if nextDate.weekday() in timeDict["days"]:
+                    for t in timeDict["times"]:
+                        if (nextDate.time() >= datetime.strptime(t[0], self.policyJSON["Time format"]).time()) \
+                                and (nextDate.time() <= datetime.strptime(t[1], self.policyJSON["Time format"]).time()):
+                            deviceState = 1
+                            break
+
+            state = np.append(state, deviceState)
+
+        return state
+
+    def calculateReward(self, nextState, nextDate):
+        expectedState = self.buildExpectedState(nextDate)
+        # count how many devices we have predicted wrong
+        wrongCounter = np.sum((np.logical_xor(nextState[self.stateDevicesStartIdx:], expectedState).astype(int)))
+        # count how many devices we have predicted correctly
+        correctCounter = self.nDevices - wrongCounter
+
+        # total reward is scaled in range [-1,1]
+        reward = (correctCounter - wrongCounter) / float(self.nDevices)
 
         return reward
 
@@ -124,19 +149,20 @@ class WeekPolicy(Policy):
         nextState = self.buildNextState(nextDate, state, action)
 
         # calculate reward
-        reward = self.calculateReward()
+        reward = self.calculateReward(nextState, nextDate)
 
         return nextState, reward
 
 
-# G = WeekPolicy()
-#
-# state = np.array([6, 20, 4], dtype=int)
-# print(state)
-# action = np.array([], dtype=int)
-# for i in range(len(G.outputTitle)):
-#     state = np.append(state, randint(0, 1))
-#     action = np.append(action, randint(0, 1))
-#
-# nextState = G.step(state, action)
-# print(nextState)
+G = WeekPolicy("Week_policies/policy1.json")
+
+state = np.array([6, 20, 4], dtype=int)
+action = np.array([], dtype=int)
+for i in range(len(G.policyJSON["Devices"])):
+    state = np.append(state, randint(0, 1))
+    action = np.append(action, randint(0, 1))
+
+print(state)
+nextState, reward = G.step(state, action)
+print(nextState)
+print(reward)
