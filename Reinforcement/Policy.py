@@ -46,6 +46,10 @@ class Policy:
     def generateRandomTimePrefix(self):
         raise NotImplementedError('subclasses must override generateRandomTimePrefix()!')
 
+    # normalize state vector before it goes through the model
+    def normalizeStateForModelInput(self,state):
+        raise NotImplementedError('subclasses must override normalizeStateForModelInput()!')
+
     # generate random state
     def generateRandomState(self):
         # generate random time prefix

@@ -35,6 +35,9 @@ class WeekPolicy(Policy):
     inputDateTitle = ['Weekday', 'Hour', 'Minute']
     stateDevicesStartIdx = len(inputDateTitle)
 
+    # set values for state time normalization
+    timeNormalizationValues = np.array([6, 24, 60], dtype=float)
+
     # inputTitle.extend(outputTitle)
 
     # inputSize = len(inputTitle)
@@ -138,14 +141,14 @@ class WeekPolicy(Policy):
         newState = (np.logical_xor(state[self.stateDevicesStartIdx:], action).astype(int))
 
         # create updated state (with date part)
-        nextState = np.array([nextDate.weekday(), nextDate.hour, nextDate.minute])
+        nextState = np.array([nextDate.weekday(), nextDate.hour, nextDate.minute], dtype=int)
         nextState = np.append(nextState, newState)
 
         return nextState
 
     # Builds the expected state at time nextDate
     def buildExpectedState(self, nextDate):
-        state = np.array([])
+        state = np.array([], dtype=int)
         for i in range(self.numOfDevices):
             device = self.policyJSON[str(i)]
             deviceState = 0
@@ -182,9 +185,15 @@ class WeekPolicy(Policy):
         minute = randint(0, 59)
 
         # build state date prefix
-        state = np.array([day, hour, minute])
+        state = np.array([day, hour, minute], dtype=int)
 
         return state
+
+    # normalize state vector before it goes through the model
+    def normalizeStateForModelInput(self, state):
+        input = state.astype(float)
+        input[0:len(self.timeNormalizationValues)] /= self.timeNormalizationValues
+        return input
 
 
 G = WeekPolicy("Week_policies/policy1.json", None)
