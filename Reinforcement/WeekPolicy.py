@@ -57,9 +57,10 @@ class WeekPolicy(Policy):
     ##### each time interval in times is a tuple (startTime , endTime)
 
     def __init__(self, fname, logger):
+        super(WeekPolicy, self).__init__(logger)
+
         self.policyJSON = self.loadPolicyFromJSON(fname)
-        self.nDevices = len(self.policyJSON["Devices"])
-        # self.model = self.buildModel(logger)
+        self.numOfDevices = len(self.policyJSON["Devices"])
 
     @staticmethod
     def loadPolicyFromJSON(fname):
@@ -101,16 +102,13 @@ class WeekPolicy(Policy):
     def minTimeUnit(self):
         return timedelta(minutes=1)
 
-    # Extracts date from given state
-    def stateToDatetime(self, state):
-        # 05/02/2018 is Monday which is (weekday == 0)
-        # it synchronizes between month day and weekday, i.e. same value for both
-        return datetime(year=2018, month=2, day=5 + state[0], hour=state[1], minute=state[2])
+    def nDevices(self):
+        return self.numOfDevices
 
     # build model to learn policy
     def buildModel(self, logger):
-        inputDim = self.stateDevicesStartIdx + self.nDevices
-        outputDim = pow(2, self.nDevices)  # possible actions
+        inputDim = self.stateDevicesStartIdx + self.numOfDevices
+        outputDim = pow(2, self.numOfDevices)  # possible actions
 
         # Neural Net for Deep-Q learning Model
         model = Sequential()
@@ -128,6 +126,12 @@ class WeekPolicy(Policy):
 
         return model
 
+    # Extracts date from given state
+    def stateToDatetime(self, state):
+        # 05/02/2018 is Monday which is (weekday == 0)
+        # it synchronizes between month day and weekday, i.e. same value for both
+        return datetime(year=2018, month=2, day=5 + state[0], hour=state[1], minute=state[2])
+
     # Builds state at time nextDate based on current state and selected action
     def buildNextState(self, nextDate, state, action):
         # update states (without date part)
@@ -142,7 +146,7 @@ class WeekPolicy(Policy):
     # Builds the expected state at time nextDate
     def buildExpectedState(self, nextDate):
         state = np.array([])
-        for i in range(self.nDevices):
+        for i in range(self.numOfDevices):
             device = self.policyJSON[str(i)]
             deviceState = 0
             for timeDict in device:
@@ -163,25 +167,15 @@ class WeekPolicy(Policy):
         # count how many devices we have predicted wrong
         wrongCounter = np.sum((np.logical_xor(nextState[self.stateDevicesStartIdx:], expectedState).astype(int)))
         # count how many devices we have predicted correctly
-        correctCounter = self.nDevices - wrongCounter
+        correctCounter = self.numOfDevices - wrongCounter
 
         # total reward is scaled in range [-1,1]
-        reward = (correctCounter - wrongCounter) / float(self.nDevices)
+        reward = (correctCounter - wrongCounter) / float(self.numOfDevices)
 
         return reward
 
-    # perform action
-    def step(self, state, action):
-        curDate = self.stateToDatetime(state)
-        nextDate = curDate + self.minTimeUnit()
-        nextState = self.buildNextState(nextDate, state, action)
-
-        # calculate reward
-        reward = self.calculateReward(nextState, nextDate)
-
-        return nextState, reward
-
-    def generateRandomState(self):
+    # generate random time prefix for random state
+    def generateRandomTimePrefix(self):
         # draw date
         day = randint(0, 6)
         hour = randint(0, 23)
@@ -189,41 +183,8 @@ class WeekPolicy(Policy):
 
         # build state date prefix
         state = np.array([day, hour, minute])
-        # build date object for drawn date
-        date = self.stateToDatetime(state)
-        # build expected state for drawn date
-        expectedState = self.buildExpectedState(date)
-
-        # append state
-        state = np.append(state, expectedState)
 
         return state
-
-    # for exploration
-    def generateRandomAction(self):
-        action = np.array([], dtype=int)
-        for i in range(self.nDevices):
-            action = np.insert(action, randint(0, 1))
-
-        return action
-
-    # converts action vector as binary number to integer, for NN output index
-    def actionToInt(self, action):
-        idx = 0
-        val = pow(2, len(action) - 1)
-
-        for i in range(len(action)):
-            idx += (action[i] * val)
-            val /= 2
-
-        return idx
-
-    # convert NN output index to corresponding action representation
-    def intToAction(self, val):
-        action = [int(x) for x in bin(val)[2:]]
-        action = np.array(action, dtype=int)
-
-        return action
 
 
 G = WeekPolicy("Week_policies/policy1.json", None)
