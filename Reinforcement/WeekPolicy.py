@@ -3,6 +3,8 @@ import numpy as np
 from datetime import timedelta, datetime, time
 from random import randint
 from Policy import Policy
+from keras.models import Sequential
+from keras.layers import Dense
 
 
 class WeekPolicy(Policy):
@@ -54,9 +56,10 @@ class WeekPolicy(Policy):
     #### times: array of time interval during these days that the device should be ON.
     ##### each time interval in times is a tuple (startTime , endTime)
 
-    def __init__(self, fname):
+    def __init__(self, fname, logger):
         self.policyJSON = self.loadPolicyFromJSON(fname)
         self.nDevices = len(self.policyJSON["Devices"])
+        # self.model = self.buildModel(logger)
 
     @staticmethod
     def loadPolicyFromJSON(fname):
@@ -98,11 +101,34 @@ class WeekPolicy(Policy):
     def minTimeUnit(self):
         return timedelta(minutes=1)
 
+    # Extracts date from given state
     def stateToDatetime(self, state):
         # 05/02/2018 is Monday which is (weekday == 0)
         # it synchronizes between month day and weekday, i.e. same value for both
         return datetime(year=2018, month=2, day=5 + state[0], hour=state[1], minute=state[2])
 
+    # build model to learn policy
+    def buildModel(self, logger):
+        inputDim = self.stateDevicesStartIdx + self.nDevices
+        outputDim = pow(2, self.nDevices)  # possible actions
+
+        # Neural Net for Deep-Q learning Model
+        model = Sequential()
+        model.add(Dense(outputDim, input_dim=inputDim, activation='relu'))
+        model.add(Dense(outputDim, activation='relu'))
+        model.add(Dense(outputDim, activation='relu'))
+        model.add(Dense(outputDim, activation='linear'))
+
+        # set loss and optimizer
+        model.compile(loss='mse', optimizer='adam')
+
+        # print model architecture
+        model.summary(print_fn=lambda x: logger.info(x))
+        model.summary()
+
+        return model
+
+    # Builds state at time nextDate based on current state and selected action
     def buildNextState(self, nextDate, state, action):
         # update states (without date part)
         newState = (np.logical_xor(state[self.stateDevicesStartIdx:], action).astype(int))
@@ -113,6 +139,7 @@ class WeekPolicy(Policy):
 
         return nextState
 
+    # Builds the expected state at time nextDate
     def buildExpectedState(self, nextDate):
         state = np.array([])
         for i in range(self.nDevices):
@@ -130,6 +157,7 @@ class WeekPolicy(Policy):
 
         return state
 
+    # Calculates the reward based on the expected state at time nextDate compared to the actual state, nextState.
     def calculateReward(self, nextState, nextDate):
         expectedState = self.buildExpectedState(nextDate)
         # count how many devices we have predicted wrong
@@ -153,8 +181,52 @@ class WeekPolicy(Policy):
 
         return nextState, reward
 
+    def generateRandomState(self):
+        # draw date
+        day = randint(0, 6)
+        hour = randint(0, 23)
+        minute = randint(0, 59)
 
-G = WeekPolicy("Week_policies/policy1.json")
+        # build state date prefix
+        state = np.array([day, hour, minute])
+        # build date object for drawn date
+        date = self.stateToDatetime(state)
+        # build expected state for drawn date
+        expectedState = self.buildExpectedState(date)
+
+        # append state
+        state = np.append(state, expectedState)
+
+        return state
+
+    # for exploration
+    def generateRandomAction(self):
+        action = np.array([], dtype=int)
+        for i in range(self.nDevices):
+            action = np.insert(action, randint(0, 1))
+
+        return action
+
+    # converts action vector as binary number to integer, for NN output index
+    def actionToInt(self, action):
+        idx = 0
+        val = pow(2, len(action) - 1)
+
+        for i in range(len(action)):
+            idx += (action[i] * val)
+            val /= 2
+
+        return idx
+
+    # convert NN output index to corresponding action representation
+    def intToAction(self, val):
+        action = [int(x) for x in bin(val)[2:]]
+        action = np.array(action, dtype=int)
+
+        return action
+
+
+G = WeekPolicy("Week_policies/policy1.json", None)
 
 state = np.array([6, 20, 4], dtype=int)
 action = np.array([], dtype=int)

@@ -9,7 +9,7 @@ class DQNAgent:
     def __init__(self, logger, state_size, action_size, dequeLen=1000):
         self.logger = logger
 
-        self.state_size = state_size
+        # self.state_size = state_size
         self.action_size = action_size
         self.memory = deque(maxlen=dequeLen)
         self.gamma = 0.95  # discount rate
@@ -17,26 +17,26 @@ class DQNAgent:
         self.epsilon_min = 0.01
         self.epsilon_decay = 0.995
         self.learning_rate = 0.001
-        self.model = self._build_model()
+        # self.model = self._build_model()
 
         self.dictTypes = [str, int, float]
 
-    def _build_model(self):
-        # Neural Net for Deep-Q learning Model
-        model = Sequential()
-        model.add(Dense(128, input_dim=self.state_size, activation='relu'))
-        model.add(Dense(64, activation='relu'))
-        model.add(Dense(32, activation='relu'))
-        model.add(Dense(16, activation='relu'))
-        model.add(Dense(8, activation='relu'))
-        model.add(Dense(self.action_size, activation='linear'))
-        # model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
-        model.compile(loss='mse', optimizer='adam')
-        # model.compile(loss='mse', optimizer=SGD(lr=self.learning_rate))
-        # model.compile(loss='mse', optimizer='sgd')
-        model.summary(print_fn=lambda x: self.logger.info(x))
-        model.summary()
-        return model
+    # def _build_model(self):
+    #     # Neural Net for Deep-Q learning Model
+    #     model = Sequential()
+    #     model.add(Dense(128, input_dim=self.state_size, activation='relu'))
+    #     model.add(Dense(64, activation='relu'))
+    #     model.add(Dense(32, activation='relu'))
+    #     model.add(Dense(16, activation='relu'))
+    #     model.add(Dense(8, activation='relu'))
+    #     model.add(Dense(self.action_size, activation='linear'))
+    #     # model.compile(loss='mse', optimizer=Adam(lr=self.learning_rate))
+    #     model.compile(loss='mse', optimizer='adam')
+    #     # model.compile(loss='mse', optimizer=SGD(lr=self.learning_rate))
+    #     # model.compile(loss='mse', optimizer='sgd')
+    #     model.summary(print_fn=lambda x: self.logger.info(x))
+    #     model.summary()
+    #     return model
 
     def remember(self, state, action, reward, next_state):
         self.memory.append((state, action, reward, next_state))
