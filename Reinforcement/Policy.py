@@ -7,18 +7,19 @@ from random import randint
 class Policy:
     __metaclass__ = ABCMeta
 
-    def __init__(self, logger):
-        # self.model = self.buildModel(logger)
-        pass
+    def __init__(self, fname):
+        self.policyJSON = self.loadPolicyFromJSON(fname)
+        self.numOfDevices = len(self.policyJSON["Devices"])
+        self.model = self.buildModel()
 
     @abstractmethod
     def minTimeUnit(self):
         raise NotImplementedError('subclasses must override minTimeUnit()!')
 
-    # Number of devices the policy handles
-    @abstractmethod
-    def nDevices(self):
-        raise NotImplementedError('subclasses must override nDevices()!')
+    # # Number of devices the policy handles
+    # @abstractmethod
+    # def nDevices(self):
+    #     raise NotImplementedError('subclasses must override nDevices()!')
 
     # Extracts date from given state
     @abstractmethod
@@ -34,6 +35,10 @@ class Policy:
     def buildExpectedState(self, nextDate):
         raise NotImplementedError('subclasses must override buildExpectedState()!')
 
+    # Appends the expected state of given date
+    def appendExpectedState(self, stateTimePrefix):
+        raise NotImplementedError('subclasses must override appendExpectedState()!')
+
     # Calculates the reward based on the expected state at time nextDate compared to the actual state, nextState.
     def calculateReward(self, nextState, nextDate):
         raise NotImplementedError('subclasses must override calculateReward()!')
@@ -47,7 +52,7 @@ class Policy:
         raise NotImplementedError('subclasses must override generateRandomTimePrefix()!')
 
     # normalize state vector before it goes through the model
-    def normalizeStateForModelInput(self,state):
+    def normalizeStateForModelInput(self, state):
         raise NotImplementedError('subclasses must override normalizeStateForModelInput()!')
 
     # generate random state
@@ -66,8 +71,8 @@ class Policy:
     # for exploration
     def generateRandomAction(self):
         action = np.array([], dtype=int)
-        for i in range(self.nDevices()):
-            action = np.insert(action, randint(0, 1))
+        for i in range(self.numOfDevices):
+            action = np.append(action, randint(0, 1))
 
         return action
 
@@ -82,9 +87,12 @@ class Policy:
 
         return nextState, reward
 
-    # converts action vector as binary number to integer, for NN output index
+    def toJSON(self):
+        return self.policyJSON
+
+    # converts action vector as binary number to index (integer), for NN output index
     @staticmethod
-    def actionToInt(action):
+    def actionToIdx(action):
         idx = 0
         val = pow(2, len(action) - 1)
 
@@ -95,9 +103,22 @@ class Policy:
         return idx
 
     # convert NN output index to corresponding action representation
-    @staticmethod
-    def intToAction(val):
-        action = [int(x) for x in bin(val)[2:]]
+    def idxToAction(self, val):
+        # binary value to array of bits
+        binValArray = [int(x) for x in bin(val)[2:]]
+
+        # pad action with leading 0's
+        action = []
+        if len(binValArray) < self.numOfDevices:
+            action = [0] * (self.numOfDevices - len(binValArray))
+
+        # merge leading 0's with binary bits
+        action.extend(binValArray)
         action = np.array(action, dtype=int)
 
         return action
+
+    # prints model architecture
+    @staticmethod
+    def printModel(model, logger):
+        model.summary(print_fn=lambda x: logger.info(x))

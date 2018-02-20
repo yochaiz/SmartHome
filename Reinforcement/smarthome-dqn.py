@@ -10,7 +10,7 @@ import tensorflow as tf
 from Functions import loadInfoFile
 import json
 from DQNAgent import DQNAgent
-from SingleDayPolicy import SingleDayPolicy
+from WeekPolicy import WeekPolicy
 
 
 # parse arguments
@@ -54,6 +54,7 @@ def initGPU(gpuNum, gpuFrac):
     config = tf.ConfigProto()
     config.gpu_options.per_process_gpu_memory_fraction = gpuFrac
     set_session(tf.Session(config=config))
+    return
 
 
 args = parseArguments()
@@ -66,10 +67,8 @@ info, jsonFullFname = loadInfoFile(dirName, logger)
 info['args'] = vars(args)
 
 # initialize policy and the agent
-policy = SingleDayPolicy(time(hour=6, minute=0), time(hour=18, minute=0))
+policy = WeekPolicy("Week_policies/policy1.json")
 info['policy'] = policy.toJSON()
-state_size = policy.stateSize
-action_size = policy.actionSize
 
 settings = None
 with open(args.settings, 'r') as f:
@@ -78,41 +77,48 @@ with open(args.settings, 'r') as f:
 minGameScore = int(settings['minGameScoreRatio'] * settings['gameMinutesLength'])
 info['settings'] = settings
 
-agent = DQNAgent(logger, state_size, action_size, settings['dequeSize'])
+agent = DQNAgent(logger, policy, settings['dequeSize'])
 info['agent'] = agent.toJSON()
 
-# settings = Settings(minGameScoreRatio=0.85, minGameSequence=500, gameMinutesLength=500, batch_size=128, trainSetSize=agent.dequeLen)
-# info['settings'] = vars(settings)
+# log info data
+for key in info:
+    logger.info('{}:[{}]'.format(key, info[key]))
 
-logger.info('info:[{}]'.format(info))
+# save info data to JSON
 with open(jsonFullFname, 'w') as f:
     json.dump(info, f)
 
 # save init model
 agent.save(dirName)
 
+# print model to log
+policy.model.summary(print_fn=lambda x: logger.info(x))
+
 # initialize number of games
 curSequence = 0
 # Iterate the game
 g = 0
-stateTime = time(hour=8, minute=0)
+# init start time
+stateTime = policy.stateToDatetime(policy.generateRandomTimePrefix())
+# init time delta
 stateTimeDelta = timedelta(minutes=17)
 while curSequence < settings['minGameSequence']:
     g += 1
-    # reset state in the beginning of each game
-    # state = np.array([13, 30, 0])
     if args.random is True:
         state = policy.getRandomState()
     elif args.sequential is True:
-        state = np.array([stateTime.hour, stateTime.minute, random.randrange(2)])
-        stateTime = datetime(year=2000, month=1, day=1, hour=stateTime.hour, minute=stateTime.minute)
+        state = policy.appendExpectedState(stateTime)
         stateTime += stateTimeDelta
-        stateTime = stateTime.time()
+
+        # state = np.array([stateTime.hour, stateTime.minute, random.randrange(2)])
+        # stateTime = datetime(year=2000, month=1, day=1, hour=stateTime.hour, minute=stateTime.minute)
+        # stateTime += stateTimeDelta
+        # stateTime = stateTime.time()
     else:
         raise ValueError('Undefined init game state')
 
     initState = 'init state:[{}]'.format(state)
-    state = np.reshape(state, [1, state_size])
+    # state = np.reshape(state, [1, len(state)])
 
     # time_t represents each minute of the game
     score = 0
@@ -123,13 +129,12 @@ while curSequence < settings['minGameSequence']:
         numOfRandomActions += isRandom
 
         # Advance the game to the next frame based on the action.
-        # Reward is 1 for every frame the pole survived
-        next_state, reward = policy.step(state[0], action)
-        next_state = np.reshape(next_state, [1, state_size])
+        next_state, reward = policy.step(state, action)
+        # next_state = np.reshape(next_state, [1, len(state)])
         score += reward
 
         # Remember the previous state, action, reward
-        agent.remember(state, action, reward, next_state)
+        agent.remember(state, policy.actionToIdx(action), reward, next_state)
 
         # make next_state the new current state for the next frame.
         state = next_state
@@ -145,7 +150,8 @@ while curSequence < settings['minGameSequence']:
         loss = 'Done training'
 
     logger.info(
-        "episode: {}, state: {}, score: [{}], loss:[{}], sequence:[{}], random actions:[{}], e:[{:.2}]".format(g, initState, score, loss, curSequence, numOfRandomActions,
+        "episode: {}, state: {}, score: [{}], loss:[{}], sequence:[{}], random actions:[{}], e:[{:.2}]".format(g, initState, score, loss, curSequence,
+                                                                                                               numOfRandomActions,
                                                                                                                agent.epsilon))
 # save model
 agent.save(dirName)
