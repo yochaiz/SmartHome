@@ -6,15 +6,16 @@ import numpy as np
 class DQNAgent:
     dictTypes = [str, int, float]
 
-    def __init__(self, logger, policy, dequeLen=1000):
-        self.logger = logger
+    def __init__(self, policy, nBackups=3, dequeLen=1000):
         self.policy = policy
+        self.nBackups = nBackups
+        self.curBackupIdx = 0
 
         self.memory = deque(maxlen=dequeLen)
         self.gamma = 0.95  # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995
+        self.epsilon_decay = 1 - 1E-4
         self.learning_rate = 0.001
 
     def remember(self, state, action, reward, next_state):
@@ -103,11 +104,12 @@ class DQNAgent:
     def load(self, name):
         self.policy.model.load_weights(name)
 
-    def save(self, dirName):
-        fullPath = '{}/model.h5'.format(dirName)
-        self.logger.info('Saving model as [{}]'.format(fullPath))
-        # self.policy.model.save_weights(name)
+    def save(self, dirName, logger):
+        fullPath = '{}/model-{}.h5'.format(dirName, self.curBackupIdx)
+        logger.info('Saving model as [{}]'.format(fullPath))
         self.policy.model.save(fullPath)
+        # update next save index
+        self.curBackupIdx = (self.curBackupIdx + 1) % self.nBackups
 
     # convert class object to JSON serializable
     def toJSON(self):

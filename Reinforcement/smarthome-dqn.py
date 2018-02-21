@@ -77,7 +77,7 @@ with open(args.settings, 'r') as f:
 minGameScore = int(settings['minGameScoreRatio'] * settings['gameMinutesLength'])
 info['settings'] = settings
 
-agent = DQNAgent(logger, policy, settings['dequeSize'])
+agent = DQNAgent(policy, settings['nModelBackups'], settings['dequeSize'])
 info['agent'] = agent.toJSON()
 
 # log info data
@@ -89,7 +89,7 @@ with open(jsonFullFname, 'w') as f:
     json.dump(info, f)
 
 # save init model
-agent.save(dirName)
+agent.save(dirName, logger)
 
 # print model to log
 policy.model.summary(print_fn=lambda x: logger.info(x))
@@ -109,16 +109,10 @@ while curSequence < settings['minGameSequence']:
     elif args.sequential is True:
         state = policy.appendExpectedState(stateTime)
         stateTime += stateTimeDelta
-
-        # state = np.array([stateTime.hour, stateTime.minute, random.randrange(2)])
-        # stateTime = datetime(year=2000, month=1, day=1, hour=stateTime.hour, minute=stateTime.minute)
-        # stateTime += stateTimeDelta
-        # stateTime = stateTime.time()
     else:
         raise ValueError('Undefined init game state')
 
-    initState = 'init state:[{}]'.format(state)
-    # state = np.reshape(state, [1, len(state)])
+    initState = '{}'.format(state)
 
     # time_t represents each minute of the game
     score = 0
@@ -130,7 +124,6 @@ while curSequence < settings['minGameSequence']:
 
         # Advance the game to the next frame based on the action.
         next_state, reward = policy.step(state, action)
-        # next_state = np.reshape(next_state, [1, len(state)])
         score += reward
 
         # Remember the previous state, action, reward
@@ -150,11 +143,16 @@ while curSequence < settings['minGameSequence']:
         loss = 'Done training'
 
     logger.info(
-        "episode: {}, state: {}, score: [{}], loss:[{}], sequence:[{}], random actions:[{}], e:[{:.2}]".format(g, initState, score, loss, curSequence,
-                                                                                                               numOfRandomActions,
-                                                                                                               agent.epsilon))
+        "episode: {}, init state:[{}], score:[{}], loss:[{}], sequence:[{}], random actions:[{}], e:[{:.2}]".format(g, initState, score, loss,
+                                                                                                                    curSequence,
+                                                                                                                    numOfRandomActions,
+                                                                                                                    agent.epsilon))
+    # save model
+    if (g % settings['nGamesPerSave']) == 0:
+        agent.save(dirName, logger)
+
 # save model
-agent.save(dirName)
+agent.save(dirName, logger)
 
 # class Settings:
 #     def __init__(self, minGameScoreRatio, minGameSequence, gameMinutesLength, trainSetSize, batch_size):
