@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
-import random
-import numpy as np
 import os
-from datetime import time, timedelta, datetime
+from datetime import timedelta, datetime
 import logging
 import argparse
 from keras.backend.tensorflow_backend import set_session
@@ -17,7 +15,7 @@ from WeekPolicy import WeekPolicy
 def parseArguments():
     parser = argparse.ArgumentParser(description='test model on dataset')
     parser.add_argument("gpuNum", type=int, help="GPU # to run on")
-    parser.add_argument("--gpuFrac", type=float, default=0.3, help="GPU memory fraction")
+    parser.add_argument("--gpuFrac", type=float, default=0.2, help="GPU memory fraction")
     parser.add_argument("--settings", type=str, default='settings.json', help="Settings JSON file")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--sequential", action='store_true', help="Init sequential state for a new game")
@@ -99,15 +97,15 @@ curSequence = 0
 # Iterate the game
 g = 0
 # init start time
-stateTime = policy.stateToDatetime(policy.generateRandomTimePrefix())
+stateTime = policy.inputToDatetime(policy.generateRandomTimePrefix())
 # init time delta
 stateTimeDelta = timedelta(minutes=17)
 while curSequence < settings['minGameSequence']:
     g += 1
     if args.random is True:
-        state = policy.getRandomState()
+        state = policy.generateRandomInput()
     elif args.sequential is True:
-        state = policy.appendExpectedState(stateTime)
+        state = policy.buildDateInput(stateTime)
         stateTime += stateTimeDelta
     else:
         raise ValueError('Undefined init game state')
@@ -142,11 +140,9 @@ while curSequence < settings['minGameSequence']:
     else:
         loss = 'Done training'
 
-    logger.info(
-        "episode: {}, init state:[{}], score:[{}], loss:[{}], sequence:[{}], random actions:[{}], e:[{:.2}]".format(g, initState, score, loss,
-                                                                                                                    curSequence,
-                                                                                                                    numOfRandomActions,
-                                                                                                                    agent.epsilon))
+    logger.info("episode: {}, score:[{}], loss:[{}], sequence:[{}], random actions:[{}], e:[{:.4}], init state:[{}]"
+                .format(g, score, loss, curSequence, numOfRandomActions, agent.epsilon, initState))
+
     # save model
     if (g % settings['nGamesPerSave']) == 0:
         agent.save(dirName, logger)

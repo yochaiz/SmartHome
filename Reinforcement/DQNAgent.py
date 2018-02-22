@@ -28,9 +28,9 @@ class DQNAgent:
 
         # Predict the reward value based on the given state
         input = self.policy.normalizeStateForModelInput(state)
-        input = np.reshape(input, [1, len(input)])
+        input = np.expand_dims(input, axis=0)
         actValues = self.policy.model.predict(input)
-        actionIdx = np.argmax(actValues[0])
+        actionIdx = np.argmax(actValues)
         action = self.policy.idxToAction(actionIdx)
         # Pick the action based on the predicted reward
         return action, 0
@@ -43,22 +43,27 @@ class DQNAgent:
         trainAction = []
         trainNextState = []
         trainReward = []
-        for state, action, reward, next_state in trainSet:
+        for i, (state, action, reward, next_state) in enumerate(trainSet):
             trainState.append(self.policy.normalizeStateForModelInput(state))
             trainAction.append(action)
             trainNextState.append(self.policy.normalizeStateForModelInput(next_state))
             trainReward.append(reward)
 
         trainState = np.array(trainState)
-        trainNextState = np.array(trainNextState)
         trainReward = np.array(trainReward)
+        trainNextState = np.array(trainNextState)
 
         # predict the future discounted reward
-        target = trainReward + (self.gamma * np.amax(self.policy.model.predict(trainNextState), axis=1))
+        futureReward = self.policy.model.predict(trainNextState)
+        futureReward = np.amax(futureReward, axis=2)
+        futureReward = futureReward[:, 0]
+
+        target = trainReward + (self.gamma * futureReward)
+
         # make the agent to approximately map the current state to future discounted reward
         target_f = self.policy.model.predict(trainState)
         for i in range(len(target_f)):
-            target_f[i, trainAction[i]] = target[i]
+            target_f[i, -1, trainAction[i]] = target[i]
 
         scores = self.policy.model.fit(trainState, target_f, batch_size=batchSize, epochs=1, verbose=0)
         loss = scores.history['loss'][0]

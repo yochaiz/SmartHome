@@ -38,19 +38,6 @@ class WeekPolicy(Policy):
     # set values for state time normalization
     timeNormalizationValues = np.array([6, 24, 60], dtype=float)
 
-    # inputTitle.extend(outputTitle)
-
-    # inputSize = len(inputTitle)
-    # outputSize = len(outputTitle)
-
-    # date.weekday() - Return the day of the week as an integer, where Monday is 0 and Sunday is 6.
-    # nDays = 7
-    # weekdays = [0, 1, 2, 3, 6]
-    # # weekdays = weekdays / (nDays - 1)  # normalize to [0,1]
-    #
-    # weekend = [4, 5]
-    # # weekend = weekend / (nDays - 1)  # normalize to [0,1]
-
     # Policy object structure:
     # Policy is a dictionary with key per device.
     ## Each key contains list of time dictionaries {'days':[] , 'times':[]}
@@ -59,8 +46,8 @@ class WeekPolicy(Policy):
     #### times: array of time interval during these days that the device should be ON.
     ##### each time interval in times is a tuple (startTime , endTime)
 
-    def __init__(self, fname):
-        super(WeekPolicy, self).__init__(fname)
+    def __init__(self, fname, seqLen=1):
+        super(WeekPolicy, self).__init__(fname, seqLen)
 
     @staticmethod
     def loadPolicyFromJSON(fname):
@@ -102,9 +89,6 @@ class WeekPolicy(Policy):
     def minTimeUnit(self):
         return timedelta(minutes=1)
 
-    # def nDevices(self):
-    #     return self.numOfDevices
-
     # build model to learn policy
     def buildModel(self):
         inputDim = self.stateDevicesStartIdx + self.numOfDevices
@@ -112,7 +96,7 @@ class WeekPolicy(Policy):
 
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(Dense(outputDim, input_dim=inputDim, activation='relu'))
+        model.add(Dense(outputDim, input_shape=(self.seqLen, inputDim), activation='relu'))
         model.add(Dense(outputDim, activation='relu'))
         model.add(Dense(outputDim, activation='relu'))
         model.add(Dense(outputDim, activation='linear'))
@@ -125,22 +109,28 @@ class WeekPolicy(Policy):
 
         return model
 
-    # Extracts date from given state
-    def stateToDatetime(self, state):
+    # Extracts date from given input, i.e. bottom row date
+    def inputToDatetime(self, state):
         # 05/02/2018 is Monday which is (weekday == 0)
         # it synchronizes between month day and weekday, i.e. same value for both
-        return datetime(year=2018, month=2, day=5 + state[0], hour=state[1], minute=state[2])
+        return datetime(year=2018, month=2, day=5 + state[-1, 0], hour=state[-1, 1], minute=state[-1, 2])
 
-    # Builds state at time nextDate based on current state and selected action
-    def buildNextState(self, nextDate, state, action):
+    # Builds state at time nextDate based on current input and selected action
+    def buildNextState(self, nextDate, input, action):
         # update states (without date part)
-        newState = (np.logical_xor(state[self.stateDevicesStartIdx:], action).astype(int))
+        newState = (np.logical_xor(input[-1, self.stateDevicesStartIdx:], action).astype(int))
 
         # create updated state (with date part)
         nextState = np.array([nextDate.weekday(), nextDate.hour, nextDate.minute], dtype=int)
         nextState = np.append(nextState, newState)
 
-        return nextState
+        newInput = np.copy(input)
+        # remove current input top row
+        newInput[:-1, :] = newInput[1:, :]
+        # update new input bottom row to new date state
+        newInput[-1, :] = nextState
+
+        return newInput
 
     # Builds the expected state at time nextDate
     def buildExpectedState(self, nextDate):
@@ -160,16 +150,24 @@ class WeekPolicy(Policy):
 
         return state
 
-    # Appends the expected state of given date
-    def appendExpectedState(self, stateTime):
-        expectedSate = self.buildExpectedState(stateTime)
-        return np.append(np.array([stateTime.weekday(), stateTime.hour, stateTime.minute], dtype=int), expectedSate)
+    # Builds the expected input for model of given date
+    def buildDateInput(self, stateTime):
+        input = np.zeros((self.seqLen, self.stateDevicesStartIdx + self.numOfDevices), dtype=int)
+
+        # build input according to seqLen
+        for i in reversed(range(self.seqLen)):  # iterate backwards
+            input[i, :self.stateDevicesStartIdx] = np.array([stateTime.weekday(), stateTime.hour, stateTime.minute], dtype=int)
+            input[i, self.stateDevicesStartIdx:] = self.buildExpectedState(stateTime)
+            stateTime -= self.minTimeUnit()
+
+        return input
 
     # Calculates the reward based on the expected state at time nextDate compared to the actual state, nextState.
+    # previous states that are part of the input to model are irrelevant to reward value
     def calculateReward(self, nextState, nextDate):
         expectedState = self.buildExpectedState(nextDate)
         # count how many devices we have predicted wrong
-        wrongCounter = np.sum((np.logical_xor(nextState[self.stateDevicesStartIdx:], expectedState).astype(int)))
+        wrongCounter = np.sum((np.logical_xor(nextState[self.stateDevicesStartIdx:], expectedState)))
         # count how many devices we have predicted correctly
         correctCounter = self.numOfDevices - wrongCounter
 
@@ -186,14 +184,14 @@ class WeekPolicy(Policy):
         minute = randint(0, 59)
 
         # build state date prefix
-        state = np.array([day, hour, minute], dtype=int)
+        state = np.matrix([day, hour, minute], dtype=int)
 
         return state
 
     # normalize state vector before it goes through the model
     def normalizeStateForModelInput(self, state):
         input = state.astype(float)
-        input[0:len(self.timeNormalizationValues)] /= self.timeNormalizationValues
+        input[:, :len(self.timeNormalizationValues)] /= self.timeNormalizationValues
         return input
 
 # G = WeekPolicy("Week_policies/policy1.json")

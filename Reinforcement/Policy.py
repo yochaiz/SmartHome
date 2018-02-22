@@ -7,9 +7,10 @@ from random import randint
 class Policy:
     __metaclass__ = ABCMeta
 
-    def __init__(self, fname):
+    def __init__(self, fname, seqLen):
         self.policyJSON = self.loadPolicyFromJSON(fname)
         self.numOfDevices = len(self.policyJSON["Devices"])
+        self.seqLen = seqLen
         self.model = self.buildModel()
 
     @abstractmethod
@@ -23,7 +24,7 @@ class Policy:
 
     # Extracts date from given state
     @abstractmethod
-    def stateToDatetime(self, state):
+    def inputToDatetime(self, state):
         raise NotImplementedError('subclasses must override stateToDatetime()!')
 
     # Builds state at time nextDate based on current state and selected action
@@ -35,8 +36,9 @@ class Policy:
     def buildExpectedState(self, nextDate):
         raise NotImplementedError('subclasses must override buildExpectedState()!')
 
-    # Appends the expected state of given date
-    def appendExpectedState(self, stateTimePrefix):
+        # Builds the expected input for model of given date
+
+    def buildDateInput(self, stateTimePrefix):
         raise NotImplementedError('subclasses must override appendExpectedState()!')
 
     # Calculates the reward based on the expected state at time nextDate compared to the actual state, nextState.
@@ -55,18 +57,16 @@ class Policy:
     def normalizeStateForModelInput(self, state):
         raise NotImplementedError('subclasses must override normalizeStateForModelInput()!')
 
-    # generate random state
-    def generateRandomState(self):
+    # generate random input for model
+    def generateRandomInput(self):
         # generate random time prefix
         state = self.generateRandomTimePrefix()
         # build date object for drawn date
-        date = self.stateToDatetime(state)
-        # build expected state for drawn date
-        expectedState = self.buildExpectedState(date)
-        # append state
-        state = np.append(state, expectedState)
+        date = self.inputToDatetime(state)
+        # build input for drawn date
+        input = self.buildDateInput(date)
 
-        return state
+        return input
 
     # for exploration
     def generateRandomAction(self):
@@ -77,15 +77,15 @@ class Policy:
         return action
 
     # perform action
-    def step(self, state, action):
-        curDate = self.stateToDatetime(state)
+    def step(self, input, action):
+        curDate = self.inputToDatetime(input)
         nextDate = curDate + self.minTimeUnit()
-        nextState = self.buildNextState(nextDate, state, action)
+        nextInput = self.buildNextState(nextDate, input, action)
 
         # calculate reward
-        reward = self.calculateReward(nextState, nextDate)
+        reward = self.calculateReward(nextInput[-1], nextDate)
 
-        return nextState, reward
+        return nextInput, reward
 
     def toJSON(self):
         return self.policyJSON
