@@ -4,7 +4,7 @@ from datetime import timedelta, datetime, time
 from random import randint
 from Policy import Policy
 from keras.models import Sequential
-from keras.layers import Dense
+from keras.layers import Dense, LSTM, Conv2D, Reshape
 
 
 class WeekPolicy(Policy):
@@ -94,12 +94,20 @@ class WeekPolicy(Policy):
         inputDim = self.stateDevicesStartIdx + self.numOfDevices
         outputDim = pow(2, self.numOfDevices)  # possible actions
 
-        # Neural Net for Deep-Q learning Model
+        h = 54
+        w = 8
+
         model = Sequential()
-        model.add(Dense(outputDim, input_shape=(self.seqLen, inputDim), activation='relu'))
-        model.add(Dense(outputDim, activation='relu'))
-        model.add(Dense(outputDim, activation='relu'))
-        model.add(Dense(outputDim, activation='linear'))
+        model.add(Conv2D(512, kernel_size=(3, 3), activation='tanh', input_shape=(self.seqLen, inputDim, 1), data_format='channels_last'))
+        model.add(Conv2D(256, kernel_size=(3, 3), activation='tanh', data_format='channels_last'))
+        model.add(Conv2D(128, kernel_size=(3, 3), activation='tanh', data_format='channels_last'))
+        model.add(Conv2D(64, kernel_size=(1, 1), activation='tanh', data_format='channels_last'))
+        model.add(Conv2D(32, kernel_size=(1, 1), activation='tanh', data_format='channels_last'))
+        model.add(Conv2D(1, kernel_size=(1, 1), activation='tanh'))
+        # model.add(Reshape((h, w), input_shape=(h, w, 1)))
+        # model.add(LSTM(outputDim, activation='tanh', dropout=0.3, recurrent_dropout=0.3, input_shape=(h, w)))
+        # model.add(Dense(outputDim, activation='tanh'))
+        # model.add(Dense(outputDim, activation='tanh'))
 
         # set loss and optimizer
         model.compile(loss='mse', optimizer='adam')
@@ -194,7 +202,37 @@ class WeekPolicy(Policy):
         input[:, :len(self.timeNormalizationValues)] /= self.timeNormalizationValues
         return input
 
-# G = WeekPolicy("Week_policies/policy1.json")
+
+# # build model to learn policy
+# def buildModel(self):
+#     inputDim = self.stateDevicesStartIdx + self.numOfDevices
+#     outputDim = pow(2, self.numOfDevices)  # possible actions
+#
+#     # Neural Net for Deep-Q learning Model
+#     model = Sequential()
+#     model.add(Dense(outputDim, input_shape=(self.seqLen, inputDim), activation='relu'))
+#     model.add(Dense(outputDim, activation='relu'))
+#     model.add(Dense(outputDim, activation='relu'))
+#     model.add(Dense(outputDim, activation='linear'))
+#
+#     # set loss and optimizer
+#     model.compile(loss='mse', optimizer='adam')
+#
+#     # print model architecture
+#     model.summary()
+#
+#     return model
+
+
+seqLen = 60
+G = WeekPolicy("Week_policies/policy1.json", seqLen)
+input = np.ones((seqLen, 14))
+input = np.expand_dims(input, axis=-1)
+print(input.shape)
+output = G.model.predict(input)
+print(output.shape)
+
+a = 5
 #
 # state = np.array([6, 20, 4], dtype=int)
 # action = np.array([], dtype=int)
