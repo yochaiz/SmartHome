@@ -8,14 +8,14 @@ import tensorflow as tf
 from Functions import loadInfoFile
 import json
 from DQNAgent import DQNAgent
-from WeekPolicy import WeekPolicy
+from WeekPolicyLSTM import WeekPolicyLSTM
 
 
 # parse arguments
 def parseArguments():
     parser = argparse.ArgumentParser(description='test model on dataset')
     parser.add_argument("gpuNum", type=int, help="GPU # to run on")
-    parser.add_argument("--gpuFrac", type=float, default=0.2, help="GPU memory fraction")
+    parser.add_argument("--gpuFrac", type=float, default=0.3, help="GPU memory fraction")
     parser.add_argument("--settings", type=str, default='settings.json', help="Settings JSON file")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--sequential", action='store_true', help="Init sequential state for a new game")
@@ -65,7 +65,7 @@ info, jsonFullFname = loadInfoFile(dirName, logger)
 info['args'] = vars(args)
 
 # initialize policy and the agent
-policy = WeekPolicy("Week_policies/policy1.json")
+policy = WeekPolicyLSTM("Week_policies/policy1.json", 10)
 info['policy'] = policy.toJSON()
 
 settings = None
@@ -97,7 +97,7 @@ curSequence = 0
 # Iterate the game
 g = 0
 # init start time
-stateTime = policy.inputToDatetime(policy.generateRandomTimePrefix())
+curTime = policy.timePrefixToDate(policy.generateRandomTimePrefix())
 # init time delta
 stateTimeDelta = timedelta(minutes=17)
 while curSequence < settings['minGameSequence']:
@@ -105,12 +105,12 @@ while curSequence < settings['minGameSequence']:
     if args.random is True:
         state = policy.generateRandomInput()
     elif args.sequential is True:
-        state = policy.buildDateInput(stateTime)
-        stateTime += stateTimeDelta
+        state = policy.buildDateInput(curTime)
+        curTime += stateTimeDelta
     else:
         raise ValueError('Undefined init game state')
 
-    initState = '{}'.format(state)
+    initState = '{}'.format(state[-1, :])
 
     # time_t represents each minute of the game
     score = 0
@@ -136,7 +136,7 @@ while curSequence < settings['minGameSequence']:
         curSequence = 0
 
     if curSequence < settings['minGameSequence']:
-        loss = agent.replay(settings['trainSetSize'], settings['batchSize'])
+        loss = agent.replay(settings['trainSetSize'], settings['batchSize'], settings['nEpochs'])
     else:
         loss = 'Done training'
 

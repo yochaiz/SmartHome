@@ -6,7 +6,7 @@ import numpy as np
 class DQNAgent:
     dictTypes = [str, int, float]
 
-    def __init__(self, policy, nBackups=3, dequeLen=1000):
+    def __init__(self, policy, nBackups, dequeLen):
         self.policy = policy
         self.nBackups = nBackups
         self.curBackupIdx = 0
@@ -15,7 +15,7 @@ class DQNAgent:
         self.gamma = 0.95  # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.01
-        self.epsilon_decay = 1 - 4E-4
+        self.epsilon_decay = 0.995  # 1 - 1E-3
         self.learning_rate = 0.001
 
     def remember(self, state, action, reward, next_state):
@@ -35,7 +35,7 @@ class DQNAgent:
         # Pick the action based on the predicted reward
         return action, 0
 
-    def replay(self, trainSetSize, batchSize):
+    def replay(self, trainSetSize, batchSize, nEpochs):
         # Sample trainSet from the memory
         trainSet = random.sample(self.memory, min(trainSetSize, len(self.memory)))
 
@@ -55,17 +55,20 @@ class DQNAgent:
 
         # predict the future discounted reward
         futureReward = self.policy.model.predict(trainNextState)
-        futureReward = np.amax(futureReward, axis=2)
-        futureReward = futureReward[:, 0]
+        futureReward = np.amax(futureReward, axis=1)
 
         target = trainReward + (self.gamma * futureReward)
 
         # make the agent to approximately map the current state to future discounted reward
         target_f = self.policy.model.predict(trainState)
+        diff = 0
         for i in range(len(target_f)):
-            target_f[i, -1, trainAction[i]] = target[i]
+            diff += pow((target[i] - target_f[i, trainAction[i]]), 2)
+            target_f[i, trainAction[i]] = target[i]
 
-        scores = self.policy.model.fit(trainState, target_f, batch_size=batchSize, epochs=1, verbose=0)
+        diff /= len(target_f)
+
+        scores = self.policy.model.fit(trainState, target_f, batch_size=batchSize, epochs=nEpochs, verbose=0)
         loss = scores.history['loss'][0]
 
         # # Extract informations from each memory

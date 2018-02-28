@@ -4,10 +4,10 @@ from datetime import timedelta, datetime, time
 from random import randint
 from Policy import Policy
 from keras.models import Sequential
-from keras.layers import Dense, LSTM, Conv2D, Reshape
+from keras.layers import LSTM
 
 
-class WeekPolicy(Policy):
+class WeekPolicyLSTM(Policy):
     # This policy represents my typical week behavior as my house.
     # The policy is built from 7 days, 24 hours a day
     # List of objects I try to predicts:
@@ -46,15 +46,18 @@ class WeekPolicy(Policy):
     #### times: array of time interval during these days that the device should be ON.
     ##### each time interval in times is a tuple (startTime , endTime)
 
-    def __init__(self, fname, seqLen=1):
-        super(WeekPolicy, self).__init__(fname, seqLen)
+    # Input to model is like a sentence, i.e. a list of words
+    # Each word represents a state WITH time prefix
+    # Therefore, each word is a vector of length nDevices
+    def __init__(self, fname, seqLen):
+        super(WeekPolicyLSTM, self).__init__(fname, seqLen)
 
     @staticmethod
     def loadPolicyFromJSON(fname):
         with open(fname, 'r') as f:
             policy = json.load(f)
 
-        WeekPolicy.validatePolicy(policy)
+        WeekPolicyLSTM.validatePolicy(policy)
         return policy
 
     @staticmethod
@@ -91,15 +94,13 @@ class WeekPolicy(Policy):
 
     # build model to learn policy
     def buildModel(self):
-        inputDim = self.stateDevicesStartIdx + self.numOfDevices
+        # each state CONTAINS time prefix
+        nFeatures = self.stateDevicesStartIdx + self.numOfDevices
         outputDim = pow(2, self.numOfDevices)  # possible actions
 
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(Dense(outputDim, input_shape=(self.seqLen, inputDim), activation='relu'))
-        model.add(Dense(outputDim, activation='relu'))
-        model.add(Dense(outputDim, activation='relu'))
-        model.add(Dense(outputDim, activation='linear'))
+        model.add(LSTM(outputDim, activation='relu', input_shape=(self.seqLen, nFeatures), dropout=0.3, recurrent_dropout=0.3))
 
         # set loss and optimizer
         model.compile(loss='mse', optimizer='adam')
@@ -193,7 +194,6 @@ class WeekPolicy(Policy):
         input = state.astype(float)
         input[:, :len(self.timeNormalizationValues)] /= self.timeNormalizationValues
         return input
-
 
 # seqLen = 60
 # G = WeekPolicy("Week_policies/policy1.json", seqLen)

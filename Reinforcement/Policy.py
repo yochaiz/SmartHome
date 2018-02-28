@@ -24,7 +24,7 @@ class Policy:
 
     # Extracts date from given state
     @abstractmethod
-    def inputToDatetime(self, state):
+    def timePrefixToDate(self, state):
         raise NotImplementedError('subclasses must override stateToDatetime()!')
 
     # Builds state at time nextDate based on current state and selected action
@@ -62,7 +62,7 @@ class Policy:
         # generate random time prefix
         state = self.generateRandomTimePrefix()
         # build date object for drawn date
-        date = self.inputToDatetime(state)
+        date = self.timePrefixToDate(state)
         # build input for drawn date
         input = self.buildDateInput(date)
 
@@ -78,7 +78,7 @@ class Policy:
 
     # perform action
     def step(self, input, action):
-        curDate = self.inputToDatetime(input)
+        curDate = self.timePrefixToDate(input)
         nextDate = curDate + self.minTimeUnit()
         nextInput = self.buildNextState(nextDate, input, action)
 

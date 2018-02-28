@@ -3,6 +3,7 @@
   "minGameSequence": 500,
   "gameMinutesLength": 2880,
   "batchSize": 128,
+  "nEpochs": 10,
   "dequeSize": 50000,
   "trainSetSize": 50000,
   "nGamesPerSave": 100,
