@@ -1,8 +1,9 @@
 from keras.models import Sequential
 from keras.layers import Dense
+from Log import Log
 
 
-class Actor:
+class Actor(Log):
     def __init__(self, seqLen, stateDim, actionDim):
         self.seqLen = seqLen
         self.stateDim = stateDim

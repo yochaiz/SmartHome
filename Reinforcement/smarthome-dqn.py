@@ -1,60 +1,10 @@
 # -*- coding: utf-8 -*-
-import os
 from datetime import timedelta, datetime
-import logging
-import argparse
-from keras.backend.tensorflow_backend import set_session
-import tensorflow as tf
-from Functions import loadInfoFile
+from Functions import *
 import json
 from DQNAgent import DQNAgent
 from WeekPolicyLSTM import WeekPolicyLSTM
 from WeekPolicy import WeekPolicy
-
-
-# parse arguments
-def parseArguments():
-    parser = argparse.ArgumentParser(description='test model on dataset')
-    parser.add_argument("gpuNum", type=int, help="GPU # to run on")
-    parser.add_argument("--gpuFrac", type=float, default=0.3, help="GPU memory fraction")
-    parser.add_argument("--settings", type=str, default='settings.json', help="Settings JSON file")
-    group = parser.add_mutually_exclusive_group(required=True)
-    group.add_argument("--sequential", action='store_true', help="Init sequential state for a new game")
-    group.add_argument("--random", action='store_true', help="Init random state for a new game")
-
-    return parser.parse_args()
-
-
-# init results directory
-def createResultsFolder():
-    rootDir = 'results'
-    now = datetime.now()
-    dirName = '{}/D-{}-{}-H-{}-{}-{}'.format(rootDir, now.day, now.month, now.hour, now.minute, now.second)
-    if not os.path.exists(dirName):
-        os.makedirs(dirName)
-
-    return dirName
-
-
-# initialize logger
-def initLogger(dirName):
-    logging.basicConfig(level=logging.INFO, filename=dirName + '/info.log')
-    logger = logging.getLogger(__name__)
-
-    return logger
-
-
-# init GPU
-def initGPU(gpuNum, gpuFrac):
-    os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
-    os.environ["CUDA_VISIBLE_DEVICES"] = str(gpuNum)
-
-    # limit memory precentage usage
-    config = tf.ConfigProto()
-    config.gpu_options.per_process_gpu_memory_fraction = gpuFrac
-    set_session(tf.Session(config=config))
-    return
-
 
 args = parseArguments()
 dirName = createResultsFolder()
@@ -75,18 +25,17 @@ with open(args.settings, 'r') as f:
     settings = json.load(f)
 
 minGameScore = int(settings['minGameScoreRatio'] * settings['gameMinutesLength'])
+settings['minGameScore'] = minGameScore
 info['settings'] = settings
 
 agent = DQNAgent(policy, settings['nModelBackups'], settings['dequeSize'])
 info['agent'] = agent.toJSON()
 
 # log info data
-for key in info:
-    logger.info('{}:[{}]'.format(key, info[key]))
+logInfo(info, logger)
 
 # save info data to JSON
-with open(jsonFullFname, 'w') as f:
-    json.dump(info, f)
+saveDataToJSON(info, jsonFullFname)
 
 # save init model
 agent.save(dirName, logger)
@@ -168,7 +117,7 @@ while curSequence < settings['minGameSequence']:
 
 # log max score & sequence values
 logger.info("maxScore:{} , maxSequence:{}".format(maxScore, maxSequence))
-		
+
 # save model
 agent.save(dirName, logger)
 

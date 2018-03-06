@@ -1,8 +1,9 @@
 from keras.models import Model
 from keras.layers import Dense, Input, add, Activation
+from Log import Log
 
 
-class Critic:
+class Critic(Log):
     def __init__(self, seqLen, stateDim, actionDim):
         self.seqLen = seqLen
         self.stateDim = stateDim
