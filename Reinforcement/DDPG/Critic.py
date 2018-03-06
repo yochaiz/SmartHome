@@ -1,16 +1,11 @@
 from keras.models import Model
 from keras.layers import Dense, Input, add, Activation
-from Log import Log
+from DeepNetwork import DeepNetwork
 
 
-class Critic(Log):
-    def __init__(self, seqLen, stateDim, actionDim, nBackups):
-        super(Critic, self).__init__(nBackups)
-        self.seqLen = seqLen
-        self.stateDim = stateDim
-        self.actionDim = actionDim
-
-        # self.model = self.buildModel()
+class Critic(DeepNetwork):
+    def __init__(self, seqLen, stateDim, actionDim,TAU, nBackups):
+        super(Critic, self).__init__(seqLen, stateDim, actionDim, TAU, nBackups)
 
     def buildModel(self):
         hidden1 = 512  # number of output units
@@ -30,3 +25,5 @@ class Critic(Log):
         model = Model(inputs=[stateInput, actionInput], outputs=layer4)
 
         return model
+
+

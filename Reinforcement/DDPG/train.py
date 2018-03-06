@@ -3,7 +3,7 @@ from Reinforcement.Functions import *
 import json
 from Actor import Actor
 from Critic import Critic
-from Log import Log
+from DeepNetwork import DeepNetwork
 
 args = parseArguments()
 dirName = createResultsFolder()
@@ -32,7 +32,7 @@ actor = Actor(1, 11, 8, settings['nModelBackups'])
 critic = Critic(1, 11, 8, settings['nModelBackups'])
 
 # Log objects info to JSON
-Loginfo = Log.toJSON()
+Loginfo = DeepNetwork.toJSON()
 for key, value in Loginfo.iteritems():
     info[key] = value
 
@@ -43,7 +43,7 @@ logInfo(info, logger)
 saveDataToJSON(info, jsonFullFname)
 
 # save init models
-Log.save(dirName, logger)
+DeepNetwork.save(dirName, logger)
 
 # print models to log
-Log.printModel(logger)
+DeepNetwork.printModel(logger)

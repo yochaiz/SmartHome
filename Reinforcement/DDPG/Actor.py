@@ -1,16 +1,11 @@
 from keras.models import Sequential
 from keras.layers import Dense
-from Log import Log
+from DeepNetwork import DeepNetwork
 
 
-class Actor(Log):
-    def __init__(self, seqLen, stateDim, actionDim, nBackups):
-        super(Actor, self).__init__(nBackups)
-        self.seqLen = seqLen
-        self.stateDim = stateDim
-        self.actionDim = actionDim
-
-        # self.model = self.buildModel()
+class Actor(DeepNetwork):
+    def __init__(self, seqLen, stateDim, actionDim, TAU, nBackups):
+        super(Actor, self).__init__(seqLen, stateDim, actionDim, TAU, nBackups)
 
     def buildModel(self):
         model = Sequential()
@@ -22,3 +17,5 @@ class Actor(Log):
         # model.add(Reshape((self.actionDim,), input_shape=(self.seqLen, self.stateDim)))
 
         return model
+
+
