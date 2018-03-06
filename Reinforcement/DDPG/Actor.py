@@ -4,12 +4,13 @@ from Log import Log
 
 
 class Actor(Log):
-    def __init__(self, seqLen, stateDim, actionDim):
+    def __init__(self, seqLen, stateDim, actionDim, nBackups):
+        super(Actor, self).__init__(nBackups)
         self.seqLen = seqLen
         self.stateDim = stateDim
         self.actionDim = actionDim
 
-        self.model = self.buildModel()
+        # self.model = self.buildModel()
 
     def buildModel(self):
         model = Sequential()

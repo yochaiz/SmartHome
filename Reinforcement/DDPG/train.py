@@ -1,11 +1,14 @@
 # -*- coding: utf-8 -*-
-from Functions import *
+from Reinforcement.Functions import *
 import json
+from Actor import Actor
+from Critic import Critic
+from Log import Log
 
 args = parseArguments()
 dirName = createResultsFolder()
 logger = initLogger(dirName)
-initGPU(args.gpuNum, args.gpuFrac)
+# initGPU(args.gpuNum, args.gpuFrac)
 
 # init info json file
 info, jsonFullFname = loadInfoFile(dirName, logger)
@@ -23,11 +26,15 @@ minGameScore = int(settings['minGameScoreRatio'] * settings['gameMinutesLength']
 settings['minGameScore'] = minGameScore
 info['settings'] = settings
 
-# actor =
-# info['actor'] = actor.toJSON()
+# init Actor
+actor = Actor(1, 11, 8, settings['nModelBackups'])
+# init Critic
+critic = Critic(1, 11, 8, settings['nModelBackups'])
 
-# critic =
-# info['critic'] = critic.toJSON()
+# Log objects info to JSON
+Loginfo = Log.toJSON()
+for key, value in Loginfo.iteritems():
+    info[key] = value
 
 # log info data
 logInfo(info, logger)
@@ -36,9 +43,7 @@ logInfo(info, logger)
 saveDataToJSON(info, jsonFullFname)
 
 # save init models
-# actor.save(dirName, logger)
-# critic.save(dirName, logger)
+Log.save(dirName, logger)
 
 # print models to log
-# actor.printModel(logger)
-# critic.printModel(logger)
+Log.printModel(logger)
