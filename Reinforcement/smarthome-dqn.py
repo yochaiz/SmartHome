@@ -9,6 +9,7 @@ from Functions import loadInfoFile
 import json
 from DQNAgent import DQNAgent
 from WeekPolicyLSTM import WeekPolicyLSTM
+from WeekPolicy import WeekPolicy
 
 
 # parse arguments
@@ -65,7 +66,8 @@ info, jsonFullFname = loadInfoFile(dirName, logger)
 info['args'] = vars(args)
 
 # initialize policy and the agent
-policy = WeekPolicyLSTM("Week_policies/policy1.json", 10)
+# policy = WeekPolicyLSTM("Week_policies/policy2.json", 10)
+policy = WeekPolicy("Week_policies/policy2.json")
 info['policy'] = policy.toJSON()
 
 settings = None
@@ -94,6 +96,8 @@ policy.model.summary(print_fn=lambda x: logger.info(x))
 
 # initialize number of games
 curSequence = 0
+maxSequence = (0, [])
+maxScore = (-1 * settings['gameMinutesLength'], [])
 # Iterate the game
 g = 0
 # init start time
@@ -130,23 +134,41 @@ while curSequence < settings['minGameSequence']:
         # make next_state the new current state for the next frame.
         state = next_state
 
+    # update current sequence length
     if score >= minGameScore:
         curSequence += 1
     else:
         curSequence = 0
 
+    # update maximal score achieved during games
+    if score > maxScore[0]:
+        maxScore = (score, [g])
+    elif abs(score - maxScore[0]) < 1E-5:
+        maxScore[1].append(g)
+
+    # update maximal sequence achieved during games
+    if curSequence > maxSequence[0]:
+        maxSequence = (curSequence, [g])
+    elif abs(maxSequence[0] - curSequence) < 1E-5:
+        maxSequence[1].append(g)
+
+    # train network after game
     if curSequence < settings['minGameSequence']:
         loss = agent.replay(settings['trainSetSize'], settings['batchSize'], settings['nEpochs'])
     else:
-        loss = 'Done training'
+        loss = 0
 
-    logger.info("episode: {}, score:[{}], loss:[{}], sequence:[{}], random actions:[{}], e:[{:.4}], init state:[{}]"
+    logger.info("episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], random actions:[{}], e:[{:.4f}], init state:[{}]"
                 .format(g, score, loss, curSequence, numOfRandomActions, agent.epsilon, initState))
 
-    # save model
+    # save model and log max score & sequence values
     if (g % settings['nGamesPerSave']) == 0:
         agent.save(dirName, logger)
+        logger.info("maxScore:{} , maxSequence:{}".format(maxScore, maxSequence))
 
+# log max score & sequence values
+logger.info("maxScore:{} , maxSequence:{}".format(maxScore, maxSequence))
+		
 # save model
 agent.save(dirName, logger)
 

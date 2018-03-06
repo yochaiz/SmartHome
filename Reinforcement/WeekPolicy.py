@@ -4,7 +4,7 @@ from datetime import timedelta, datetime, time
 from random import randint
 from Policy import Policy
 from keras.models import Sequential
-from keras.layers import Dense, LSTM, Conv2D, Reshape
+from keras.layers import Dense, Reshape
 
 
 class WeekPolicy(Policy):
@@ -96,10 +96,11 @@ class WeekPolicy(Policy):
 
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(Dense(outputDim, input_shape=(self.seqLen, inputDim), activation='relu'))
-        model.add(Dense(outputDim, activation='relu'))
-        model.add(Dense(outputDim, activation='relu'))
+        model.add(Dense(512, input_shape=(self.seqLen, inputDim), activation='relu'))
+        model.add(Dense(256, activation='relu'))
+        model.add(Dense(128, activation='relu'))
         model.add(Dense(outputDim, activation='linear'))
+        model.add(Reshape((outputDim,), input_shape=(self.seqLen, inputDim)))
 
         # set loss and optimizer
         model.compile(loss='mse', optimizer='adam')
@@ -193,7 +194,6 @@ class WeekPolicy(Policy):
         input = state.astype(float)
         input[:, :len(self.timeNormalizationValues)] /= self.timeNormalizationValues
         return input
-
 
 # seqLen = 60
 # G = WeekPolicy("Week_policies/policy1.json", seqLen)

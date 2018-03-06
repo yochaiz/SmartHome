@@ -1,9 +1,6 @@
 {
   "Time format": "%H:%M",
-  "Devices": [
-    "Room light1", "Room light2", "Room light3 (backdoor)", "Kitchen light", "Toilets light", "Bathroom light", "Living room light1",
-    "Living room light2"
-  ],
+  "Devices": ["Room light1", "Room light2", "Room light3 (backdoor)", "Kitchen light", "Toilets light", "Bathroom light", "Living room light1"],
   "days": ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
   "weekdays": [0, 1, 2, 3, 6],
   "weekend": [4, 5],

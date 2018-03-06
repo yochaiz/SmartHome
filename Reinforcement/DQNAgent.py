@@ -15,7 +15,7 @@ class DQNAgent:
         self.gamma = 0.95  # discount rate
         self.epsilon = 1.0  # exploration rate
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995  # 1 - 1E-3
+        self.epsilon_decay = 0.99  # 1 - 1E-3
         self.learning_rate = 0.001
 
     def remember(self, state, action, reward, next_state):

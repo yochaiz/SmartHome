@@ -1,10 +1,10 @@
 import json
 import numpy as np
-from datetime import timedelta, datetime, time
+from datetime import timedelta, datetime
 from random import randint
 from Policy import Policy
 from keras.models import Sequential
-from keras.layers import LSTM
+from keras.layers import LSTM, Dense
 
 
 class WeekPolicyLSTM(Policy):
@@ -100,7 +100,9 @@ class WeekPolicyLSTM(Policy):
 
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(LSTM(outputDim, activation='relu', input_shape=(self.seqLen, nFeatures), dropout=0.3, recurrent_dropout=0.3))
+        model.add(LSTM(256, activation='relu', input_shape=(self.seqLen, nFeatures), dropout=0.3, recurrent_dropout=0.3, return_sequences=True))
+        model.add(LSTM(128, activation='relu', dropout=0.3, recurrent_dropout=0.3))
+        model.add(Dense(outputDim, activation='linear'))
 
         # set loss and optimizer
         model.compile(loss='mse', optimizer='adam')
