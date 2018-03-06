@@ -27,9 +27,9 @@ settings['minGameScore'] = minGameScore
 info['settings'] = settings
 
 # init Actor
-actor = Actor(1, 11, 8, settings['nModelBackups'])
+actor = Actor(1, 11, 8, settings['TAU'], settings['nModelBackups'])
 # init Critic
-critic = Critic(1, 11, 8, settings['nModelBackups'])
+critic = Critic(1, 11, 8, settings['TAU'], settings['nModelBackups'])
 
 # Log objects info to JSON
 Loginfo = DeepNetwork.toJSON()
