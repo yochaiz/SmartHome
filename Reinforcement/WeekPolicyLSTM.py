@@ -92,15 +92,19 @@ class WeekPolicyLSTM(Policy):
     def minTimeUnit(self):
         return timedelta(minutes=1)
 
+    def getStateDim(self):
+        return self.stateDim
+
     # build model to learn policy
     def buildModel(self):
         # each state CONTAINS time prefix
         nFeatures = self.stateDevicesStartIdx + self.numOfDevices
+        self.stateDim = (self.seqLen, nFeatures)
         outputDim = pow(2, self.numOfDevices)  # possible actions
 
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(LSTM(256, activation='relu', input_shape=(self.seqLen, nFeatures), dropout=0.3, recurrent_dropout=0.3, return_sequences=True))
+        model.add(LSTM(256, activation='relu', input_shape=self.stateDim, dropout=0.3, recurrent_dropout=0.3, return_sequences=True))
         model.add(LSTM(128, activation='relu', dropout=0.3, recurrent_dropout=0.3))
         model.add(Dense(outputDim, activation='linear'))
 

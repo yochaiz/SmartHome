@@ -1,13 +1,13 @@
 from keras.models import Model
-from keras.layers import Dense, Input
+from keras.layers import Dense, Input, Reshape
 from DeepNetwork import DeepNetwork
 import numpy as np
 import tensorflow as tf
 
 
 class Actor(DeepNetwork):
-    def __init__(self, sess, policy, seqLen, stateDim, actionDim, TAU, lr, nBackups):
-        super(Actor, self).__init__(sess, seqLen, stateDim, actionDim, TAU, lr, nBackups)
+    def __init__(self, sess, policy, stateDim, actionDim, TAU, lr, nBackups):
+        super(Actor, self).__init__(sess, stateDim, actionDim, TAU, lr, nBackups)
 
         # set model optimization method (gradients calculation)
         self.action_gradient = tf.placeholder(tf.float32, [None, actionDim])
@@ -15,7 +15,7 @@ class Actor(DeepNetwork):
         self.params_grad = tf.gradients(self.models[self.trainModelKey].output, self.weights, -self.action_gradient)
         grads = zip(self.params_grad, self.weights)
         self.optimize = tf.train.AdamOptimizer(lr).apply_gradients(grads)
-        self.sess.run(tf.initialize_all_variables())
+        self.sess.run(tf.global_variables_initializer())
 
         # exploration params
         self.epsilon = 1.0  # exploration rate
@@ -31,13 +31,13 @@ class Actor(DeepNetwork):
         })
 
     def buildModel(self, lr):
-        self.stateInput = Input(shape=(self.seqLen, self.stateDim))
+        self.stateInput = Input(shape=self.stateDim)
         h0 = Dense(512, activation='relu')(self.stateInput)
         # model.add(BatchNormalization())
         h1 = Dense(256, activation='relu')(h0)
         # model.add(BatchNormalization())
-        V = Dense(self.actionDim, activation='sigmoid')(h1)
-        # model.add(Reshape((self.actionDim,), input_shape=(self.seqLen, self.stateDim)))
+        h2 = Dense(self.actionDim, activation='sigmoid')(h1)
+        V = Reshape((self.actionDim,))(h2)
 
         model = Model(input=self.stateInput, outputs=V)
         return model
@@ -53,3 +53,6 @@ class Actor(DeepNetwork):
         action = self.models[self.trainModelKey].predict(input)
 
         return action, 0
+
+    def updateEpsilon(self):
+        self.epsilon = max(self.epsilon_min, (self.epsilon * self.epsilon_decay))

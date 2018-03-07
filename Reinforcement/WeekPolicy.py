@@ -89,18 +89,21 @@ class WeekPolicy(Policy):
     def minTimeUnit(self):
         return timedelta(minutes=1)
 
+    def getStateDim(self):
+        return self.stateDim
+
     # build model to learn policy
     def buildModel(self):
-        inputDim = self.stateDevicesStartIdx + self.numOfDevices
+        self.stateDim = (self.seqLen, self.stateDevicesStartIdx + self.numOfDevices)
         outputDim = pow(2, self.numOfDevices)  # possible actions
 
         # Neural Net for Deep-Q learning Model
         model = Sequential()
-        model.add(Dense(512, input_shape=(self.seqLen, inputDim), activation='relu'))
+        model.add(Dense(512, input_shape=self.stateDim, activation='relu'))
         model.add(Dense(256, activation='relu'))
         model.add(Dense(128, activation='relu'))
         model.add(Dense(outputDim, activation='linear'))
-        model.add(Reshape((outputDim,), input_shape=(self.seqLen, inputDim)))
+        model.add(Reshape((outputDim,), input_shape=self.stateDim))
 
         # set loss and optimizer
         model.compile(loss='mse', optimizer='adam')

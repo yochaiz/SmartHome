@@ -13,13 +13,12 @@ class DeepNetwork:
     # list of all Log objs
     objs = []
 
-    def __init__(self, sess, seqLen, stateDim, actionDim, TAU, lr, nBackups):
+    def __init__(self, sess, stateDim, actionDim, TAU, lr, nBackups):
         self.sess = sess
 
         self.nBackups = nBackups
         self.curBackupIdx = 0
 
-        self.seqLen = seqLen
         self.stateDim = stateDim
         self.actionDim = actionDim
         self.TAU = TAU
@@ -80,7 +79,7 @@ class DeepNetwork:
     def __printModel(self, logger):
         if self.models[self.trainModelKey] is not None:
             logger.info('[{}] model architecture:'.format(self.className()))
-            logger.info('============================')
+            # logger.info('============================')
             self.models[self.trainModelKey].summary(print_fn=lambda x: logger.info(x))
 
     # print model function for all list objects

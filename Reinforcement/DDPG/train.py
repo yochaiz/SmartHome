@@ -19,7 +19,7 @@ info, jsonFullFname = loadInfoFile(dirName, logger)
 info['args'] = vars(args)
 
 # initialize policy and the agent
-policy = WeekPolicy("Week_policies/policy2.json")
+policy = WeekPolicy("../Week_policies/policy2.json")
 info['policy'] = policy.toJSON()
 
 settings = None
@@ -31,11 +31,11 @@ settings['minGameScore'] = minGameScore
 info['settings'] = settings
 
 # init replay Buffer
-replayBuffer = ReplayBuffer(settings['dequeSize'])
+replayBuffer = ReplayBuffer(settings['dequeSize'], settings['gamma'])
 # init Actor
-actor = Actor(sess, policy, 1, 11, 8, settings['TAU'], settings['learningRate'], settings['nModelBackups'])
+actor = Actor(sess, policy, policy.getStateDim(), policy.getActionDim(), settings['TAU'], settings['learningRate'], settings['nModelBackups'])
 # init Critic
-critic = Critic(sess, 1, 11, 8, settings['TAU'], settings['learningRate'], settings['nModelBackups'])
+critic = Critic(sess, policy.getStateDim(), policy.getActionDim(), settings['TAU'], settings['learningRate'], settings['nModelBackups'])
 
 # Log objects info to JSON
 Loginfo = DeepNetwork.toJSON()
@@ -94,7 +94,12 @@ while curSequence < settings['minGameSequence']:
         replayBuffer.remember(state, action, reward, next_state)
 
         # train network after each frame
-        loss += replayBuffer.replay(settings['batchSize'])
+        loss += replayBuffer.replay(
+            {'targetModel': actor.models[actor.targetModelKey], 'trainModel': actor.models[actor.trainModelKey], 'trainFunc': actor.train,
+             'updateEpsilonFunc': actor.updateEpsilon},
+            {'targetModel': critic.models[critic.targetModelKey], 'trainModel': critic.models[critic.trainModelKey],
+             'gradientsFunc': critic.gradients},
+            {'normalizeStateForModelInput': policy.normalizeStateForModelInput}, DeepNetwork.updateModelParams, settings['batchSize'])
         # TODO: average loss ??
 
         # make next_state the new current state for the next frame.

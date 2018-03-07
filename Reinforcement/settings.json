@@ -5,6 +5,7 @@
   "batchSize": 128,
   "nEpochs": 5,
   "TAU": 0.001,
+  "gamma": 0.95,
   "learningRate": 0.001,
   "dequeSize": 50000,
   "trainSetSize": 50000,

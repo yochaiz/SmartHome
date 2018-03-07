@@ -17,11 +17,6 @@ class Policy:
     def minTimeUnit(self):
         raise NotImplementedError('subclasses must override minTimeUnit()!')
 
-    # # Number of devices the policy handles
-    # @abstractmethod
-    # def nDevices(self):
-    #     raise NotImplementedError('subclasses must override nDevices()!')
-
     # Extracts date from given state
     @abstractmethod
     def timePrefixToDate(self, state):
@@ -31,6 +26,13 @@ class Policy:
     @abstractmethod
     def buildNextState(self, nextDate, state, action):
         raise NotImplementedError('subclasses must override buildNextState()!')
+
+    @abstractmethod
+    def getStateDim(self):
+        raise NotImplementedError('subclasses must override getStateDim()!')
+
+    def getActionDim(self):
+        return self.numOfDevices
 
     # Builds the expected state at time nextDate
     def buildExpectedState(self, nextDate):
