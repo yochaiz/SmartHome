@@ -60,8 +60,9 @@ def initGPU(gpuNum, gpuFrac):
     # limit memory precentage usage
     config = tf.ConfigProto()
     config.gpu_options.per_process_gpu_memory_fraction = gpuFrac
-    set_session(tf.Session(config=config))
-    return
+    sess = tf.Session(config=config)
+    set_session(sess)
+    return sess
 
 
 # log info data
@@ -69,7 +70,17 @@ def logInfo(info, logger):
     for key in info:
         logger.info('{}:[{}]'.format(key, info[key]))
 
+
 # save info data to JSON
-def saveDataToJSON(info,jsonFullFname):
+def saveDataToJSON(info, jsonFullFname):
     with open(jsonFullFname, 'w') as f:
         json.dump(info, f)
+
+
+def updateMaxTuple(newValue, g, curTuple):
+    if newValue > curTuple[0]:
+        curTuple = (newValue, [g])
+    elif abs(newValue - curTuple[0]) < 1E-5:
+        curTuple[1].append(g)
+
+    return curTuple

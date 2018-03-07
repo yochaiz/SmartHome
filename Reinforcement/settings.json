@@ -5,6 +5,7 @@
   "batchSize": 128,
   "nEpochs": 5,
   "TAU": 0.001,
+  "learningRate": 0.001,
   "dequeSize": 50000,
   "trainSetSize": 50000,
   "nGamesPerSave": 100,

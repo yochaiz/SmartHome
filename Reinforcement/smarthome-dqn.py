@@ -69,7 +69,7 @@ while curSequence < settings['minGameSequence']:
     score = 0
     numOfRandomActions = 0
     for time_t in range(settings['gameMinutesLength']):
-        # Decide action
+        # select action
         action, isRandom = agent.act(state)
         numOfRandomActions += isRandom
 
@@ -90,16 +90,9 @@ while curSequence < settings['minGameSequence']:
         curSequence = 0
 
     # update maximal score achieved during games
-    if score > maxScore[0]:
-        maxScore = (score, [g])
-    elif abs(score - maxScore[0]) < 1E-5:
-        maxScore[1].append(g)
-
+    maxScore = updateMaxTuple(score, g, maxScore)
     # update maximal sequence achieved during games
-    if curSequence > maxSequence[0]:
-        maxSequence = (curSequence, [g])
-    elif abs(maxSequence[0] - curSequence) < 1E-5:
-        maxSequence[1].append(g)
+    maxSequence = updateMaxTuple(curSequence, g, maxSequence)
 
     # train network after game
     if curSequence < settings['minGameSequence']:
@@ -107,8 +100,8 @@ while curSequence < settings['minGameSequence']:
     else:
         loss = 0
 
-    logger.info("episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], random actions:[{}], e:[{:.4f}], init state:[{}]"
-                .format(g, score, loss, curSequence, numOfRandomActions, agent.epsilon, initState))
+    logger.info("episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], random actions:[{}], e:[{:.4f}], init state:{}, end state:{}"
+                .format(g, score, loss, curSequence, numOfRandomActions, agent.epsilon, initState, state[-1, :]))
 
     # save model and log max score & sequence values
     if (g % settings['nGamesPerSave']) == 0:

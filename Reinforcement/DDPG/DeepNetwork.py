@@ -1,5 +1,6 @@
 # base class that applies some log behaviour for sub-classes
 from abc import ABCMeta, abstractmethod
+from keras.models import clone_model
 
 
 class DeepNetwork:
@@ -12,7 +13,9 @@ class DeepNetwork:
     # list of all Log objs
     objs = []
 
-    def __init__(self, seqLen, stateDim, actionDim, TAU, nBackups):
+    def __init__(self, sess, seqLen, stateDim, actionDim, TAU, lr, nBackups):
+        self.sess = sess
+
         self.nBackups = nBackups
         self.curBackupIdx = 0
 
@@ -23,16 +26,27 @@ class DeepNetwork:
 
         # create models
         self.models = {self.trainModelKey: None, self.targetModelKey: None}
-        # # create training model
-        # self.models[self.trainModelAttrName] = self.buildModel()
-        # # create target (final) model
+        # create training model
+        self.models[self.trainModelKey] = self.buildModel(lr)
+        # create target (final) model
+        self.models[self.targetModelKey] = clone_model(self.models[self.trainModelKey])
+        self.models[self.targetModelKey].set_weights(self.models[self.trainModelKey].get_weights())
         # self.models[self.targetModelKey] = self.buildModel()
+        # TODO: both models should start with same weights or not ?? papers says yes ...
 
         # add self to objects list
         DeepNetwork.objs.append(self)
 
-    # update target model SLOWLY by current trained model
-    def updateModel(self):
+    @abstractmethod
+    def buildModel(self, lr):
+        raise NotImplementedError('subclasses must override buildModel()!')
+
+    def updateModelParams(self):
+        for obj in DeepNetwork.objs:
+            obj.____updateModelParams()
+
+    # update target model parameters SLOWLY by current trained model parameters
+    def __updateModelParams(self):
         wModel = self.models[self.trainModelKey].get_weights()
         wTargetModel = self.models[self.targetModelKey].get_weights()
         assert (len(wModel) == len(wTargetModel))
