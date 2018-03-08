@@ -25,7 +25,7 @@ def parseArguments():
     parser = argparse.ArgumentParser(description='test model on dataset')
     parser.add_argument("gpuNum", type=int, help="GPU # to run on")
     parser.add_argument("--gpuFrac", type=float, default=0.3, help="GPU memory fraction")
-    parser.add_argument("--settings", type=str, default='../settings.json', help="Settings JSON file")
+    parser.add_argument("--settings", type=str, default='/home/yochaiz/SmartHome/Reinforcement/settings.json', help="Settings JSON file")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--sequential", action='store_true', help="Init sequential state for a new game")
     group.add_argument("--random", action='store_true', help="Init random state for a new game")

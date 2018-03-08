@@ -17,7 +17,7 @@ class Critic(DeepNetwork):
         return self.sess.run(self.action_grads, feed_dict={
             self.stateInput: states,
             self.actionInput: actions
-        })
+        })[0]
 
     def buildModel(self, lr):
         hidden1 = 512  # number of hidden layer 1 output units

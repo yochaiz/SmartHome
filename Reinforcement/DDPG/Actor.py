@@ -2,7 +2,9 @@ from keras.models import Model
 from keras.layers import Dense, Input, Reshape
 from DeepNetwork import DeepNetwork
 import numpy as np
+from math import ceil
 import tensorflow as tf
+from sklearn.neighbors import NearestNeighbors
 
 
 class Actor(DeepNetwork):
@@ -24,6 +26,25 @@ class Actor(DeepNetwork):
 
         self.policy = policy
 
+        # init possible actions
+        self.possibleActions, nActions = self.__buildPossibleActions()
+        # number of knn neighbors to compare when converting continuous action to discrete action
+        self.k = min(max(10, int(ceil(nActions * 0.1))), nActions)
+        # init knn object
+        self.knn = NearestNeighbors(n_neighbors=self.k)
+        # init knn object train set
+        self.knn.fit(self.possibleActions)
+
+    # Build matrix of possible actions given actionDim
+    # for knn search of closest action for some continuous space action
+    def __buildPossibleActions(self):
+        nActions = pow(2, self.actionDim)
+        actions = np.zeros((nActions, self.actionDim), dtype=int)
+        for i in range(nActions):
+            actions[i, :] = self.policy.idxToAction(i)
+
+        return actions, nActions
+
     def train(self, states, action_grads):
         self.sess.run(self.optimize, feed_dict={
             self.stateInput: states,
@@ -42,7 +63,7 @@ class Actor(DeepNetwork):
         model = Model(input=self.stateInput, outputs=V)
         return model
 
-    def act(self, state):
+    def act(self, state, criticModel):
         if np.random.rand() <= self.epsilon:
             # The agent acts randomly
             return self.policy.generateRandomAction(), 1
@@ -51,6 +72,18 @@ class Actor(DeepNetwork):
         input = self.policy.normalizeStateForModelInput(state)
         input = np.expand_dims(input, axis=0)
         action = self.models[self.trainModelKey].predict(input)
+        # TODO: add action noise (Ornstein Uhlenbeck) ???
+        # find IDs of closest valid (discrete, possible) actions
+        validActions = self.knn.kneighbors(action, return_distance=False)[0]
+        # convert IDs to the actions themselves
+        validActions = self.possibleActions[validActions]
+        # duplicate input as rows for Q-value prediction
+        input = np.repeat(input, validActions.shape[0], axis=0)
+        # calc Q-value for each valid action
+        Qvalues = criticModel.predict([input, validActions])
+        # choose highest Q-value action
+        actionID = np.argmax(Qvalues)
+        action = validActions[actionID, :]
 
         return action, 0
 

@@ -27,7 +27,7 @@ class DeepNetwork:
         self.models = {self.trainModelKey: None, self.targetModelKey: None}
         # create training model
         self.models[self.trainModelKey] = self.buildModel(lr)
-        # create target (final) model
+        # create target (final) model as copy of training model
         self.models[self.targetModelKey] = clone_model(self.models[self.trainModelKey])
         self.models[self.targetModelKey].set_weights(self.models[self.trainModelKey].get_weights())
         # self.models[self.targetModelKey] = self.buildModel()
@@ -40,10 +40,6 @@ class DeepNetwork:
     def buildModel(self, lr):
         raise NotImplementedError('subclasses must override buildModel()!')
 
-    def updateModelParams(self):
-        for obj in DeepNetwork.objs:
-            obj.____updateModelParams()
-
     # update target model parameters SLOWLY by current trained model parameters
     def __updateModelParams(self):
         wModel = self.models[self.trainModelKey].get_weights()
@@ -51,6 +47,11 @@ class DeepNetwork:
         assert (len(wModel) == len(wTargetModel))
         for i in xrange(len(wTargetModel)):
             wTargetModel[i] = (self.TAU * wModel[i]) + ((1 - self.TAU) * wTargetModel[i])
+
+    @staticmethod
+    def updateModelParams():
+        for obj in DeepNetwork.objs:
+            obj.__updateModelParams()
 
     def className(self):
         return self.__class__.__name__

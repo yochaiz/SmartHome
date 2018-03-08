@@ -31,7 +31,7 @@ class ReplayBuffer:
 
         trainState = np.array(trainState)
         trainAction = np.array(trainAction)
-        trainReward = np.array(trainReward)
+        trainReward = np.expand_dims(np.array(trainReward), axis=1)
         trainNextState = np.array(trainNextState)
 
         # Calculate targets

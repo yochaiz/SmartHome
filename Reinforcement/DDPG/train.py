@@ -18,7 +18,7 @@ info, jsonFullFname = loadInfoFile(dirName, logger)
 info['args'] = vars(args)
 
 # initialize policy and the agent
-policy = WeekPolicy("../Week_policies/policy2.json")
+policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json")
 info['policy'] = policy.toJSON()
 
 settings = None
@@ -60,6 +60,7 @@ maxScore = (-1 * settings['gameMinutesLength'], [])
 g = 0  # game number
 curTime = policy.timePrefixToDate(policy.generateRandomTimePrefix())  # init start time
 stateTimeDelta = timedelta(minutes=17)  # init time delta
+epsilon = actor.epsilon
 
 while curSequence < settings['minGameSequence']:
     g += 1
@@ -82,7 +83,7 @@ while curSequence < settings['minGameSequence']:
     loss = 0
     for time_t in range(settings['gameMinutesLength']):
         # select action
-        action, isRandom = actor.act(state)
+        action, isRandom = actor.act(state, critic.models[critic.trainModelKey])
         numOfRandomActions += isRandom
 
         # Advance the game to the next frame based on the action.
@@ -116,8 +117,13 @@ while curSequence < settings['minGameSequence']:
     maxSequence = updateMaxTuple(curSequence, g, maxSequence)
 
     # log game
-    logger.info("episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], random actions:[{}], e:[{:.4f}], init state:{}, end state:{}"
-                .format(g, score, loss, curSequence, numOfRandomActions, actor.epsilon, initState, state[-1, :]))
+    logger.info("episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], random actions:[{}], eInit:[{:.4f}], init state:{}, end state:{}"
+                .format(g, score, loss, curSequence, numOfRandomActions, epsilon, initState, state[-1, :]))
+
+    # decrease game initial epsilon value
+    epsilon = max(actor.epsilon_min, epsilon * actor.epsilon_decay)
+    # update game initial epsilon value
+    actor.epsilon = epsilon
 
     # stop playing if we reached the desired minimal game sequence
     if curSequence >= settings['minGameSequence']:
