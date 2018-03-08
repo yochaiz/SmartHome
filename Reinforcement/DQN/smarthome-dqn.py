@@ -1,10 +1,9 @@
 # -*- coding: utf-8 -*-
-from datetime import timedelta, datetime
-from Functions import *
+from datetime import timedelta
+from Reinforcement.Functions import *
 import json
 from DQNAgent import DQNAgent
-from WeekPolicyLSTM import WeekPolicyLSTM
-from WeekPolicy import WeekPolicy
+from Reinforcement.Policies.Week.WeekPolicy import WeekPolicy
 
 args = parseArguments()
 dirName = createResultsFolder()

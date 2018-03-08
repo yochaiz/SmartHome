@@ -1,8 +1,8 @@
 import json
 import numpy as np
-from datetime import timedelta, datetime, time
+from datetime import timedelta, datetime
 from random import randint
-from Policy import Policy
+from Reinforcement.Policies.Policy import Policy
 from keras.models import Sequential
 from keras.layers import Dense, Reshape
 

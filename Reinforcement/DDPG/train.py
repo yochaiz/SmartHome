@@ -6,8 +6,7 @@ from Actor import Actor
 from Critic import Critic
 from DeepNetwork import DeepNetwork
 from ReplayBuffer import ReplayBuffer
-from Reinforcement.WeekPolicyLSTM import WeekPolicyLSTM
-from Reinforcement.WeekPolicy import WeekPolicy
+from Reinforcement.Policies.Week.WeekPolicy import WeekPolicy
 
 args = parseArguments()
 dirName = createResultsFolder()
