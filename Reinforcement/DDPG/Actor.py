@@ -8,7 +8,14 @@ from sklearn.neighbors import NearestNeighbors
 
 
 class Actor(DeepNetwork):
-    def __init__(self, sess, policy, stateDim, actionDim, TAU, lr, nBackups):
+    # class of policy function pointers
+    class PolicyFunctions:
+        def __init__(self, idxToAction, generateRandomAction, normalizeState):
+            self.idxToAction = idxToAction
+            self.generateRandomAction = generateRandomAction
+            self.normalizeState = normalizeState
+
+    def __init__(self, sess, idxToAction, generateRandomAction, normalizeState, stateDim, actionDim, TAU, lr, nBackups):
         super(Actor, self).__init__(sess, stateDim, actionDim, TAU, lr, nBackups)
 
         # set model optimization method (gradients calculation)
@@ -24,7 +31,7 @@ class Actor(DeepNetwork):
         self.epsilon_min = 0.01  # exploration minimal rate
         self.epsilon_decay = 0.99  # 1 - 1E-3
 
-        self.policy = policy
+        self.policy = self.PolicyFunctions(idxToAction, generateRandomAction, normalizeState)
 
         # init possible actions
         self.possibleActions, nActions = self.__buildPossibleActions()
