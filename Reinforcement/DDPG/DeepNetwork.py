@@ -40,6 +40,12 @@ class DeepNetwork:
     def buildModel(self, lr):
         raise NotImplementedError('subclasses must override buildModel()!')
 
+    def getTrainModel(self):
+        return self.models[self.trainModelKey]
+
+    def getTargetModel(self):
+        return self.models[self.targetModelKey]
+
     # update target model parameters SLOWLY by current trained model parameters
     def __updateModelParams(self):
         wModel = self.models[self.trainModelKey].get_weights()

@@ -18,7 +18,7 @@ info, jsonFullFname = loadInfoFile(dirName, logger)
 info['args'] = vars(args)
 
 # initialize policy and the agent
-policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json")
+policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy1.json")
 info['policy'] = policy.toJSON()
 
 settings = None
@@ -83,7 +83,7 @@ while curSequence < settings['minGameSequence']:
     loss = 0
     for time_t in range(settings['gameMinutesLength']):
         # select action
-        action, isRandom = actor.act(state, critic.models[critic.trainModelKey])
+        action, isRandom = actor.act(state, critic.getTrainModel())
         numOfRandomActions += isRandom
 
         # Advance the game to the next frame based on the action.
@@ -94,40 +94,37 @@ while curSequence < settings['minGameSequence']:
         replayBuffer.remember(state, action, reward, next_state)
 
         # train network after each frame
-        loss += replayBuffer.replay(
-            {'targetModel': actor.models[actor.targetModelKey], 'trainModel': actor.models[actor.trainModelKey], 'trainFunc': actor.train,
-             'updateEpsilonFunc': actor.updateEpsilon},
-            {'targetModel': critic.models[critic.targetModelKey], 'trainModel': critic.models[critic.trainModelKey],
-             'gradientsFunc': critic.gradients},
-            {'normalizeStateForModelInput': policy.normalizeStateForModelInput}, DeepNetwork.updateModelParams, settings['batchSize'])
+        loss += replayBuffer.replay(actor.getTrainModel(), actor.getTargetModel(), actor.train, actor.updateEpsilon, critic.getTrainModel(),
+                                    critic.getTargetModel(), critic.gradients, policy.normalizeStateForModelInput, DeepNetwork.updateModelParams,
+                                    settings['batchSize'])
         # TODO: average loss ??
 
         # make next_state the new current state for the next frame.
         state = next_state
 
-    # update current sequence length
-    if score >= minGameScore:
-        curSequence += 1
-    else:
-        curSequence = 0
+        # update current sequence length
+        if score >= minGameScore:
+            curSequence += 1
+        else:
+            curSequence = 0
 
-    # update maximal score achieved during games
-    maxScore = updateMaxTuple(score, g, maxScore)
-    # update maximal sequence achieved during games
-    maxSequence = updateMaxTuple(curSequence, g, maxSequence)
+        # update maximal score achieved during games
+        maxScore = updateMaxTuple(score, g, maxScore)
+        # update maximal sequence achieved during games
+        maxSequence = updateMaxTuple(curSequence, g, maxSequence)
 
-    # log game
-    logger.info("episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], random actions:[{}], eInit:[{:.4f}], init state:{}, end state:{}"
-                .format(g, score, loss, curSequence, numOfRandomActions, epsilon, initState, state[-1, :]))
+        # log game
+        logger.info("episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], random actions:[{}], eInit:[{:.4f}], init state:{}, end state:{}"
+                    .format(g, score, loss, curSequence, numOfRandomActions, epsilon, initState, state[-1, :]))
 
-    # decrease game initial epsilon value
-    epsilon = max(actor.epsilon_min, epsilon * actor.epsilon_decay)
-    # update game initial epsilon value
-    actor.epsilon = epsilon
+        # decrease game initial epsilon value
+        epsilon = max(actor.epsilon_min, epsilon * actor.epsilon_decay)
+        # update game initial epsilon value
+        actor.epsilon = epsilon
 
-    # stop playing if we reached the desired minimal game sequence
-    if curSequence >= settings['minGameSequence']:
-        break
+        # stop playing if we reached the desired minimal game sequence
+        if curSequence >= settings['minGameSequence']:
+            break
 
     # save models and log max score & sequence values
     if (g % settings['nGamesPerSave']) == 0:

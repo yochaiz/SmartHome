@@ -9,6 +9,6 @@
   "learningRate": 0.001,
   "dequeSize": 50000,
   "trainSetSize": 50000,
-  "nGamesPerSave": 100,
+  "nGamesPerSave": 10,
   "nModelBackups": 3
 }
