@@ -6,7 +6,7 @@ from Actor import Actor
 from Critic import Critic
 from DeepNetwork import DeepNetwork
 from ReplayBuffer import ReplayBuffer
-from Reinforcement.Policies.Week.WeekPolicy import WeekPolicy
+from Reinforcement.Policies.Week.WeekPolicyFC import WeekPolicyFC
 
 args = parseArguments()
 dirName = createResultsFolder()
@@ -18,7 +18,7 @@ info, jsonFullFname = loadInfoFile(dirName, logger)
 info['args'] = vars(args)
 
 # initialize policy and the agent
-policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy1.json")
+policy = WeekPolicyFC("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy1.json")
 info['policy'] = policy.toJSON()
 
 settings = None

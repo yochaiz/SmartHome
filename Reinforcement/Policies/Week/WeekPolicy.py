@@ -1,12 +1,12 @@
+from abc import ABCMeta, abstractmethod
 import numpy as np
 from datetime import timedelta, datetime
 from random import randint
 from Reinforcement.Policies.Policy import Policy
-from keras.models import Sequential
-from keras.layers import Dense, Reshape
 
 
 class WeekPolicy(Policy):
+    __metaclass__ = ABCMeta
     # This policy represents my typical week behavior as my house.
     # The policy is built from 7 days, 24 hours a day
     # List of objects I try to predicts:
@@ -55,25 +55,9 @@ class WeekPolicy(Policy):
         return self.stateDim
 
     # build model to learn policy
+    @abstractmethod
     def buildModel(self):
-        self.stateDim = (self.seqLen, self.stateDevicesStartIdx + self.numOfDevices)
-        outputDim = pow(2, self.numOfDevices)  # possible actions
-
-        # Neural Net for Deep-Q learning Model
-        model = Sequential()
-        model.add(Dense(512, input_shape=self.stateDim, activation='relu'))
-        model.add(Dense(256, activation='relu'))
-        model.add(Dense(128, activation='relu'))
-        model.add(Dense(outputDim, activation='linear'))
-        model.add(Reshape((outputDim,), input_shape=self.stateDim))
-
-        # set loss and optimizer
-        model.compile(loss='mse', optimizer='adam')
-
-        # print model architecture
-        model.summary()
-
-        return model
+        raise NotImplementedError('subclasses must override buildNextState()!')
 
     # Extracts date from given input, i.e. bottom row date
     def timePrefixToDate(self, input):

@@ -3,7 +3,7 @@ from datetime import timedelta
 from Reinforcement.Functions import *
 import json
 from DQNAgent import DQNAgent
-from Reinforcement.Policies.Week.WeekPolicy import WeekPolicy
+from Reinforcement.Policies.Week.WeekPolicyFC import WeekPolicyFC
 
 args = parseArguments()
 dirName = createResultsFolder()
@@ -16,7 +16,7 @@ info['args'] = vars(args)
 
 # initialize policy and the agent
 # policy = WeekPolicyLSTM("Week_policies/policy2.json", 10)
-policy = WeekPolicy("Week_policies/policy2.json")
+policy = WeekPolicyFC("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json")
 info['policy'] = policy.toJSON()
 
 settings = None
