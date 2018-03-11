@@ -5,8 +5,8 @@ from keras.layers import Dense, Reshape
 
 # Fully-connected based model
 class WeekPolicyFC(WeekPolicyWithModel):
-    def __init__(self, fname, seqLen=1):
-        super(WeekPolicyFC, self).__init__(fname, seqLen)
+    def __init__(self, fname, TAU, seqLen=1):
+        super(WeekPolicyFC, self).__init__(fname, TAU, seqLen)
 
     # build model to learn policy
     def buildModel(self):

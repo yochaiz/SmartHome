@@ -8,8 +8,8 @@ class WeekPolicyLSTM(WeekPolicyWithModel):
     # Input to model is like a sentence, i.e. a list of words
     # Each word represents a state WITH time prefix
     # Therefore, each word is a vector of length nDevices
-    def __init__(self, fname, seqLen):
-        super(WeekPolicyLSTM, self).__init__(fname, seqLen)
+    def __init__(self, fname, TAU, seqLen):
+        super(WeekPolicyLSTM, self).__init__(fname, TAU, seqLen)
 
     # build model to learn policy
     def buildModel(self):

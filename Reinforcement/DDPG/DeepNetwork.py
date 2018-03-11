@@ -25,7 +25,7 @@ class DeepNetwork:
 
         # create models
         self.models = {self.mainModelKey: None, self.targetModelKey: None}
-        # create training model
+        # create main model
         self.models[self.mainModelKey] = self.buildModel(lr)
         # create target (final) model as copy of training model
         self.models[self.targetModelKey] = clone_model(self.models[self.mainModelKey])

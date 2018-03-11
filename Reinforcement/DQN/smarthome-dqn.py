@@ -3,7 +3,7 @@ from datetime import timedelta
 from Reinforcement.Functions import *
 import json
 from DQNAgent import DQNAgent
-from Reinforcement.DQN.WeekPolicyFC import WeekPolicyFC
+from Reinforcement.DQN.WeekPolicyCNN import WeekPolicyCNN
 
 args = parseArguments()
 dirName = createResultsFolder()
@@ -14,11 +14,6 @@ initGPU(args.gpuNum, args.gpuFrac)
 info, jsonFullFname = loadInfoFile(dirName, logger)
 info['args'] = vars(args)
 
-# initialize policy and the agent
-# policy = WeekPolicyLSTM("Week_policies/policy2.json", 10)
-policy = WeekPolicyFC("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json")
-info['policy'] = policy.toJSON()
-
 settings = None
 with open(args.settings, 'r') as f:
     settings = json.load(f)
@@ -26,6 +21,12 @@ with open(args.settings, 'r') as f:
 minGameScore = int(settings['minGameScoreRatio'] * settings['gameMinutesLength'])
 settings['minGameScore'] = minGameScore
 info['settings'] = settings
+
+# initialize policy and the agent
+# policy = WeekPolicyLSTM("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json",settings['TAU'], 10)
+policy = WeekPolicyCNN("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json", settings['TAU'], 10)
+# policy = WeekPolicyFC("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json",settings['TAU'])
+info['policy'] = policy.toJSON()
 
 agent = DQNAgent(policy, settings['nModelBackups'], settings['dequeSize'])
 info['agent'] = agent.toJSON()
@@ -40,7 +41,7 @@ saveDataToJSON(info, jsonFullFname)
 agent.save(dirName, logger)
 
 # print model to log
-policy.model.summary(print_fn=lambda x: logger.info(x))
+policy.getMainModel().summary(print_fn=lambda x: logger.info(x))
 
 # initialize number of games
 curSequence = 0
@@ -52,8 +53,12 @@ g = 0
 curTime = policy.timePrefixToDate(policy.generateRandomTimePrefix())
 # init time delta
 stateTimeDelta = timedelta(minutes=17)
+# init epsilon value
+epsilon = agent.epsilon
+
 while curSequence < settings['minGameSequence']:
     g += 1
+
     if args.random is True:
         state = policy.generateRandomInput()
     elif args.sequential is True:
@@ -67,6 +72,7 @@ while curSequence < settings['minGameSequence']:
     # time_t represents each minute of the game
     score = 0
     numOfRandomActions = 0
+    loss = 0
     for time_t in range(settings['gameMinutesLength']):
         # select action
         action, isRandom = agent.act(state)
@@ -78,6 +84,9 @@ while curSequence < settings['minGameSequence']:
 
         # Remember the previous state, action, reward
         agent.remember(state, policy.actionToIdx(action), reward, next_state)
+
+        # train network after each frame
+        loss += agent.replay(settings['trainSetSize'], settings['batchSize'], settings['nEpochs'])
 
         # make next_state the new current state for the next frame.
         state = next_state
@@ -93,14 +102,17 @@ while curSequence < settings['minGameSequence']:
     # update maximal sequence achieved during games
     maxSequence = updateMaxTuple(curSequence, g, maxSequence)
 
-    # train network after game
-    if curSequence < settings['minGameSequence']:
-        loss = agent.replay(settings['trainSetSize'], settings['batchSize'], settings['nEpochs'])
-    else:
-        loss = 0
+    logger.info("episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], random actions:[{}], eInit:[{:.4f}], init state:{}, end state:{}"
+                .format(g, score, loss, curSequence, numOfRandomActions, epsilon, initState, state[-1, :]))
 
-    logger.info("episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], random actions:[{}], e:[{:.4f}], init state:{}, end state:{}"
-                .format(g, score, loss, curSequence, numOfRandomActions, agent.epsilon, initState, state[-1, :]))
+    # decrease game initial epsilon value
+    epsilon = max(agent.epsilon_min, epsilon * agent.epsilon_decay)
+    # update game initial epsilon value
+    agent.epsilon = epsilon
+
+    # stop playing if we reached the desired minimal game sequence
+    if curSequence >= settings['minGameSequence']:
+        break
 
     # save model and log max score & sequence values
     if (g % settings['nGamesPerSave']) == 0:

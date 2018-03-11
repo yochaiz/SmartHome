@@ -29,7 +29,7 @@ class DQNAgent:
         # Predict the reward value based on the given state
         input = self.policy.normalizeStateForModelInput(state)
         input = np.expand_dims(input, axis=0)
-        actValues = self.policy.model.predict(input)
+        actValues = self.policy.getMainModel().predict(input)
         actionIdx = np.argmax(actValues)
         action = self.policy.idxToAction(actionIdx)
         # Pick the action based on the predicted reward
@@ -54,68 +54,35 @@ class DQNAgent:
         trainNextState = np.array(trainNextState)
 
         # predict the future discounted reward
-        futureReward = self.policy.model.predict(trainNextState)
+        futureReward = self.policy.getTargetModel().predict(trainNextState)
         futureReward = np.amax(futureReward, axis=1)
 
         target = trainReward + (self.gamma * futureReward)
 
         # make the agent to approximately map the current state to future discounted reward
-        target_f = self.policy.model.predict(trainState)
-        diff = 0
+        target_f = self.policy.getMainModel().predict(trainState)
+        # diff = 0
         for i in range(len(target_f)):
-            diff += pow((target[i] - target_f[i, trainAction[i]]), 2)
+            # diff += pow((target[i] - target_f[i, trainAction[i]]), 2)
             target_f[i, trainAction[i]] = target[i]
 
-        diff /= len(target_f)
+        # diff /= len(target_f)
 
-        scores = self.policy.model.fit(trainState, target_f, batch_size=batchSize, epochs=nEpochs, verbose=0)
+        scores = self.policy.getMainModel().fit(trainState, target_f, batch_size=batchSize, epochs=nEpochs, verbose=0)
         loss = scores.history['loss'][0]
 
-        # # Extract informations from each memory
-        # for state, action, reward, next_state in trainSet:
-        #     # print('state:{}, action:[{}], reward:[{}], next_state:{}'.format(state, action, reward, next_state))
-        #     # target = reward
-        #     # if not done:
-        #     #     target = (reward + self.gamma * np.amax(self.policy.model.predict(next_state)[0]))
-        #
-        #     # predict the future discounted reward
-        #     # jj = self.policy.model.predict(next_state)
-        #     # print(jj)
-        #     # jj = jj[0]
-        #     # print(jj)
-        #     input = next_state.astype(float)
-        #     input[0][0] /= 24.0
-        #     input[0][1] /= 60.0
-        #     target = (reward + self.gamma * np.amax(self.policy.model.predict(input)))
-        #     # print('target:[{}]'.format(target))
-        #     # make the agent to approximately map the current state to future discounted reward. We'll call that target_f
-        #     input = state.astype(float)
-        #     input[0][0] /= 24.0
-        #     input[0][1] /= 60.0
-        #     target_f = self.policy.model.predict(input)
-        #     # print('target_f:{}'.format(target_f))
-        #     target_f[0][action] = target
-        #     # print('target_f:{}'.format(target_f))
-        #
-        #     # Train the Neural Net with the state and target_f
-        #     scores = self.policy.model.fit(input, target_f, epochs=1, verbose=0)
-        #     loss += scores.history['loss'][0]
-        #
-        # loss /= trainSetSize
+        # update actor & critic target models weights
+        self.policy.updateModelParams()
 
         # update epsilon value
-        if self.epsilon > self.epsilon_min:
-            self.epsilon *= self.epsilon_decay
+        self.epsilon = max(self.epsilon_min, (self.epsilon * self.epsilon_decay))
 
         return loss
-
-    def load(self, name):
-        self.policy.model.load_weights(name)
 
     def save(self, dirName, logger):
         fullPath = '{}/model-{}.h5'.format(dirName, self.curBackupIdx)
         logger.info('Saving model as [{}]'.format(fullPath))
-        self.policy.model.save(fullPath)
+        self.policy.getMainModel().save(fullPath)
         # update next save index
         self.curBackupIdx = (self.curBackupIdx + 1) % self.nBackups
 
@@ -131,6 +98,9 @@ class DQNAgent:
             del var[key]
 
         return var
+
+    # def load(self, name):
+    #     self.policy.model.load_weights(name)
 
     # def _build_model(self):
     #     # Neural Net for Deep-Q learning Model
