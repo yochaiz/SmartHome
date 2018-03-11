@@ -1,6 +1,8 @@
 from abc import ABCMeta, abstractmethod
 import numpy as np
 from random import randint
+import json
+from datetime import datetime
 
 
 # Abstract policy class
@@ -124,3 +126,40 @@ class Policy:
     @staticmethod
     def printModel(model, logger):
         model.summary(print_fn=lambda x: logger.info(x))
+
+    @staticmethod
+    def loadPolicyFromJSON(fname):
+        with open(fname, 'r') as f:
+            policy = json.load(f)
+
+        Policy.validatePolicy(policy)
+        return policy
+
+    @staticmethod
+    def validatePolicy(policy):
+        nDays = len(policy["days"])
+        for i in range(len(policy["Devices"])):
+            device = policy[str(i)]
+            daysArray = [[] for j in range(nDays)]
+
+            for timeDict in device:
+                if type(timeDict["days"]) is unicode:  # replace predefined array in JSON with actual array for future simplicity
+                    timeDict["days"] = policy[timeDict["days"]]
+
+                # sort timeDict by startTime
+                timeDict["times"] = sorted(timeDict["times"], key=lambda t: datetime.strptime(t[0], policy["Time format"]))
+
+                for day in timeDict["days"]:
+                    daysArray[day].extend(timeDict["times"])
+
+            # sort time ranges for easier compare
+            for j in range(len(daysArray)):
+                daysArray[j] = sorted(daysArray[j], key=lambda t: datetime.strptime(t[0], policy["Time format"]))
+
+            for array in daysArray:
+                for j in range(len(array) - 1):
+                    tCur = array[j]
+                    tNext = array[j + 1]
+                    if tCur[1] > tNext[0]:  # endTime is bigger than next range startTime
+                        raise ValueError(
+                            'Validation failed for device [{}], ID:[{}], time ranges: [{}] - [{}]'.format(policy["Devices"][i], i, tCur, tNext))
