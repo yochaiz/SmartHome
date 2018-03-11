@@ -83,7 +83,7 @@ while curSequence < settings['minGameSequence']:
     loss = 0
     for time_t in range(settings['gameMinutesLength']):
         # select action
-        action, isRandom = actor.act(state, critic.getTrainModel())
+        action, isRandom = actor.act(state, critic.getMainModel())
         numOfRandomActions += isRandom
 
         # Advance the game to the next frame based on the action.
@@ -94,7 +94,7 @@ while curSequence < settings['minGameSequence']:
         replayBuffer.remember(state, action, reward, next_state)
 
         # train network after each frame
-        loss += replayBuffer.replay(actor.getTrainModel(), actor.getTargetModel(), actor.train, actor.updateEpsilon, critic.getTrainModel(),
+        loss += replayBuffer.replay(actor.getMainModel(), actor.getTargetModel(), actor.train, actor.updateEpsilon, critic.getMainModel(),
                                     critic.getTargetModel(), critic.gradients, policy.normalizeStateForModelInput, DeepNetwork.updateModelParams,
                                     settings['batchSize'])
         # TODO: average loss ??

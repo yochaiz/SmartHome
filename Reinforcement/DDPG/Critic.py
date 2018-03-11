@@ -10,7 +10,7 @@ class Critic(DeepNetwork):
         super(Critic, self).__init__(sess, stateDim, actionDim, TAU, lr, nBackups)
 
         # set model optimization method (gradients calculation)
-        self.action_grads = tf.gradients(self.models[self.trainModelKey].output, self.actionInput)  # GRADIENTS for policy update
+        self.action_grads = tf.gradients(self.models[self.mainModelKey].output, self.actionInput)  # GRADIENTS for policy update
         self.sess.run(tf.global_variables_initializer())
 
     def gradients(self, states, actions):

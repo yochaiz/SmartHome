@@ -7,7 +7,7 @@ class DeepNetwork:
     __metaclass__ = ABCMeta
 
     dictTypes = [str, int, float]
-    trainModelKey = 'train'
+    mainModelKey = 'main'
     targetModelKey = 'target'
 
     # list of all Log objs
@@ -24,12 +24,12 @@ class DeepNetwork:
         self.TAU = TAU
 
         # create models
-        self.models = {self.trainModelKey: None, self.targetModelKey: None}
+        self.models = {self.mainModelKey: None, self.targetModelKey: None}
         # create training model
-        self.models[self.trainModelKey] = self.buildModel(lr)
+        self.models[self.mainModelKey] = self.buildModel(lr)
         # create target (final) model as copy of training model
-        self.models[self.targetModelKey] = clone_model(self.models[self.trainModelKey])
-        self.models[self.targetModelKey].set_weights(self.models[self.trainModelKey].get_weights())
+        self.models[self.targetModelKey] = clone_model(self.models[self.mainModelKey])
+        self.models[self.targetModelKey].set_weights(self.models[self.mainModelKey].get_weights())
         # self.models[self.targetModelKey] = self.buildModel()
         # TODO: both models should start with same weights or not ?? papers says yes ...
 
@@ -40,15 +40,15 @@ class DeepNetwork:
     def buildModel(self, lr):
         raise NotImplementedError('subclasses must override buildModel()!')
 
-    def getTrainModel(self):
-        return self.models[self.trainModelKey]
+    def getMainModel(self):
+        return self.models[self.mainModelKey]
 
     def getTargetModel(self):
         return self.models[self.targetModelKey]
 
     # update target model parameters SLOWLY by current trained model parameters
     def __updateModelParams(self):
-        wModel = self.models[self.trainModelKey].get_weights()
+        wModel = self.models[self.mainModelKey].get_weights()
         wTargetModel = self.models[self.targetModelKey].get_weights()
         assert (len(wModel) == len(wTargetModel))
         for i in xrange(len(wTargetModel)):
@@ -84,10 +84,10 @@ class DeepNetwork:
             obj.__save(dirName, logger)
 
     def __printModel(self, logger):
-        if self.models[self.trainModelKey] is not None:
+        if self.models[self.mainModelKey] is not None:
             logger.info('[{}] model architecture:'.format(self.className()))
             # logger.info('============================')
-            self.models[self.trainModelKey].summary(print_fn=lambda x: logger.info(x))
+            self.models[self.mainModelKey].summary(print_fn=lambda x: logger.info(x))
 
     # print model function for all list objects
     @staticmethod

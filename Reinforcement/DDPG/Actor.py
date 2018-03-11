@@ -13,8 +13,8 @@ class Actor(DeepNetwork):
 
         # set model optimization method (gradients calculation)
         self.action_gradient = tf.placeholder(tf.float32, [None, actionDim])
-        self.weights = self.models[self.trainModelKey].trainable_weights
-        self.params_grad = tf.gradients(self.models[self.trainModelKey].output, self.weights, -self.action_gradient)
+        self.weights = self.models[self.mainModelKey].trainable_weights
+        self.params_grad = tf.gradients(self.models[self.mainModelKey].output, self.weights, -self.action_gradient)
         grads = zip(self.params_grad, self.weights)
         self.optimize = tf.train.AdamOptimizer(lr).apply_gradients(grads)
         self.sess.run(tf.global_variables_initializer())
@@ -71,7 +71,7 @@ class Actor(DeepNetwork):
         # predict action from **train** network based on given state
         input = self.policy.normalizeStateForModelInput(state)
         input = np.expand_dims(input, axis=0)
-        action = self.models[self.trainModelKey].predict(input)
+        action = self.models[self.mainModelKey].predict(input)
         # TODO: add action noise (Ornstein Uhlenbeck) ???
         # find IDs of closest valid (discrete, possible) actions
         validActions = self.knn.kneighbors(action, return_distance=False)[0]

@@ -11,7 +11,7 @@ class ReplayBuffer:
     def remember(self, state, action, reward, next_state):
         self.memory.append((state, action, reward, next_state))
 
-    def replay(self, actorTrainModel, actorTargetModel, actorTrainFunc, actorUpdateEpsilonFunc, criticTrainModel, criticTargetModel,
+    def replay(self, actorMainModel, actorTargetModel, actorTrainFunc, actorUpdateEpsilonFunc, criticMainModel, criticTargetModel,
                criticGradientsFunc, stateNormalizeFunc, updateTargetModelsParams,
                trainSetSize):
         # Sample trainSet from the memory
@@ -42,9 +42,9 @@ class ReplayBuffer:
         target = trainReward + (self.gamma * criticTargetPrediction)
 
         # train (update) critic train model
-        loss = criticTrainModel.train_on_batch([trainState, trainAction], target)
+        loss = criticMainModel.train_on_batch([trainState, trainAction], target)
         # train (update) actor train model
-        actions_for_grad = actorTrainModel.predict(trainState)
+        actions_for_grad = actorMainModel.predict(trainState)
         grads = criticGradientsFunc(trainState, actions_for_grad)
         actorTrainFunc(trainState, grads)
 
