@@ -13,7 +13,6 @@ class Policy:
         self.policyJSON = self.loadPolicyFromJSON(fname)
         self.numOfDevices = len(self.policyJSON["Devices"])
         self.seqLen = seqLen
-        self.model = self.buildModel()
 
     @abstractmethod
     def minTimeUnit(self):

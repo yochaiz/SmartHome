@@ -1,4 +1,3 @@
-from abc import ABCMeta, abstractmethod
 import numpy as np
 from datetime import timedelta, datetime
 from random import randint
@@ -6,7 +5,6 @@ from Reinforcement.Policies.Policy import Policy
 
 
 class WeekPolicy(Policy):
-    __metaclass__ = ABCMeta
     # This policy represents my typical week behavior as my house.
     # The policy is built from 7 days, 24 hours a day
     # List of objects I try to predicts:
@@ -53,11 +51,6 @@ class WeekPolicy(Policy):
 
     def getStateDim(self):
         return self.stateDim
-
-    # build model to learn policy
-    @abstractmethod
-    def buildModel(self):
-        raise NotImplementedError('subclasses must override buildNextState()!')
 
     # Extracts date from given input, i.e. bottom row date
     def timePrefixToDate(self, input):

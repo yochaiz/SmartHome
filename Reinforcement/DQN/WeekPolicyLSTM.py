@@ -1,10 +1,10 @@
-from Reinforcement.Policies.Week.WeekPolicy import WeekPolicy
+from Reinforcement.DQN.WeekPolicyWithModel import WeekPolicyWithModel
 from keras.models import Sequential
 from keras.layers import LSTM, Dense
 
 
 # LSTM based model
-class WeekPolicyLSTM(WeekPolicy):
+class WeekPolicyLSTM(WeekPolicyWithModel):
     # Input to model is like a sentence, i.e. a list of words
     # Each word represents a state WITH time prefix
     # Therefore, each word is a vector of length nDevices

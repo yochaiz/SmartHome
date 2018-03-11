@@ -3,7 +3,7 @@ from datetime import timedelta
 from Reinforcement.Functions import *
 import json
 from DQNAgent import DQNAgent
-from Reinforcement.Policies.Week.WeekPolicyFC import WeekPolicyFC
+from Reinforcement.DQN.WeekPolicyFC import WeekPolicyFC
 
 args = parseArguments()
 dirName = createResultsFolder()
