@@ -10,7 +10,7 @@ class WeekPolicyCNN(WeekPolicyWithModel):
 
     # build model to learn policy
     def buildModel(self):
-        kernelSize = (1, 1)
+        self.kernelSize = (1, 1)
         nChannels = 1
         # each state CONTAINS time prefix
         nFeatures = self.stateDevicesStartIdx + self.numOfDevices
@@ -20,10 +20,10 @@ class WeekPolicyCNN(WeekPolicyWithModel):
         # Neural Net for Deep-Q learning Model
         model = Sequential()
         model.add(Reshape(self.stateDim, input_shape=(self.seqLen, nFeatures)))
-        model.add(Conv2D(256, kernel_size=kernelSize, activation='relu', input_shape=self.stateDim, data_format='channels_last'))
+        model.add(Conv2D(256, kernel_size=self.kernelSize, activation='relu', input_shape=self.stateDim, data_format='channels_last'))
         # TODO: max pooling? dropout?
-        model.add(Conv2D(128, kernel_size=kernelSize, activation='relu', data_format='channels_last'))
-        model.add(Conv2D(64, kernel_size=kernelSize, activation='relu', data_format='channels_last'))
+        model.add(Conv2D(128, kernel_size=self.kernelSize, activation='relu', data_format='channels_last'))
+        model.add(Conv2D(64, kernel_size=self.kernelSize, activation='relu', data_format='channels_last'))
         model.add(Flatten())
         model.add(Dense(64, activation='relu'))
         model.add(Dense(outputDim, activation='linear'))

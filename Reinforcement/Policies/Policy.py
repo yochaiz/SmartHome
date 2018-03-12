@@ -9,6 +9,8 @@ from datetime import datetime
 class Policy:
     __metaclass__ = ABCMeta
 
+    dictTypes = [str, int, float, tuple]
+
     def __init__(self, fname, seqLen):
         self.policyJSON = self.loadPolicyFromJSON(fname)
         self.numOfDevices = len(self.policyJSON["Devices"])
@@ -91,7 +93,15 @@ class Policy:
         return nextInput, reward
 
     def toJSON(self):
-        return self.policyJSON
+        var = dict(vars(self))  # make dict copy
+        jsonObj = {}
+        for key, val in var.iteritems():
+            if type(val) in self.dictTypes:
+                jsonObj[key] = val
+
+        jsonObj['policyJSON'] = self.policyJSON
+
+        return jsonObj
 
     # converts action vector as binary number to index (integer), for NN output index
     @staticmethod
@@ -142,11 +152,13 @@ class Policy:
             daysArray = [[] for j in range(nDays)]
 
             for timeDict in device:
-                if type(timeDict["days"]) is unicode:  # replace predefined array in JSON with actual array for future simplicity
+                if type(timeDict[
+                            "days"]) is unicode:  # replace predefined array in JSON with actual array for future simplicity
                     timeDict["days"] = policy[timeDict["days"]]
 
                 # sort timeDict by startTime
-                timeDict["times"] = sorted(timeDict["times"], key=lambda t: datetime.strptime(t[0], policy["Time format"]))
+                timeDict["times"] = sorted(timeDict["times"],
+                                           key=lambda t: datetime.strptime(t[0], policy["Time format"]))
 
                 for day in timeDict["days"]:
                     daysArray[day].extend(timeDict["times"])
@@ -161,4 +173,5 @@ class Policy:
                     tNext = array[j + 1]
                     if tCur[1] > tNext[0]:  # endTime is bigger than next range startTime
                         raise ValueError(
-                            'Validation failed for device [{}], ID:[{}], time ranges: [{}] - [{}]'.format(policy["Devices"][i], i, tCur, tNext))
+                            'Validation failed for device [{}], ID:[{}], time ranges: [{}] - [{}]'.format(
+                                policy["Devices"][i], i, tCur, tNext))
