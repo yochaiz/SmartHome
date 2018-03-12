@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
-from Reinforcement.Functions import *
 import json
 from datetime import timedelta
+from Reinforcement.Functions import *
+from Reinforcement.Results import Results
 from Actor import Actor
 from Critic import Critic
 from DeepNetwork import DeepNetwork
@@ -28,6 +29,10 @@ with open(args.settings, 'r') as f:
 minGameScore = int(settings['minGameScoreRatio'] * settings['gameMinutesLength'])
 settings['minGameScore'] = minGameScore
 info['settings'] = settings
+
+# init Results object
+results = Results()
+info['results'] = results.toJSON()
 
 # init replay Buffer
 replayBuffer = ReplayBuffer(settings['dequeSize'], settings['gamma'])
@@ -117,6 +122,14 @@ while curSequence < settings['minGameSequence']:
     # log game
     logger.info("episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], random actions:[{}], eInit:[{:.4f}], init state:{}, end state:{}"
                 .format(g, score, loss, curSequence, numOfRandomActions, epsilon, initState, state[-1, :]))
+
+    # update results object
+    results.loss.append(round(loss, 5))
+    results.score.append(int(score))
+
+    # update info data in JSON, add results
+    info['results'] = results.toJSON()
+    saveDataToJSON(info, jsonFullFname)
 
     # decrease game initial epsilon value
     epsilon = max(actor.epsilon_min, epsilon * actor.epsilon_decay)

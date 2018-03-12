@@ -1,7 +1,8 @@
 # -*- coding: utf-8 -*-
+import json
 from datetime import timedelta
 from Reinforcement.Functions import *
-import json
+from Reinforcement.Results import Results
 from DQNAgent import DQNAgent
 from Reinforcement.DQN.WeekPolicyCNN import WeekPolicyCNN
 
@@ -21,6 +22,10 @@ with open(args.settings, 'r') as f:
 minGameScore = int(settings['minGameScoreRatio'] * settings['gameMinutesLength'])
 settings['minGameScore'] = minGameScore
 info['settings'] = settings
+
+# init Results object
+results = Results()
+info['results'] = results.toJSON()
 
 # initialize policy and the agent
 # policy = WeekPolicyLSTM("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json",settings['TAU'], 10)
@@ -104,6 +109,14 @@ while curSequence < settings['minGameSequence']:
 
     logger.info("episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], random actions:[{}], eInit:[{:.4f}], init state:{}, end state:{}"
                 .format(g, score, loss, curSequence, numOfRandomActions, epsilon, initState, state[-1, :]))
+
+    # update results object
+    results.loss.append(round(loss, 5))
+    results.score.append(int(score))
+
+    # update info data in JSON, add results
+    info['results'] = results.toJSON()
+    saveDataToJSON(info, jsonFullFname)
 
     # decrease game initial epsilon value
     epsilon = max(agent.epsilon_min, epsilon * agent.epsilon_decay)
