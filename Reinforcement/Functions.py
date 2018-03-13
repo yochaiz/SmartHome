@@ -3,8 +3,6 @@ import json
 from datetime import datetime
 import logging
 import argparse
-from keras.backend.tensorflow_backend import set_session
-import tensorflow as tf
 
 
 def loadInfoFile(folderName, logger):
@@ -14,8 +12,9 @@ def loadInfoFile(folderName, logger):
 
     if os.path.exists(jsonFullFname):
         with open(jsonFullFname, 'r') as f:
-            logger.info('File [{}] exists, loading ...'.format(jsonFname))
             info = json.load(f)
+            if logger:
+                logger.info('File [{}] exists, loading ...'.format(jsonFname))
 
     return info, jsonFullFname
 
@@ -57,6 +56,8 @@ def initGPU(gpuNum, gpuFrac):
     os.environ["CUDA_DEVICE_ORDER"] = "PCI_BUS_ID"
     os.environ["CUDA_VISIBLE_DEVICES"] = str(gpuNum)
 
+    import tensorflow as tf
+    from keras.backend.tensorflow_backend import set_session
     # limit memory precentage usage
     config = tf.ConfigProto()
     config.gpu_options.per_process_gpu_memory_fraction = gpuFrac
