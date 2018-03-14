@@ -76,7 +76,7 @@ class Actor(DeepNetwork):
             return self.policy.generateRandomAction(), 1
 
         # predict action from **train** network based on given state
-        input = self.policy.normalizeStateForModelInput(state)
+        input = self.policy.normalizeState(state)
         input = np.expand_dims(input, axis=0)
         action = self.models[self.mainModelKey].predict(input)
         # TODO: add action noise (Ornstein Uhlenbeck) ???

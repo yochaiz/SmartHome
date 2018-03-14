@@ -18,7 +18,7 @@ info, jsonFullFname = loadInfoFile(dirName, logger)
 info['args'] = vars(args)
 
 # initialize policy and the agent
-policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json")
+policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy1.json")
 info['policy'] = policy.toJSON()
 
 settings = None

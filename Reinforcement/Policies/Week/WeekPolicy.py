@@ -45,6 +45,7 @@ class WeekPolicy(Policy):
 
     def __init__(self, fname, seqLen=1):
         super(WeekPolicy, self).__init__(fname, seqLen)
+        self.stateDim = (self.seqLen, self.stateDevicesStartIdx + self.numOfDevices)
 
     def minTimeUnit(self):
         return timedelta(minutes=1)
