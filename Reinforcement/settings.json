@@ -1,8 +1,8 @@
 {
-  "minGameScoreRatio": 0.85,
+  "minGameScoreRatio": 0.95,
   "minGameSequence": 500,
   "gameMinutesLength": 2880,
-  "batchSize": 128,
+  "batchSize": 256,
   "nEpochs": 1,
   "TAU": 0.001,
   "gamma": 0.95,
