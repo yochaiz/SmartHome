@@ -35,7 +35,7 @@ with open(logFname, 'r') as f:
     for line in f:
         m = pattern.match(line)
         if m:
-            results.score.append(float(m.group(2)))
+            results.score.append(int(m.group(2)))
             results.loss.append(float(m.group(3)))
 
 # update info data in JSON, add results
