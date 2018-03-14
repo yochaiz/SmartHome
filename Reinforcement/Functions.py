@@ -3,6 +3,9 @@ import json
 from datetime import datetime
 import logging
 import argparse
+import sys
+import re
+from Reinforcement.Results import Results
 
 
 def loadInfoFile(folderName, logger):
@@ -85,3 +88,40 @@ def updateMaxTuple(newValue, g, curTuple):
         curTuple[1].append(g)
 
     return curTuple
+
+
+# Collect score & loss from log file for future plots
+def CollectResultsFromLog(folderName):
+    logFname = '{}/info.log'.format(folderName)
+    jsonFname = '{}/info.json'.format(folderName)
+
+    # define regex
+    pattern = re.compile('.*:episode: (\d+), score:\[(\d+\.\d+)\], loss:\[(\d+\.\d+)\]')
+
+    # check files exist
+    if not os.path.exists(jsonFname):
+        print('path [{}] does not exist'.format(jsonFname))
+        sys.exit()
+
+    # load log file
+    if not os.path.exists(logFname):
+        print('path [{}] does not exist'.format(logFname))
+        sys.exit()
+
+    # load JSON file
+    info, jsonFname = loadInfoFile(folderName, None)
+
+    # init results object
+    results = Results()
+
+    # add results from log
+    with open(logFname, 'r') as f:
+        for line in f:
+            m = pattern.match(line)
+            if m:
+                results.score.append(int(round(float(m.group(2)))))
+                results.loss.append(float(m.group(3)))
+
+    # update info data in JSON, add results
+    info['results'] = results.toJSON()
+    saveDataToJSON(info, jsonFname)
