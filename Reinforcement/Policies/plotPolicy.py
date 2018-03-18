@@ -1,9 +1,9 @@
 from datetime import datetime, timedelta
 import matplotlib.pyplot as plt
 import argparse
-from os import sys, path
-
-sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
+# from os import sys, path
+#
+# sys.path.append(path.dirname(path.dirname(path.abspath(__file__))))
 from WeekPolicy import WeekPolicy
 
 

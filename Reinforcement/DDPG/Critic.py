@@ -20,8 +20,8 @@ class Critic(DeepNetwork):
         })[0]
 
     def buildModel(self, lr):
-        hidden1 = 512  # number of hidden layer 1 output units
-        hidden2 = 256  # number of hidden layer 2 output units
+        hidden1 = 2048  # number of hidden layer 1 output units
+        hidden2 = 2048  # number of hidden layer 2 output units
         nOutput = 1  # number of output layer units
 
         self.stateInput = Input(shape=self.stateDim)

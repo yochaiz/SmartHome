@@ -37,6 +37,7 @@ class Actor(DeepNetwork):
         self.possibleActions, nActions = self.__buildPossibleActions()
         # number of knn neighbors to compare when converting continuous action to discrete action
         self.k = min(max(10, int(ceil(nActions * 0.1))), nActions)
+        self.k = nActions
         # init knn object
         self.knn = NearestNeighbors(n_neighbors=self.k)
         # init knn object train set
@@ -59,10 +60,13 @@ class Actor(DeepNetwork):
         })
 
     def buildModel(self, lr):
+        hidden1 = 2048
+        hidden2 = 2048
+
         self.stateInput = Input(shape=self.stateDim)
-        h0 = Dense(512, activation='relu')(self.stateInput)
+        h0 = Dense(hidden1, activation='relu')(self.stateInput)
         # model.add(BatchNormalization())
-        h1 = Dense(256, activation='relu')(h0)
+        h1 = Dense(hidden2, activation='relu')(h0)
         # model.add(BatchNormalization())
         h2 = Dense(self.actionDim, activation='sigmoid')(h1)
         V = Reshape((self.actionDim,))(h2)
@@ -70,29 +74,44 @@ class Actor(DeepNetwork):
         model = Model(input=self.stateInput, outputs=V)
         return model
 
-    def act(self, state, criticModel):
-        if np.random.rand() <= self.epsilon:
+    def act(self, state, criticModel, optimalAction):
+        isRandom = int(np.random.rand() <= self.epsilon)
+        isInPool = 0
+
+        if isRandom > 0:
             # The agent acts randomly
-            return self.policy.generateRandomAction(), 1
+            action = self.policy.generateRandomAction()
 
-        # predict action from **train** network based on given state
-        input = self.policy.normalizeState(state)
-        input = np.expand_dims(input, axis=0)
-        action = self.models[self.mainModelKey].predict(input)
-        # TODO: add action noise (Ornstein Uhlenbeck) ???
-        # find IDs of closest valid (discrete, possible) actions
-        validActions = self.knn.kneighbors(action, return_distance=False)[0]
-        # convert IDs to the actions themselves
-        validActions = self.possibleActions[validActions]
-        # duplicate input as rows for Q-value prediction
-        input = np.repeat(input, validActions.shape[0], axis=0)
-        # calc Q-value for each valid action
-        Qvalues = criticModel.predict([input, validActions])
-        # choose highest Q-value action
-        actionID = np.argmax(Qvalues)
-        action = validActions[actionID, :]
+        else:
+            # predict action from **train** network based on given state
+            input = self.policy.normalizeState(state)
+            input = np.expand_dims(input, axis=0)
+            action = self.models[self.mainModelKey].predict(input)
+            # TODO: add action noise (Ornstein Uhlenbeck) ???
+            # find IDs of closest valid (i.e. discrete, possible) actions
+            # validActions = self.knn.kneighbors(action, return_distance=False)[0]
+            distances, validActions = self.knn.kneighbors(action)
+            maxPoolDist = distances[0].max()
+            validActions = validActions[0]
+            # convert IDs to the actions themselves
+            validActions = self.possibleActions[validActions]
+            # duplicate input as rows for Q-value prediction
+            input = np.repeat(input, validActions.shape[0], axis=0)
+            # calc Q-value for each valid action
+            Qvalues = criticModel.predict([input, validActions])
+            # choose highest Q-value action
+            actionID = np.argmax(Qvalues)
 
-        return action, 0
+            # check if optimalAction is in validActions pool
+            dist = np.linalg.norm(action - optimalAction)
+            isInPool = int(dist - maxPoolDist < 1E-5)
+
+            # select optimal valid action
+            action = validActions[actionID, :]
+
+        isOptActionSelected = int(np.linalg.norm(action - optimalAction) < 1)
+
+        return action, isRandom, isInPool, isOptActionSelected
 
     def updateEpsilon(self):
         self.epsilon = max(self.epsilon_min, (self.epsilon * self.epsilon_decay))

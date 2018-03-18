@@ -125,3 +125,5 @@ def CollectResultsFromLog(folderName):
     # update info data in JSON, add results
     info['results'] = results.toJSON()
     saveDataToJSON(info, jsonFname)
+
+    return info

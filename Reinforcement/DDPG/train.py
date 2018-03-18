@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
+import numpy as np
 from Reinforcement.Functions import *
 from Reinforcement.Results import Results
 from Actor import Actor
@@ -18,7 +19,7 @@ info, jsonFullFname = loadInfoFile(dirName, logger)
 info['args'] = vars(args)
 
 # initialize policy and the agent
-policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy1.json")
+policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json")
 info['policy'] = policy.toJSON()
 
 settings = None
@@ -85,11 +86,23 @@ while curSequence < settings['minGameSequence']:
     # time_t represents each minute of the game
     score = 0
     numOfRandomActions = 0
+    isInPoolRatio = 0
+    numOfOptActionSelected = 0
+    optActionInPoolButNotSelected = 0
     loss = 0
     for time_t in range(settings['gameMinutesLength']):
+        # build optimal action for comparison purposes
+        curDate = policy.timePrefixToDate(state)
+        nextDate = curDate + policy.minTimeUnit()
+        optimalNextState = policy.buildExpectedState(nextDate)
+        optimalAction = np.logical_xor(state[-1, -policy.numOfDevices:], optimalNextState).astype(int)
+
         # select action
-        action, isRandom = actor.act(state, critic.getMainModel())
+        action, isRandom, isInPool, isOptActionSelected = actor.act(state, critic.getMainModel(), optimalAction)
         numOfRandomActions += isRandom
+        isInPoolRatio += isInPool
+        numOfOptActionSelected += isOptActionSelected
+        optActionInPoolButNotSelected += abs(isInPool - isOptActionSelected) if (isRandom == 0) else 0
 
         # Advance the game to the next frame based on the action.
         next_state, reward = policy.step(state, action)
@@ -100,12 +113,15 @@ while curSequence < settings['minGameSequence']:
 
         # train network after each frame
         loss += replayBuffer.replay(actor.getMainModel(), actor.getTargetModel(), actor.train, actor.updateEpsilon, critic.getMainModel(),
-                                    critic.getTargetModel(), critic.gradients, policy.normalizeStateForModelInput, DeepNetwork.updateModelParams,
-                                    settings['batchSize'])
-        # TODO: average loss ??
+                                    critic.getTargetModel(), critic.gradients, policy.normalizeStateForModelInput,
+                                    DeepNetwork.updateModelParams, settings['trainSetSize'])
 
         # make next_state the new current state for the next frame.
         state = next_state
+
+    optActionInPoolButNotSelected /= float(isInPoolRatio)
+    isInPoolRatio /= float(settings['gameMinutesLength'] - numOfRandomActions)
+    numOfOptActionSelected /= float(settings['gameMinutesLength'])
 
     # update current sequence length
     if score >= minGameScore:
@@ -119,8 +135,11 @@ while curSequence < settings['minGameSequence']:
     maxSequence = updateMaxTuple(curSequence, g, maxSequence)
 
     # log game
-    logger.info("episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], random actions:[{}], eInit:[{:.4f}], init state:{}, end state:{}"
-                .format(g, score, loss, curSequence, numOfRandomActions, epsilon, initState, state[-1, :]))
+    logger.info(
+        "episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], isInPoolRatio:[{:.2f}], optActionSelectedRatio:[{:.2f}], optActionInPoolButNotSelected:[{:.2f}], random actions:[{}], eInit:[{:.4f}], init state:{}, end state:{}"
+            .format(g, score, loss, curSequence, isInPoolRatio, numOfOptActionSelected, optActionInPoolButNotSelected, numOfRandomActions,
+                    epsilon, initState,
+                    state[-1, :]))
 
     # update results object
     results.loss.append(round(loss, 5))

@@ -8,7 +8,7 @@
   "gamma": 0.95,
   "learningRate": 0.001,
   "dequeSize": 50000,
-  "trainSetSize": 128,
-  "nGamesPerSave": 10,
+  "trainSetSize": 256,
+  "nGamesPerSave": 50,
   "nModelBackups": 3
 }
