@@ -37,7 +37,6 @@ class Actor(DeepNetwork):
         self.possibleActions, nActions = self.__buildPossibleActions()
         # number of knn neighbors to compare when converting continuous action to discrete action
         self.k = min(max(10, int(ceil(nActions * 0.1))), nActions)
-        self.k = nActions
         # init knn object
         self.knn = NearestNeighbors(n_neighbors=self.k)
         # init knn object train set

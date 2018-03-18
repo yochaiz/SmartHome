@@ -47,6 +47,9 @@ Loginfo = DeepNetwork.toJSON()
 for key, value in Loginfo.iteritems():
     info[key] = value
 
+# log experiment description
+if args.desc is not None:
+    logger.info('Description:[{}]'.format(args.desc))
 # log info data
 logInfo(info, logger)
 
