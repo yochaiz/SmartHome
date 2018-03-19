@@ -34,9 +34,9 @@ class Actor(DeepNetwork):
         self.policy = self.PolicyFunctions(idxToAction, generateRandomAction, normalizeState)
 
         # init possible actions
-        self.possibleActions, nActions = self.__buildPossibleActions()
+        self.possibleActions, self.nActions = self.__buildPossibleActions()
         # number of knn neighbors to compare when converting continuous action to discrete action
-        self.k = min(max(10, int(ceil(nActions * 0.1))), nActions)
+        self.k = min(max(10, int(ceil(self.nActions * 0.1))), self.nActions)
         # init knn object
         self.knn = NearestNeighbors(n_neighbors=self.k)
         # init knn object train set
@@ -73,44 +73,58 @@ class Actor(DeepNetwork):
         model = Model(input=self.stateInput, outputs=V)
         return model
 
+    # state is the vector from Policy object, AFTER normalization
+    def wolpertingerAction(self, state, actorModel, criticModel):
+        contAction = actorModel.predict(state)
+        # TODO: add action noise (Ornstein Uhlenbeck) ???
+        # find IDs of closest valid (i.e. discrete, possible) actions
+        # validActions = self.knn.kneighbors(action, return_distance=False)[0]
+        distances, validActions = self.knn.kneighbors(contAction)
+        # find max pool distance for each action in contAction
+        maxPoolDist = distances.max(axis=-1)
+        # convert IDs to the actions themselves
+        validActions = self.possibleActions[validActions]
+        # evaluate Qvalues for each state
+        nSamples = state.shape[0]
+        # init selected discrete action for each state
+        discreteAction = np.zeros((nSamples, self.actionDim), dtype=int)
+        for i in range(nSamples):
+            # duplicate input as number of actions for Q-value prediction
+            input = np.expand_dims(state[i], axis=0)
+            input = np.repeat(input, self.k, axis=0)
+            # calc Q-value for each valid action
+            Qvalues = criticModel.predict([input, validActions[i]])
+            # choose highest Q-value action
+            actionID = np.argmax(Qvalues)
+            # select optimal valid action
+            discreteAction[i] = validActions[i, actionID, :]
+
+        return discreteAction, contAction, maxPoolDist
+
     def act(self, state, criticModel, optimalAction):
         isRandom = int(np.random.rand() <= self.epsilon)
         isInPool = 0
 
         if isRandom > 0:
             # The agent acts randomly
-            action = self.policy.generateRandomAction()
+            discreteAction = self.policy.generateRandomAction()
 
         else:
-            # predict action from **train** network based on given state
-            input = self.policy.normalizeState(state)
-            input = np.expand_dims(input, axis=0)
-            action = self.models[self.mainModelKey].predict(input)
-            # TODO: add action noise (Ornstein Uhlenbeck) ???
-            # find IDs of closest valid (i.e. discrete, possible) actions
-            # validActions = self.knn.kneighbors(action, return_distance=False)[0]
-            distances, validActions = self.knn.kneighbors(action)
-            maxPoolDist = distances[0].max()
-            validActions = validActions[0]
-            # convert IDs to the actions themselves
-            validActions = self.possibleActions[validActions]
-            # duplicate input as rows for Q-value prediction
-            input = np.repeat(input, validActions.shape[0], axis=0)
-            # calc Q-value for each valid action
-            Qvalues = criticModel.predict([input, validActions])
-            # choose highest Q-value action
-            actionID = np.argmax(Qvalues)
+            # predict discrete action from **MAIN** network based on given state
+            state = self.policy.normalizeState(state)
+            state = np.expand_dims(state, axis=0)
+            discreteAction, contAction, maxPoolDist = self.wolpertingerAction(state, self.models[self.mainModelKey], criticModel)
+            discreteAction = discreteAction[0]
+            contAction = contAction[0]
+            maxPoolDist = maxPoolDist[0]
 
             # check if optimalAction is in validActions pool
-            dist = np.linalg.norm(action - optimalAction)
+            dist = np.linalg.norm(contAction - optimalAction)
             isInPool = int(dist - maxPoolDist < 1E-5)
 
-            # select optimal valid action
-            action = validActions[actionID, :]
+        isOptActionSelected = int(np.linalg.norm(discreteAction - optimalAction) < 1)
 
-        isOptActionSelected = int(np.linalg.norm(action - optimalAction) < 1)
-
-        return action, isRandom, isInPool, isOptActionSelected
+        return discreteAction, isRandom, isInPool, isOptActionSelected
 
     def updateEpsilon(self):
         self.epsilon = max(self.epsilon_min, (self.epsilon * self.epsilon_decay))

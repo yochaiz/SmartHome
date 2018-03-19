@@ -115,9 +115,9 @@ while curSequence < settings['minGameSequence']:
         replayBuffer.remember(state, action, reward, next_state)
 
         # train network after each frame
-        loss += replayBuffer.replay(actor.getMainModel(), actor.getTargetModel(), actor.train, actor.updateEpsilon, critic.getMainModel(),
-                                    critic.getTargetModel(), critic.gradients, policy.normalizeStateForModelInput,
-                                    DeepNetwork.updateModelParams, settings['trainSetSize'])
+        loss += replayBuffer.replay(actor.getMainModel(), actor.getTargetModel(), actor.train, actor.wolpertingerAction,
+                                    actor.updateEpsilon, critic.getMainModel(), critic.getTargetModel(), critic.gradients,
+                                    policy.normalizeStateForModelInput, DeepNetwork.updateModelParams, settings['trainSetSize'])
 
         # make next_state the new current state for the next frame.
         state = next_state
