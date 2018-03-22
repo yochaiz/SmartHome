@@ -15,7 +15,7 @@ class Actor(DeepNetwork):
             self.generateRandomAction = generateRandomAction
             self.normalizeState = normalizeState
 
-    def __init__(self, sess, idxToAction, generateRandomAction, normalizeState, stateDim, actionDim, TAU, lr, nBackups):
+    def __init__(self, sess, idxToAction, generateRandomAction, normalizeState, stateDim, actionDim, TAU, lr, k, nBackups):
         super(Actor, self).__init__(sess, stateDim, actionDim, TAU, lr, nBackups)
 
         # set model optimization method (gradients calculation)
@@ -36,7 +36,7 @@ class Actor(DeepNetwork):
         # init possible actions
         self.possibleActions, self.nActions = self.__buildPossibleActions()
         # number of knn neighbors to compare when converting continuous action to discrete action
-        self.k = min(max(10, int(ceil(self.nActions * 0.1))), self.nActions)
+        self.k = min(max(10, int(ceil(self.nActions * 0.1))), self.nActions) if k is None else min(k, self.nActions)
         # init knn object
         self.knn = NearestNeighbors(n_neighbors=self.k)
         # init knn object train set

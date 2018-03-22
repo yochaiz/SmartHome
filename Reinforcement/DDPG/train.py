@@ -38,7 +38,7 @@ info['results'] = results.toJSON()
 replayBuffer = ReplayBuffer(settings['dequeSize'], settings['gamma'])
 # init Actor
 actor = Actor(sess, policy.idxToAction, policy.generateRandomAction, policy.normalizeStateForModelInput,
-              policy.getStateDim(), policy.getActionDim(), settings['TAU'], settings['learningRate'], settings['nModelBackups'])
+              policy.getStateDim(), policy.getActionDim(), settings['TAU'], settings['learningRate'], args.k, settings['nModelBackups'])
 # init Critic
 critic = Critic(sess, policy.getStateDim(), policy.getActionDim(), settings['TAU'], settings['learningRate'], settings['nModelBackups'])
 
