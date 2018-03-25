@@ -35,9 +35,6 @@ class ReplayBuffer:
         # Calculate targets
         # predict actor target model next state preferred discrete action
         action, _, _ = actorWolpertingerFunc(trainNextState, actorTargetModel, criticTargetModel, criticModelGraph)
-        # action = np.zeros(trainAction.shape, dtype=int)
-        # for i in range(action.shape[0]):
-        #     action[i, :], _, _ = actorWolpertingerFunc(trainNextState[i], actorTargetModel, criticTargetModel)
         # TODO: it is not clear from paper if critic model should be MAIN or TARGET ???
         # predict critic target model (nextState, nextAction) Q value, i.e. future reward
         criticTargetPrediction = criticTargetModel.predict([trainNextState, action])

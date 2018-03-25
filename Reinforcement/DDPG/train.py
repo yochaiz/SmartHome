@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
+import time
 import numpy as np
 from Reinforcement.Functions import *
 from Reinforcement.Results import Results
@@ -47,6 +48,9 @@ Loginfo = DeepNetwork.toJSON()
 for key, value in Loginfo.iteritems():
     info[key] = value
 
+# basic description
+logger.info('Fixed bug where future reward (step 13) used continuous action instead of discrete action')
+
 # log experiment description
 if args.desc is not None:
     logger.info('Description:[{}]'.format(args.desc))
@@ -73,6 +77,7 @@ epsilon = actor.epsilon
 
 while curSequence < settings['minGameSequence']:
     g += 1
+    startT = time.time()
 
     # set game init state
     if args.random is True:
@@ -138,12 +143,14 @@ while curSequence < settings['minGameSequence']:
     # update maximal sequence achieved during games
     maxSequence = updateMaxTuple(curSequence, g, maxSequence)
 
+    endT = time.time()
+
     # log game
     logger.info(
-        "episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], isInPoolRatio:[{:.2f}], optActionSelectedRatio:[{:.2f}], optActionInPoolButNotSelected:[{:.2f}], random actions:[{}], eInit:[{:.4f}], init state:{}, end state:{}"
+        "episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], isInPoolRatio:[{:.2f}], optActionSelectedRatio:[{:.2f}], "
+        "optActionInPoolButNotSelected:[{:.2f}], random actions:[{}], eInit:[{:.4f}], init state:{}, end state:{}, runtime(seconds):[{:.2f}]"
             .format(g, score, loss, curSequence, isInPoolRatio, numOfOptActionSelected, optActionInPoolButNotSelected, numOfRandomActions,
-                    epsilon, initState,
-                    state[-1, :]))
+                    epsilon, initState, state[-1, :], (endT - startT)))
 
     # update results object
     results.loss.append(round(loss, 5))
