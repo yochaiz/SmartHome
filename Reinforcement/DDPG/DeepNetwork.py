@@ -23,10 +23,10 @@ class DeepNetwork:
         self.actionDim = actionDim
         self.TAU = TAU
 
-        # create models
-        self.models = {self.mainModelKey: None, self.targetModelKey: None}
+        # create models & graph
+        self.models = {}
         # create main model
-        self.models[self.mainModelKey] = self.buildModel(lr)
+        self.models[self.mainModelKey], self.graph = self.buildModel(lr)
         # create target (final) model as copy of training model
         self.models[self.targetModelKey] = clone_model(self.models[self.mainModelKey])
         self.models[self.targetModelKey].set_weights(self.models[self.mainModelKey].get_weights())
@@ -45,6 +45,9 @@ class DeepNetwork:
 
     def getTargetModel(self):
         return self.models[self.targetModelKey]
+
+    def getModelGraph(self):
+        return self.graph
 
     # update target model parameters SLOWLY by current trained model parameters
     def __updateModelParams(self):

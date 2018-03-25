@@ -12,7 +12,7 @@ class ReplayBuffer:
         self.memory.append((state, action, reward, next_state))
 
     def replay(self, actorMainModel, actorTargetModel, actorTrainFunc, actorWolpertingerFunc, actorUpdateEpsilonFunc, criticMainModel,
-               criticTargetModel, criticGradientsFunc, stateNormalizeFunc, updateTargetModelsParams, trainSetSize):
+               criticTargetModel, criticModelGraph, criticGradientsFunc, stateNormalizeFunc, updateTargetModelsParams, trainSetSize):
         # Sample trainSet from the memory
         trainSet = random.sample(self.memory, min(trainSetSize, len(self.memory)))
 
@@ -34,7 +34,7 @@ class ReplayBuffer:
 
         # Calculate targets
         # predict actor target model next state preferred discrete action
-        action, _, _ = actorWolpertingerFunc(trainNextState, actorTargetModel, criticTargetModel)
+        action, _, _ = actorWolpertingerFunc(trainNextState, actorTargetModel, criticTargetModel, criticModelGraph)
         # action = np.zeros(trainAction.shape, dtype=int)
         # for i in range(action.shape[0]):
         #     action[i, :], _, _ = actorWolpertingerFunc(trainNextState[i], actorTargetModel, criticTargetModel)

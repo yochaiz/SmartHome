@@ -20,26 +20,27 @@ class Critic(DeepNetwork):
         })[0]
 
     def buildModel(self, lr):
-        hidden1 = 2048  # number of hidden layer 1 output units
-        hidden2 = 2048  # number of hidden layer 2 output units
-        nOutput = 1  # number of output layer units
+        graph = tf.get_default_graph()
+        with graph.as_default():
+            hidden1 = 512  # number of hidden layer 1 output units
+            hidden2 = 256  # number of hidden layer 2 output units
+            nOutput = 1  # number of output layer units
 
-        self.stateInput = Input(shape=self.stateDim)
-        layer1 = Dense(hidden1, activation='relu')(self.stateInput)
-        layer2State = Dense(hidden2, activation='linear')(layer1)
+            self.stateInput = Input(shape=self.stateDim)
+            layer1 = Dense(hidden1, activation='relu')(self.stateInput)
+            layer2State = Dense(hidden2, activation='linear')(layer1)
 
-        self.actionInput = Input(shape=(self.actionDim,))
-        layer2Action = Dense(hidden2, activation='linear')(self.actionInput)
+            self.actionInput = Input(shape=(self.actionDim,))
+            layer2Action = Dense(hidden2, activation='linear')(self.actionInput)
 
-        layer2 = add([layer2State, layer2Action])
-        layer3 = Activation('relu')(layer2)
-        layer4 = Dense(nOutput, activation='linear')(layer3)
-        layer5 = Reshape((nOutput,))(layer4)
+            layer2 = add([layer2State, layer2Action])
+            layer3 = Activation('relu')(layer2)
+            layer4 = Dense(nOutput, activation='linear')(layer3)
+            layer5 = Reshape((nOutput,))(layer4)
 
-        model = Model(inputs=[self.stateInput, self.actionInput], outputs=layer5)
+            model = Model(inputs=[self.stateInput, self.actionInput], outputs=layer5)
+            # compile model
+            adam = Adam(lr=lr)
+            model.compile(loss='mse', optimizer=adam)
 
-        # compile model
-        adam = Adam(lr=lr)
-        model.compile(loss='mse', optimizer=adam)
-
-        return model
+        return model, graph

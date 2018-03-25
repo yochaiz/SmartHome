@@ -101,7 +101,7 @@ while curSequence < settings['minGameSequence']:
         optimalAction = np.logical_xor(state[-1, -policy.numOfDevices:], optimalNextState).astype(int)
 
         # select action
-        action, isRandom, isInPool, isOptActionSelected = actor.act(state, critic.getMainModel(), optimalAction)
+        action, isRandom, isInPool, isOptActionSelected = actor.act(state, critic.getMainModel(), critic.getModelGraph(), optimalAction)
         numOfRandomActions += isRandom
         isInPoolRatio += isInPool
         numOfOptActionSelected += isOptActionSelected
@@ -116,8 +116,9 @@ while curSequence < settings['minGameSequence']:
 
         # train network after each frame
         loss += replayBuffer.replay(actor.getMainModel(), actor.getTargetModel(), actor.train, actor.wolpertingerAction,
-                                    actor.updateEpsilon, critic.getMainModel(), critic.getTargetModel(), critic.gradients,
-                                    policy.normalizeStateForModelInput, DeepNetwork.updateModelParams, settings['trainSetSize'])
+                                    actor.updateEpsilon, critic.getMainModel(), critic.getTargetModel(), critic.getModelGraph(),
+                                    critic.gradients, policy.normalizeStateForModelInput, DeepNetwork.updateModelParams,
+                                    settings['trainSetSize'])
 
         # make next_state the new current state for the next frame.
         state = next_state
