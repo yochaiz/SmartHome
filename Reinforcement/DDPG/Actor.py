@@ -1,4 +1,4 @@
-from keras.models import Model
+from keras.models import Model, load_model
 from keras.layers import Dense, Input, Reshape
 from keras.optimizers import Adam
 from DeepNetwork import DeepNetwork
@@ -19,6 +19,18 @@ class Actor(DeepNetwork):
 
     def __init__(self, sess, idxToAction, generateRandomAction, normalizeState, stateDim, actionDim, TAU, lr, k, nBackups):
         super(Actor, self).__init__(sess, stateDim, actionDim, TAU, lr, nBackups)
+
+        # load models from file
+        self.graph = tf.get_default_graph()
+        with self.graph.as_default():
+            self.models[self.mainModelKey] = load_model("results/D-22-3-H-14-19-41/Actor-main-model-0.h5")
+            self.models[self.targetModelKey] = load_model("results/D-22-3-H-14-19-41/Actor-target-model-0.h5")
+            # compile models
+            adam = Adam(lr=lr)
+            self.models[self.mainModelKey].compile(loss='mse', optimizer=adam)
+            self.models[self.targetModelKey].compile(loss='mse', optimizer=adam)
+
+            self.stateInput = self.models[self.mainModelKey].input
 
         # set model optimization method (gradients calculation)
         self.action_gradient = tf.placeholder(tf.float32, [None, actionDim])

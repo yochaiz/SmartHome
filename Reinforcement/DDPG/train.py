@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
 import time
+import signal
+from sys import exit
 import numpy as np
 from Reinforcement.Functions import *
 from Reinforcement.Results import Results
@@ -14,6 +16,15 @@ args = parseArguments()
 dirName = createResultsFolder()
 logger = initLogger(dirName)
 sess = initGPU(args.gpuNum, args.gpuFrac)
+
+
+# define terminate signal handler
+def terminateSignalHandler(signal, frame):
+    logger.info('_ _ _ Program terminated by user _ _ _')
+    exit(0)
+
+
+signal.signal(signal.SIGTERM, terminateSignalHandler)
 
 # init info json file
 info, jsonFullFname = loadInfoFile(dirName, logger)
@@ -49,7 +60,7 @@ for key, value in Loginfo.iteritems():
     info[key] = value
 
 # basic description
-logger.info('Fixed bug where future reward (step 13) used continuous action instead of discrete action')
+logger.info('DESCRIPTION: Fixed bug where future reward (step 13) used continuous action instead of discrete action')
 
 # log experiment description
 if args.desc is not None:
