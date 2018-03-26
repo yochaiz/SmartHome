@@ -118,8 +118,9 @@ class Actor(DeepNetwork):
         validActions = self.possibleActions[validActions]
         # evaluate Qvalues for each state
         nSamples = state.shape[0]
-        # init selected discrete action for each state
+        # init optimal discrete action for each state
         discreteAction = np.zeros((nSamples, self.actionDim), dtype=int)
+        # select optimal discrete action for each state
         for i in range(nSamples):
             self.__optimalActionPerState(state[i], criticModel, criticModelGraph, validActions[i], discreteAction, i)
 
