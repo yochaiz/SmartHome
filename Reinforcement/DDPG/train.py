@@ -40,21 +40,17 @@ info['results'] = results.toJSON()
 replayBuffer = ReplayBuffer(settings['dequeSize'], settings['gamma'])
 # init Actor
 actor = Actor(sess, policy.idxToAction, policy.generateRandomAction, policy.normalizeStateForModelInput,
-              policy.getStateDim(), policy.getActionDim(), settings['TAU'], settings['learningRate'], args.k, settings['nModelBackups'])
+              policy.getStateDim(), policy.getActionDim(), settings['TAU'], settings['learningRate'], args.k,
+              settings['nModelBackups'])
 # init Critic
-critic = Critic(sess, policy.getStateDim(), policy.getActionDim(), settings['TAU'], settings['learningRate'], settings['nModelBackups'])
+critic = Critic(sess, policy.getStateDim(), policy.getActionDim(), settings['TAU'], settings['learningRate'],
+                settings['nModelBackups'])
 
 # Log objects info to JSON
 Loginfo = DeepNetwork.toJSON()
 for key, value in Loginfo.iteritems():
     info[key] = value
 
-# basic description
-logger.info('DESCRIPTION: Fixed bug where future reward (step 13) used continuous action instead of discrete action')
-
-# log experiment description
-if args.desc is not None:
-    logger.info('DESCRIPTION:[{}]'.format(args.desc))
 # log info data
 logInfo(info, logger)
 
@@ -63,6 +59,11 @@ saveDataToJSON(info, jsonFullFname)
 
 # save init models
 DeepNetwork.save(dirName, logger)
+
+# print descriptions
+desc = [("General", [args.desc])]
+desc.extend(DeepNetwork.getDescLogs())
+logDescriptions(logger, desc)
 
 # print models to log
 DeepNetwork.printModel(logger)
@@ -107,7 +108,7 @@ while curSequence < settings['minGameSequence']:
         optimalAction = np.logical_xor(state[-1, -policy.numOfDevices:], optimalNextState).astype(int)
 
         # select action
-        action, isRandom, isInPool, isOptActionSelected = actor.act(state, critic.getMainModel(), critic.getModelGraph(), optimalAction)
+        action, isRandom, isInPool, isOptActionSelected = actor.act(state, critic.getMainModel(), optimalAction)
         numOfRandomActions += isRandom
         isInPoolRatio += isInPool
         numOfOptActionSelected += isOptActionSelected
@@ -122,7 +123,7 @@ while curSequence < settings['minGameSequence']:
 
         # train network after each frame
         loss += replayBuffer.replay(actor.getMainModel(), actor.getTargetModel(), actor.train, actor.wolpertingerAction,
-                                    actor.updateEpsilon, critic.getMainModel(), critic.getTargetModel(), critic.getModelGraph(),
+                                    actor.updateEpsilon, critic.getMainModel(), critic.getTargetModel(),
                                     critic.gradients, policy.normalizeStateForModelInput, DeepNetwork.updateModelParams,
                                     settings['trainSetSize'])
 
@@ -150,7 +151,8 @@ while curSequence < settings['minGameSequence']:
     logger.info(
         "episode: {}, score:[{:.2f}], loss:[{:.5f}], sequence:[{}], isInPoolRatio:[{:.2f}], optActionSelectedRatio:[{:.2f}], "
         "optActionInPoolButNotSelected:[{:.2f}], random actions:[{}], eInit:[{:.4f}], init state:{}, end state:{}, runtime(seconds):[{:.2f}]"
-            .format(g, score, loss, curSequence, isInPoolRatio, numOfOptActionSelected, optActionInPoolButNotSelected, numOfRandomActions,
+            .format(g, score, loss, curSequence, isInPoolRatio, numOfOptActionSelected, optActionInPoolButNotSelected,
+                    numOfRandomActions,
                     epsilon, initState, state[-1, :], (endT - startT)))
 
     # update results object

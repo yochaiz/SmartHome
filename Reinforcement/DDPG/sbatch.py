@@ -8,8 +8,8 @@ outputFile = 'D-{}-{}-H-{}-{}-{}.out'.format(now.day, now.month, now.hour, now.m
 
 commands = [
     [sys.executable, './train.py', '0', '--random', '--k', '32', '--desc',
-     '"fixed future action (discrete) + knn over all possible discrete actions"'],
-    [sys.executable, './train.py', '0', '--random', '--desc', '"fixed future action (discrete) + default knn size"']
+     '"knn over all possible discrete actions, smaller batch size"'],
+    [sys.executable, './train.py', '0', '--random', '--desc', '"default knn size, smaller batch size"']
 ]
 
 # calc GPU fraction

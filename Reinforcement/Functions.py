@@ -28,9 +28,11 @@ def parseArguments():
     parser = argparse.ArgumentParser(description='test model on dataset')
     parser.add_argument("gpuNum", type=int, help="GPU # to run on")
     parser.add_argument("--gpuFrac", type=float, default=0.3, help="GPU memory fraction")
-    parser.add_argument("--settings", type=str, default='/home/yochaiz/SmartHome/Reinforcement/settings.json', help="Settings JSON file")
+    parser.add_argument("--settings", type=str, default='/home/yochaiz/SmartHome/Reinforcement/settings.json',
+                        help="Settings JSON file")
     parser.add_argument("--desc", type=str, default=None, help="Experiment description")
-    parser.add_argument("--k", type=int, choices=xrange(1, int(1E4) + 1), default=None, help="Number of k nearest neighbors")
+    parser.add_argument("--k", type=int, choices=xrange(1, int(1E4) + 1), default=None,
+                        help="Number of k nearest neighbors")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--sequential", action='store_true', help="Init sequential state for a new game")
     group.add_argument("--random", action='store_true', help="Init random state for a new game")
@@ -76,6 +78,17 @@ def initGPU(gpuNum, gpuFrac):
 def logInfo(info, logger):
     for key in info:
         logger.info('{}:[{}]'.format(key, info[key]))
+
+
+# log general & objects descriptions
+def logDescriptions(logger, descArray):
+    logger.info('===== DESCRIPTIONS =====')
+
+    for objName, msgArray in descArray:
+        for msg in msgArray:
+            logger.info('[{}]: {}'.format(objName, msg))
+
+    logger.info('===== ============ =====')
 
 
 # save info data to JSON

@@ -10,8 +10,6 @@ class Critic(DeepNetwork):
         super(Critic, self).__init__(sess, stateDim, actionDim, TAU, lr, nBackups)
 
         # # load models from file
-        # self.graph = tf.get_default_graph()
-        # with self.graph.as_default():
         #     self.models[self.mainModelKey] = load_model("results/D-22-3-H-14-19-41/Critic-main-model-0.h5")
         #     self.models[self.targetModelKey] = load_model("results/D-22-3-H-14-19-41/Critic-target-model-0.h5")
         #     # compile models
@@ -23,7 +21,8 @@ class Critic(DeepNetwork):
         #     self.actionInput = self.models[self.mainModelKey].input[1]
 
         # set model optimization method (gradients calculation)
-        self.action_grads = tf.gradients(self.models[self.mainModelKey].output, self.actionInput)  # GRADIENTS for policy update
+        self.action_grads = tf.gradients(self.models[self.mainModelKey].output,
+                                         self.actionInput)  # GRADIENTS for policy update
         self.sess.run(tf.global_variables_initializer())
 
     def gradients(self, states, actions):
@@ -33,27 +32,37 @@ class Critic(DeepNetwork):
         })[0]
 
     def buildModel(self, lr):
-        graph = tf.get_default_graph()
-        with graph.as_default():
-            hidden1 = 512  # number of hidden layer 1 output units
-            hidden2 = 256  # number of hidden layer 2 output units
-            nOutput = 1  # number of output layer units
+        self.description.append("Try deeper architecture")
+        # hidden = [512,256]  # number of hidden layers output units
 
-            self.stateInput = Input(shape=self.stateDim)
-            layer1 = Dense(hidden1, activation='relu')(self.stateInput)
-            layer2State = Dense(hidden2, activation='linear')(layer1)
+        hidden = [256] * 2
 
-            self.actionInput = Input(shape=(self.actionDim,))
-            layer2Action = Dense(hidden2, activation='linear')(self.actionInput)
+        nOutput = 1  # number of output layer units
 
-            layer2 = add([layer2State, layer2Action])
-            layer3 = Activation('relu')(layer2)
-            layer4 = Dense(nOutput, activation='linear')(layer3)
-            layer5 = Reshape((nOutput,))(layer4)
+        # define stateInput
+        self.stateInput = Input(shape=self.stateDim)
+        layer1 = Dense(hidden[0], activation='relu')(self.stateInput)
+        layer2State = Dense(hidden[1], activation='linear')(layer1)
 
-            model = Model(inputs=[self.stateInput, self.actionInput], outputs=layer5)
-            # compile model
-            adam = Adam(lr=lr)
-            model.compile(loss='mse', optimizer=adam)
+        self.actionInput = Input(shape=(self.actionDim,))
+        layer2Action = Dense(hidden[1], activation='linear')(self.actionInput)
 
-        return model, graph
+        layer2 = add([layer2State, layer2Action])
+        layer3 = Activation('relu')(layer2)
+
+        nLayers = 3
+        # init layers array
+        h = [layer3]
+        # add layers to array
+        for i in range(nLayers):
+            h.append(Dense(hidden[0], activation='relu')(h[-1]))
+
+        layer4 = Dense(nOutput, activation='linear')(h[-1])
+        layer5 = Reshape((nOutput,))(layer4)
+
+        model = Model(inputs=[self.stateInput, self.actionInput], outputs=layer5)
+        # compile model
+        adam = Adam(lr=lr)
+        model.compile(loss='mse', optimizer=adam)
+
+        return model

@@ -16,12 +16,11 @@ class Actor(DeepNetwork):
             self.generateRandomAction = generateRandomAction
             self.normalizeState = normalizeState
 
-    def __init__(self, sess, idxToAction, generateRandomAction, normalizeState, stateDim, actionDim, TAU, lr, k, nBackups):
+    def __init__(self, sess, idxToAction, generateRandomAction, normalizeState, stateDim, actionDim, TAU, lr, k,
+                 nBackups):
         super(Actor, self).__init__(sess, stateDim, actionDim, TAU, lr, nBackups)
 
         # # load models from file
-        # self.graph = tf.get_default_graph()
-        # with self.graph.as_default():
         #     self.models[self.mainModelKey] = load_model("results/D-22-3-H-14-19-41/Actor-main-model-0.h5")
         #     self.models[self.targetModelKey] = load_model("results/D-22-3-H-14-19-41/Actor-target-model-0.h5")
         #     # compile models
@@ -55,6 +54,11 @@ class Actor(DeepNetwork):
         # init knn object train set
         self.knn.fit(self.possibleActions)
 
+        # description messages
+        self.description.append(
+            "Fixed bug where future reward (step 13) used continuous action instead of discrete action")
+        self.description.append("No more threading during replays")
+
     # Build matrix of possible actions given actionDim
     # for knn search of closest action for some continuous space action
     def __buildPossibleActions(self):
@@ -72,41 +76,51 @@ class Actor(DeepNetwork):
         })
 
     def buildModel(self, lr):
-        graph = tf.get_default_graph()
-        with graph.as_default():
-            hidden1 = 512
-            hidden2 = 256
+        self.description.append("Try deeper architecture")
+        # hidden1 = 512
+        # hidden2 = 256
+        hidden = 256
+        nLayers = 5
 
-            self.stateInput = Input(shape=self.stateDim)
-            h0 = Dense(hidden1, activation='relu')(self.stateInput)
-            # model.add(BatchNormalization())
-            h1 = Dense(hidden2, activation='relu')(h0)
-            # model.add(BatchNormalization())
-            h2 = Dense(self.actionDim, activation='sigmoid')(h1)
-            V = Reshape((self.actionDim,))(h2)
+        # init layers array
+        h = []
+        # define stateInput
+        self.stateInput = Input(shape=self.stateDim)
+        h.append(self.stateInput)
+        # add layers to array
+        for i in range(nLayers):
+            h.append(Dense(hidden, activation='relu')(h[-1]))
+        # add output layers
+        h.append(Dense(self.actionDim, activation='sigmoid')(h[-1]))
+        V = Reshape((self.actionDim,))(h[-1])
 
-            model = Model(input=self.stateInput, outputs=V)
-            # compile model
-            adam = Adam(lr=lr)
-            model.compile(loss='mse', optimizer=adam)
+        # h0 = Dense(hidden1, activation='relu')(self.stateInput)
+        # # model.add(BatchNormalization())
+        # h1 = Dense(hidden2, activation='relu')(h0)
+        # # model.add(BatchNormalization())
+        # h2 = Dense(self.actionDim, activation='sigmoid')(h1)
+        # V = Reshape((self.actionDim,))(h2)
 
-        return model, graph
+        model = Model(input=self.stateInput, outputs=V)
+        # compile model
+        adam = Adam(lr=lr)
+        model.compile(loss='mse', optimizer=adam)
 
-    def __optimalActionPerState(self, state, criticModel, criticModelGraph, validActions, discreteAction, i):
-        # criticModelGraph is required for tf model context in different thread
-        with criticModelGraph.as_default():
-            # duplicate input as number of actions for Q-value prediction
-            input = np.expand_dims(state, axis=0)
-            input = np.repeat(input, self.k, axis=0)
-            # calc Q-value for each valid action
-            Qvalues = criticModel.predict([input, validActions])
-            # choose highest Q-value action
-            actionID = np.argmax(Qvalues)
-            # select optimal valid action
-            discreteAction[i] = validActions[actionID, :]
+        return model
+
+    def __optimalActionPerState(self, state, criticModel, validActions, discreteAction, i):
+        # duplicate input as number of actions for Q-value prediction
+        input = np.expand_dims(state, axis=0)
+        input = np.repeat(input, self.k, axis=0)
+        # calc Q-value for each valid action
+        Qvalues = criticModel.predict([input, validActions])
+        # choose highest Q-value action
+        actionID = np.argmax(Qvalues)
+        # select optimal valid action
+        discreteAction[i] = validActions[actionID, :]
 
     # state is the vector from Policy object, AFTER normalization
-    def wolpertingerAction(self, state, actorModel, criticModel, criticModelGraph):
+    def wolpertingerAction(self, state, actorModel, criticModel):
         contAction = actorModel.predict(state)
         # TODO: add action noise (Ornstein Uhlenbeck) ???
         # find IDs of closest valid (i.e. discrete, possible) actions
@@ -122,11 +136,11 @@ class Actor(DeepNetwork):
         discreteAction = np.zeros((nSamples, self.actionDim), dtype=int)
         # select optimal discrete action for each state
         for i in range(nSamples):
-            self.__optimalActionPerState(state[i], criticModel, criticModelGraph, validActions[i], discreteAction, i)
+            self.__optimalActionPerState(state[i], criticModel, validActions[i], discreteAction, i)
 
         return discreteAction, contAction, maxPoolDist
 
-    def act(self, state, criticModel, criticModelGraph, optimalAction):
+    def act(self, state, criticModel, optimalAction):
         isRandom = int(np.random.rand() <= self.epsilon)
         isInPool = 0
 
@@ -138,8 +152,8 @@ class Actor(DeepNetwork):
             # predict discrete action from **MAIN** network based on given state
             state = self.policy.normalizeState(state)
             state = np.expand_dims(state, axis=0)
-            discreteAction, contAction, maxPoolDist = self.wolpertingerAction(state, self.models[self.mainModelKey], criticModel,
-                                                                              criticModelGraph)
+            discreteAction, contAction, maxPoolDist = self.wolpertingerAction(state, self.models[self.mainModelKey],
+                                                                              criticModel)
             discreteAction = discreteAction[0]
             contAction = contAction[0]
             maxPoolDist = maxPoolDist[0]

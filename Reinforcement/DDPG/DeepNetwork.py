@@ -19,6 +19,9 @@ class DeepNetwork:
         self.nBackups = nBackups
         self.curBackupIdx = 0
 
+        # init description messages array
+        self.description = []
+
         self.stateDim = stateDim
         self.actionDim = actionDim
         self.TAU = TAU
@@ -26,7 +29,7 @@ class DeepNetwork:
         # create models & graph
         self.models = {}
         # create main model
-        self.models[self.mainModelKey], self.graph = self.buildModel(lr)
+        self.models[self.mainModelKey] = self.buildModel(lr)
         # create target (final) model as copy of training model
         self.models[self.targetModelKey] = clone_model(self.models[self.mainModelKey])
         self.models[self.targetModelKey].set_weights(self.models[self.mainModelKey].get_weights())
@@ -45,9 +48,6 @@ class DeepNetwork:
 
     def getTargetModel(self):
         return self.models[self.targetModelKey]
-
-    def getModelGraph(self):
-        return self.graph
 
     # update target model parameters SLOWLY by current trained model parameters
     def __updateModelParams(self):
@@ -97,6 +97,19 @@ class DeepNetwork:
     def printModel(logger):
         for obj in DeepNetwork.objs:
             obj.__printModel(logger)
+
+    # log descriptions for all objects
+    @staticmethod
+    def getDescLogs():
+        descriptions = []
+        for obj in DeepNetwork.objs:
+            descriptions.append((obj.className(), obj.description))
+
+        return descriptions
+        # logger.info('===== DESCRIPTIONS =====')
+        # for obj in DeepNetwork.objs:
+        #     obj.__logDesc(logger)
+        # logger.info('===== ============ =====')
 
     # convert class object to JSON serializable
     def __toJSON(self):
