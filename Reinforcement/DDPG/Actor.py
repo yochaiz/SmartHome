@@ -4,7 +4,6 @@ from keras.optimizers import Adam
 from DeepNetwork import DeepNetwork
 import numpy as np
 from math import ceil
-from threading import Thread
 import tensorflow as tf
 from sklearn.neighbors import NearestNeighbors
 
@@ -20,17 +19,17 @@ class Actor(DeepNetwork):
     def __init__(self, sess, idxToAction, generateRandomAction, normalizeState, stateDim, actionDim, TAU, lr, k, nBackups):
         super(Actor, self).__init__(sess, stateDim, actionDim, TAU, lr, nBackups)
 
-        # load models from file
-        self.graph = tf.get_default_graph()
-        with self.graph.as_default():
-            self.models[self.mainModelKey] = load_model("results/D-22-3-H-14-19-41/Actor-main-model-0.h5")
-            self.models[self.targetModelKey] = load_model("results/D-22-3-H-14-19-41/Actor-target-model-0.h5")
-            # compile models
-            adam = Adam(lr=lr)
-            self.models[self.mainModelKey].compile(loss='mse', optimizer=adam)
-            self.models[self.targetModelKey].compile(loss='mse', optimizer=adam)
-
-            self.stateInput = self.models[self.mainModelKey].input
+        # # load models from file
+        # self.graph = tf.get_default_graph()
+        # with self.graph.as_default():
+        #     self.models[self.mainModelKey] = load_model("results/D-22-3-H-14-19-41/Actor-main-model-0.h5")
+        #     self.models[self.targetModelKey] = load_model("results/D-22-3-H-14-19-41/Actor-target-model-0.h5")
+        #     # compile models
+        #     adam = Adam(lr=lr)
+        #     self.models[self.mainModelKey].compile(loss='mse', optimizer=adam)
+        #     self.models[self.targetModelKey].compile(loss='mse', optimizer=adam)
+        #
+        #     self.stateInput = self.models[self.mainModelKey].input
 
         # set model optimization method (gradients calculation)
         self.action_gradient = tf.placeholder(tf.float32, [None, actionDim])
@@ -121,20 +120,8 @@ class Actor(DeepNetwork):
         nSamples = state.shape[0]
         # init selected discrete action for each state
         discreteAction = np.zeros((nSamples, self.actionDim), dtype=int)
-        # init threadsPool
-        threadsPool = []
         for i in range(nSamples):
-            t = Thread(target=self.__optimalActionPerState,
-                       args=(state[i], criticModel, criticModelGraph, validActions[i], discreteAction, i))
-            threadsPool.append(t)
-
-        # start all threads
-        for t in threadsPool:
-            t.start()
-
-        # wait for all threads to complete
-        for t in threadsPool:
-            t.join()
+            self.__optimalActionPerState(state[i], criticModel, criticModelGraph, validActions[i], discreteAction, i)
 
         return discreteAction, contAction, maxPoolDist
 

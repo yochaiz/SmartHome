@@ -5,6 +5,7 @@ import logging
 import argparse
 import sys
 import re
+import signal
 from Reinforcement.Results import Results
 
 
@@ -29,7 +30,7 @@ def parseArguments():
     parser.add_argument("--gpuFrac", type=float, default=0.3, help="GPU memory fraction")
     parser.add_argument("--settings", type=str, default='/home/yochaiz/SmartHome/Reinforcement/settings.json', help="Settings JSON file")
     parser.add_argument("--desc", type=str, default=None, help="Experiment description")
-    parser.add_argument("--k", type=int, choices=xrange(1, int(1E4)+1), default=None, help="Number of k nearest neighbors")
+    parser.add_argument("--k", type=int, choices=xrange(1, int(1E4) + 1), default=None, help="Number of k nearest neighbors")
     group = parser.add_mutually_exclusive_group(required=True)
     group.add_argument("--sequential", action='store_true', help="Init sequential state for a new game")
     group.add_argument("--random", action='store_true', help="Init random state for a new game")
@@ -81,6 +82,17 @@ def logInfo(info, logger):
 def saveDataToJSON(info, jsonFullFname):
     with open(jsonFullFname, 'w') as f:
         json.dump(info, f)
+
+
+# attach SIGTERM handler to program
+def attachSIGTERMhandler(logger):
+    # define terminate signal handler
+    def terminateSignalHandler(signal, frame):
+        if logger is not None:
+            logger.info('_ _ _ Program terminated by user _ _ _')
+        sys.exit(0)
+
+    signal.signal(signal.SIGTERM, terminateSignalHandler)
 
 
 def updateMaxTuple(newValue, g, curTuple):

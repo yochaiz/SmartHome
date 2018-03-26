@@ -9,18 +9,18 @@ class Critic(DeepNetwork):
     def __init__(self, sess, stateDim, actionDim, TAU, lr, nBackups):
         super(Critic, self).__init__(sess, stateDim, actionDim, TAU, lr, nBackups)
 
-        # load models from file
-        self.graph = tf.get_default_graph()
-        with self.graph.as_default():
-            self.models[self.mainModelKey] = load_model("results/D-22-3-H-14-19-41/Critic-main-model-0.h5")
-            self.models[self.targetModelKey] = load_model("results/D-22-3-H-14-19-41/Critic-target-model-0.h5")
-            # compile models
-            adam = Adam(lr=lr)
-            self.models[self.mainModelKey].compile(loss='mse', optimizer=adam)
-            self.models[self.targetModelKey].compile(loss='mse', optimizer=adam)
-
-            self.stateInput = self.models[self.mainModelKey].input[0]
-            self.actionInput = self.models[self.mainModelKey].input[1]
+        # # load models from file
+        # self.graph = tf.get_default_graph()
+        # with self.graph.as_default():
+        #     self.models[self.mainModelKey] = load_model("results/D-22-3-H-14-19-41/Critic-main-model-0.h5")
+        #     self.models[self.targetModelKey] = load_model("results/D-22-3-H-14-19-41/Critic-target-model-0.h5")
+        #     # compile models
+        #     adam = Adam(lr=lr)
+        #     self.models[self.mainModelKey].compile(loss='mse', optimizer=adam)
+        #     self.models[self.targetModelKey].compile(loss='mse', optimizer=adam)
+        #
+        #     self.stateInput = self.models[self.mainModelKey].input[0]
+        #     self.actionInput = self.models[self.mainModelKey].input[1]
 
         # set model optimization method (gradients calculation)
         self.action_grads = tf.gradients(self.models[self.mainModelKey].output, self.actionInput)  # GRADIENTS for policy update

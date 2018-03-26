@@ -25,13 +25,13 @@ class DeepNetwork:
 
         # create models & graph
         self.models = {}
-        # # create main model
-        # self.models[self.mainModelKey], self.graph = self.buildModel(lr)
-        # # create target (final) model as copy of training model
-        # self.models[self.targetModelKey] = clone_model(self.models[self.mainModelKey])
-        # self.models[self.targetModelKey].set_weights(self.models[self.mainModelKey].get_weights())
-        # # self.models[self.targetModelKey] = self.buildModel()
-        # # TODO: both models should start with same weights or not ?? papers says yes ...
+        # create main model
+        self.models[self.mainModelKey], self.graph = self.buildModel(lr)
+        # create target (final) model as copy of training model
+        self.models[self.targetModelKey] = clone_model(self.models[self.mainModelKey])
+        self.models[self.targetModelKey].set_weights(self.models[self.mainModelKey].get_weights())
+        # self.models[self.targetModelKey] = self.buildModel()
+        # TODO: both models should start with same weights or not ?? papers says yes ...
 
         # add self to objects list
         DeepNetwork.objs.append(self)
