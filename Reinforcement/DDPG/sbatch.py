@@ -8,8 +8,8 @@ outputFile = 'D-{}-{}-H-{}-{}-{}.out'.format(now.day, now.month, now.hour, now.m
 
 commands = [
     [sys.executable, './train.py', '0', '--random', '--k', '32', '--desc',
-     '"knn over all possible discrete actions, smaller batch size"'],
-    [sys.executable, './train.py', '0', '--random', '--desc', '"default knn size, smaller batch size"']
+     '"knn over all possible discrete actions, ResNet architecture with ~34 layers"'],
+    [sys.executable, './train.py', '0', '--random', '--desc', '"default knn size, ResNet architecture with ~34 layers"']
 ]
 
 # calc GPU fraction

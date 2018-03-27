@@ -1,6 +1,7 @@
 # base class that applies some log behaviour for sub-classes
 from abc import ABCMeta, abstractmethod
 from keras.models import clone_model
+from keras.layers import Dense, Activation, add
 
 
 class DeepNetwork:
@@ -42,6 +43,21 @@ class DeepNetwork:
     @abstractmethod
     def buildModel(self, lr):
         raise NotImplementedError('subclasses must override buildModel()!')
+
+    # build ResNet block
+    def buildBlock(self, hidden, prevLayer, identityLayer):
+        # init block layers
+        # BatchNormalization(axis=1)
+        layers = [Dense(hidden), Activation('relu'), Dense(hidden)]
+
+        h = [prevLayer]
+        for layer in layers:
+            h.append(layer(h[-1]))
+
+        h.append(add([h[-1], identityLayer]))
+        h.append(Activation('relu')(h[-1]))
+
+        return h[-1]
 
     def getMainModel(self):
         return self.models[self.mainModelKey]
