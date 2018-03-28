@@ -7,9 +7,8 @@ now = datetime.now()
 outputFile = 'D-{}-{}-H-{}-{}-{}.out'.format(now.day, now.month, now.hour, now.minute, now.second)
 
 commands = [
-    [sys.executable, './train.py', '0', '--random', '--k', '32', '--desc',
-     '"knn over all possible discrete actions, ResNet architecture with ~34 layers"'],
-    [sys.executable, './train.py', '0', '--random', '--desc', '"default knn size, ResNet architecture with ~34 layers"']
+    [sys.executable, './train.py', '0', '--random', '--k', '32'],
+    [sys.executable, './train.py', '0', '--random']
 ]
 
 # calc GPU fraction
@@ -32,7 +31,6 @@ with open(outputFile, mode='w') as out:
         p = Popen(cmd, stdout=out, stderr=out)
         procs.append(p)
         time.sleep(10)
-		
 
 for p in procs:
     p.wait()
