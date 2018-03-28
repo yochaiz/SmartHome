@@ -1,11 +1,6 @@
-import os
-import json
+import os, sys, json, logging, argparse, re, signal
 from datetime import datetime
-import logging
-import argparse
-import sys
-import re
-import signal
+from shutil import copy2
 from Reinforcement.Results import Results
 
 
@@ -41,10 +36,11 @@ def parseArguments():
 
 
 # init results directory
-def createResultsFolder():
+def createResultsFolder(baseFolder):
     rootDir = 'results'
     now = datetime.now()
-    dirName = '{}/D-{}-{}-H-{}-{}-{}'.format(rootDir, now.day, now.month, now.hour, now.minute, now.second)
+    dirName = '{}/{}/D-{}-{}-H-{}-{}-{}'.format(baseFolder, rootDir, now.day, now.month, now.hour, now.minute,
+                                                now.second)
     if not os.path.exists(dirName):
         os.makedirs(dirName)
 
@@ -89,6 +85,27 @@ def logDescriptions(logger, descArray):
             logger.info('[{}]: {}'.format(objName, msg))
 
     logger.info('===== ============ =====')
+
+
+# save source code files to training results folder
+# dstDir - the folder to save the source code files to
+# filesData - tuple of: (base folder path, list of files under this path (may be in subfolders))
+def saveCode(dstDir, filesData):
+    folderName = 'code'
+
+    fullPath = '{}/{}'.format(dstDir, folderName)
+    if not os.path.exists(fullPath):
+        os.makedirs(fullPath)
+
+    # copy specific training files
+    baseDir, filesList = filesData
+    for fname in filesList:
+        copy2('{}/{}'.format(baseDir, fname), fullPath)
+
+    # copy general files
+    baseFilesList = ['../Functions.py', '../settings.json', ]
+    for fname in baseFilesList:
+        copy2('{}/{}'.format(baseDir, fname), fullPath)
 
 
 # save info data to JSON

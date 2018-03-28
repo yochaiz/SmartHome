@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
 from datetime import timedelta
-import time
+import time, json, os, inspect
 import numpy as np
 from shutil import copy2
-from Reinforcement.Functions import *
+import Reinforcement.Functions as Funcs
 from Reinforcement.Results import Results
 from Actor import Actor
 from Critic import Critic
@@ -11,14 +11,19 @@ from DeepNetwork import DeepNetwork
 from ReplayBuffer import ReplayBuffer
 from Reinforcement.Policies.Week.WeekPolicy import WeekPolicy
 
-args = parseArguments()
-dirName = createResultsFolder()
-logger = initLogger(dirName)
-sess = initGPU(args.gpuNum, args.gpuFrac)
-attachSIGTERMhandler(logger)
+# init current file (script) folder
+baseFolder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # script directory
+
+args = Funcs.parseArguments()
+dirName = Funcs.createResultsFolder(baseFolder)
+logger = Funcs.initLogger(dirName)
+sess = Funcs.initGPU(args.gpuNum, args.gpuFrac)
+Funcs.attachSIGTERMhandler(logger)
+# save source code
+Funcs.saveCode(dirName, (baseFolder, ['train.py', 'Actor.py', 'Critic.py', 'DeepNetwork.py', 'ReplayBuffer.py']))
 
 # init info json file
-info, jsonFullFname = loadInfoFile(dirName, logger)
+info, jsonFullFname = Funcs.loadInfoFile(dirName, logger)
 info['args'] = vars(args)
 
 # initialize policy and the agent
@@ -56,10 +61,10 @@ for key, value in Loginfo.iteritems():
     info[key] = value
 
 # log info data
-logInfo(info, logger)
+Funcs.logInfo(info, logger)
 
 # save info data to JSON
-saveDataToJSON(info, jsonFullFname)
+Funcs.saveDataToJSON(info, jsonFullFname)
 
 # save init models
 DeepNetwork.save(dirName, logger)
@@ -67,7 +72,7 @@ DeepNetwork.save(dirName, logger)
 # print descriptions
 desc = [("General", [args.desc])]
 desc.extend(DeepNetwork.getDescLogs())
-logDescriptions(logger, desc)
+Funcs.logDescriptions(logger, desc)
 
 # print models to log
 DeepNetwork.printModel(logger)
@@ -145,9 +150,9 @@ while curSequence < settings['minGameSequence']:
         curSequence = 0
 
     # update maximal score achieved during games
-    maxScore = updateMaxTuple(score, g, maxScore)
+    maxScore = Funcs.updateMaxTuple(score, g, maxScore)
     # update maximal sequence achieved during games
-    maxSequence = updateMaxTuple(curSequence, g, maxSequence)
+    maxSequence = Funcs.updateMaxTuple(curSequence, g, maxSequence)
 
     endT = time.time()
 
@@ -165,7 +170,7 @@ while curSequence < settings['minGameSequence']:
 
     # update info data in JSON, add results
     info['results'] = results.toJSON()
-    saveDataToJSON(info, jsonFullFname)
+    Funcs.saveDataToJSON(info, jsonFullFname)
 
     # decrease game initial epsilon value
     epsilon = max(actor.epsilon_min, epsilon * actor.epsilon_decay)
