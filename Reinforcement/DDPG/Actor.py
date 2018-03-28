@@ -57,6 +57,7 @@ class Actor(DeepNetwork):
         # description messages
         self.description.append(
             "Fixed bug where future reward (step 13) used continuous action instead of discrete action")
+        # self.description.append("back to continuous action in future reward (step 13)")
         self.description.append("No more threading during replays")
 
     # Build matrix of possible actions given actionDim

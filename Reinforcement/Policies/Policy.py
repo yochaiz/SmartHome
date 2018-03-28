@@ -12,9 +12,13 @@ class Policy:
     dictTypes = [str, int, float, tuple]
 
     def __init__(self, fname, seqLen):
+        self.fname = fname
         self.policyJSON = self.loadPolicyFromJSON(fname)
         self.numOfDevices = len(self.policyJSON["Devices"])
         self.seqLen = seqLen
+
+    def getFname(self):
+        return self.fname
 
     @abstractmethod
     def minTimeUnit(self):
@@ -99,7 +103,7 @@ class Policy:
             if type(val) in self.dictTypes:
                 jsonObj[key] = val
 
-        jsonObj['policyJSON'] = self.policyJSON
+        # jsonObj['policyJSON'] = self.policyJSON
 
         return jsonObj
 

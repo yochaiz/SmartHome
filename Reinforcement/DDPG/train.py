@@ -2,6 +2,7 @@
 from datetime import timedelta
 import time
 import numpy as np
+from shutil import copy2
 from Reinforcement.Functions import *
 from Reinforcement.Results import Results
 from Actor import Actor
@@ -23,6 +24,9 @@ info['args'] = vars(args)
 # initialize policy and the agent
 policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json")
 info['policy'] = policy.toJSON()
+
+# save policy JSON file to training results folder
+copy2(policy.getFname(), '{}/policy.json'.format(dirName))
 
 settings = None
 with open(args.settings, 'r') as f:

@@ -11,7 +11,8 @@ class ReplayBuffer:
     def remember(self, state, action, reward, next_state):
         self.memory.append((state, action, reward, next_state))
 
-    def replay(self, actorMainModel, actorTargetModel, actorTrainFunc, actorWolpertingerFunc, actorUpdateEpsilonFunc, criticMainModel,
+    def replay(self, actorMainModel, actorTargetModel, actorTrainFunc, actorWolpertingerFunc, actorUpdateEpsilonFunc,
+               criticMainModel,
                criticTargetModel, criticGradientsFunc, stateNormalizeFunc, updateTargetModelsParams, trainSetSize):
         # Sample trainSet from the memory
         trainSet = random.sample(self.memory, min(trainSetSize, len(self.memory)))
@@ -33,6 +34,8 @@ class ReplayBuffer:
         trainNextState = np.array(trainNextState)
 
         # Calculate targets
+        # # predict actor target model next state preferred continuous action
+        # action = actorTargetModel.predict(trainNextState)
         # predict actor target model next state preferred discrete action
         action, _, _ = actorWolpertingerFunc(trainNextState, actorTargetModel, criticTargetModel)
         # TODO: it is not clear from paper if critic model should be MAIN or TARGET ???
