@@ -1,0 +1,322 @@
+INFO:Reinforcement.Functions:settings:[{'minGameScore': 2736, u'TAU': 0.001, u'minGameScoreRatio': 0.95, u'batchSize': 64, u'nGamesPerSave': 10, u'nEpochs': 1, u'minGameSequence': 500, u'nModelBackups': 3, u'gameMinutesLength': 2880, u'dequeSize': 50000, u'learningRate': 0.001, u'gamma': 0.95, u'trainSetSize': 64}]
+INFO:Reinforcement.Functions:args:[{'settings': '/home/yochaiz/SmartHome/Reinforcement/settings.json', 'k': None, 'random': True, 'sequential': False, 'gpuNum': 0, 'gpuFrac': 0.45, 'desc': '"default knn size, ResNet architecture with ~10 layers"'}]
+INFO:Reinforcement.Functions:results:[{'loss': [], 'score': []}]
+INFO:Reinforcement.Functions:Actor:[{'epsilon_decay': 0.99, 'epsilon': 1.0, 'curBackupIdx': 0, 'epsilon_min': 0.01, 'TAU': 0.001, 'nBackups': 3, 'k': 10, 'actionDim': 5, 'nActions': 32}]
+INFO:Reinforcement.Functions:Critic:[{'TAU': 0.001, 'nBackups': 3, 'curBackupIdx': 0, 'actionDim': 5}]
+INFO:Reinforcement.Functions:policy:[{'numOfDevices': 5, 'stateDim': (1, 8), 'seqLen': 1, 'fname': '/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json'}]
+INFO:Reinforcement.Functions:Saving [Actor] main model as [/home/yochaiz/SmartHome/Reinforcement/DDPG/results/D-28-3-H-12-0-42/Actor-main-model-0.h5]
+INFO:Reinforcement.Functions:Saving [Actor] target model as [/home/yochaiz/SmartHome/Reinforcement/DDPG/results/D-28-3-H-12-0-42/Actor-target-model-0.h5]
+INFO:Reinforcement.Functions:Saving [Critic] main model as [/home/yochaiz/SmartHome/Reinforcement/DDPG/results/D-28-3-H-12-0-42/Critic-main-model-0.h5]
+INFO:Reinforcement.Functions:Saving [Critic] target model as [/home/yochaiz/SmartHome/Reinforcement/DDPG/results/D-28-3-H-12-0-42/Critic-target-model-0.h5]
+INFO:Reinforcement.Functions:===== DESCRIPTIONS =====
+INFO:Reinforcement.Functions:[General]: "default knn size, ResNet architecture with ~10 layers"
+INFO:Reinforcement.Functions:[Actor]: ResNet architecture
+INFO:Reinforcement.Functions:[Actor]: Fixed bug where future reward (step 13) used continuous action instead of discrete action
+INFO:Reinforcement.Functions:[Actor]: No more threading during replays
+INFO:Reinforcement.Functions:[Critic]: ResNet architecture
+INFO:Reinforcement.Functions:===== ============ =====
+INFO:Reinforcement.Functions:[Actor] model architecture:
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:Layer (type)                    Output Shape         Param #     Connected to                     
+INFO:Reinforcement.Functions:==================================================================================================
+INFO:Reinforcement.Functions:input_1 (InputLayer)            (None, 1, 8)         0                                            
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_2 (Dense)                 (None, 1, 128)       1152        input_1[0][0]                    
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_1 (Activation)       (None, 1, 128)       0           dense_2[0][0]                    
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_3 (Dense)                 (None, 1, 128)       16512       activation_1[0][0]               
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_1 (Dense)                 (None, 1, 128)       1152        input_1[0][0]                    
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_1 (Add)                     (None, 1, 128)       0           dense_3[0][0]                    
+INFO:Reinforcement.Functions:                                                                 dense_1[0][0]                    
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_2 (Activation)       (None, 1, 128)       0           add_1[0][0]                      
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_4 (Dense)                 (None, 1, 128)       16512       activation_2[0][0]               
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_3 (Activation)       (None, 1, 128)       0           dense_4[0][0]                    
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_5 (Dense)                 (None, 1, 128)       16512       activation_3[0][0]               
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_2 (Add)                     (None, 1, 128)       0           dense_5[0][0]                    
+INFO:Reinforcement.Functions:                                                                 activation_2[0][0]               
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_4 (Activation)       (None, 1, 128)       0           add_2[0][0]                      
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_6 (Dense)                 (None, 1, 128)       16512       activation_4[0][0]               
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_5 (Activation)       (None, 1, 128)       0           dense_6[0][0]                    
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_7 (Dense)                 (None, 1, 128)       16512       activation_5[0][0]               
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_3 (Add)                     (None, 1, 128)       0           dense_7[0][0]                    
+INFO:Reinforcement.Functions:                                                                 activation_4[0][0]               
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_6 (Activation)       (None, 1, 128)       0           add_3[0][0]                      
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_8 (Dense)                 (None, 1, 128)       16512       activation_6[0][0]               
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_7 (Activation)       (None, 1, 128)       0           dense_8[0][0]                    
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_9 (Dense)                 (None, 1, 128)       16512       activation_7[0][0]               
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_4 (Add)                     (None, 1, 128)       0           dense_9[0][0]                    
+INFO:Reinforcement.Functions:                                                                 activation_6[0][0]               
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_8 (Activation)       (None, 1, 128)       0           add_4[0][0]                      
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_10 (Dense)                (None, 1, 128)       16512       activation_8[0][0]               
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_9 (Activation)       (None, 1, 128)       0           dense_10[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_11 (Dense)                (None, 1, 128)       16512       activation_9[0][0]               
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_5 (Add)                     (None, 1, 128)       0           dense_11[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_8[0][0]               
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_10 (Activation)      (None, 1, 128)       0           add_5[0][0]                      
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_12 (Dense)                (None, 1, 128)       16512       activation_10[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_11 (Activation)      (None, 1, 128)       0           dense_12[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_13 (Dense)                (None, 1, 128)       16512       activation_11[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_6 (Add)                     (None, 1, 128)       0           dense_13[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_10[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_12 (Activation)      (None, 1, 128)       0           add_6[0][0]                      
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_14 (Dense)                (None, 1, 128)       16512       activation_12[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_13 (Activation)      (None, 1, 128)       0           dense_14[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_15 (Dense)                (None, 1, 128)       16512       activation_13[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_7 (Add)                     (None, 1, 128)       0           dense_15[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_12[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_14 (Activation)      (None, 1, 128)       0           add_7[0][0]                      
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_16 (Dense)                (None, 1, 128)       16512       activation_14[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_15 (Activation)      (None, 1, 128)       0           dense_16[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_17 (Dense)                (None, 1, 128)       16512       activation_15[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_8 (Add)                     (None, 1, 128)       0           dense_17[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_14[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_16 (Activation)      (None, 1, 128)       0           add_8[0][0]                      
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_18 (Dense)                (None, 1, 128)       16512       activation_16[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_17 (Activation)      (None, 1, 128)       0           dense_18[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_19 (Dense)                (None, 1, 128)       16512       activation_17[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_9 (Add)                     (None, 1, 128)       0           dense_19[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_16[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_18 (Activation)      (None, 1, 128)       0           add_9[0][0]                      
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_20 (Dense)                (None, 1, 128)       16512       activation_18[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_19 (Activation)      (None, 1, 128)       0           dense_20[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_21 (Dense)                (None, 1, 128)       16512       activation_19[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_10 (Add)                    (None, 1, 128)       0           dense_21[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_18[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_20 (Activation)      (None, 1, 128)       0           add_10[0][0]                     
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_22 (Dense)                (None, 1, 128)       16512       activation_20[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_21 (Activation)      (None, 1, 128)       0           dense_22[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_23 (Dense)                (None, 1, 128)       16512       activation_21[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_11 (Add)                    (None, 1, 128)       0           dense_23[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_20[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_22 (Activation)      (None, 1, 128)       0           add_11[0][0]                     
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_24 (Dense)                (None, 1, 5)         645         activation_22[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:reshape_1 (Reshape)             (None, 5)            0           dense_24[0][0]                   
+INFO:Reinforcement.Functions:==================================================================================================
+INFO:Reinforcement.Functions:Total params: 349,701
+INFO:Reinforcement.Functions:Trainable params: 349,701
+INFO:Reinforcement.Functions:Non-trainable params: 0
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:[Critic] model architecture:
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:Layer (type)                    Output Shape         Param #     Connected to                     
+INFO:Reinforcement.Functions:==================================================================================================
+INFO:Reinforcement.Functions:input_2 (InputLayer)            (None, 1, 8)         0                                            
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_26 (Dense)                (None, 1, 128)       1152        input_2[0][0]                    
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_23 (Activation)      (None, 1, 128)       0           dense_26[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_27 (Dense)                (None, 1, 128)       16512       activation_23[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_25 (Dense)                (None, 1, 128)       1152        input_2[0][0]                    
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_12 (Add)                    (None, 1, 128)       0           dense_27[0][0]                   
+INFO:Reinforcement.Functions:                                                                 dense_25[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:input_3 (InputLayer)            (None, 5)            0                                            
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_24 (Activation)      (None, 1, 128)       0           add_12[0][0]                     
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_28 (Dense)                (None, 128)          768         input_3[0][0]                    
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_13 (Add)                    (None, 1, 128)       0           activation_24[0][0]              
+INFO:Reinforcement.Functions:                                                                 dense_28[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_25 (Activation)      (None, 1, 128)       0           add_13[0][0]                     
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_29 (Dense)                (None, 1, 128)       16512       activation_25[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_26 (Activation)      (None, 1, 128)       0           dense_29[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_30 (Dense)                (None, 1, 128)       16512       activation_26[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_14 (Add)                    (None, 1, 128)       0           dense_30[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_25[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_27 (Activation)      (None, 1, 128)       0           add_14[0][0]                     
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_31 (Dense)                (None, 1, 128)       16512       activation_27[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_28 (Activation)      (None, 1, 128)       0           dense_31[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_32 (Dense)                (None, 1, 128)       16512       activation_28[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_15 (Add)                    (None, 1, 128)       0           dense_32[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_27[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_29 (Activation)      (None, 1, 128)       0           add_15[0][0]                     
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_33 (Dense)                (None, 1, 128)       16512       activation_29[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_30 (Activation)      (None, 1, 128)       0           dense_33[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_34 (Dense)                (None, 1, 128)       16512       activation_30[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_16 (Add)                    (None, 1, 128)       0           dense_34[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_29[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_31 (Activation)      (None, 1, 128)       0           add_16[0][0]                     
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_35 (Dense)                (None, 1, 128)       16512       activation_31[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_32 (Activation)      (None, 1, 128)       0           dense_35[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_36 (Dense)                (None, 1, 128)       16512       activation_32[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_17 (Add)                    (None, 1, 128)       0           dense_36[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_31[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_33 (Activation)      (None, 1, 128)       0           add_17[0][0]                     
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_37 (Dense)                (None, 1, 128)       16512       activation_33[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_34 (Activation)      (None, 1, 128)       0           dense_37[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_38 (Dense)                (None, 1, 128)       16512       activation_34[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_18 (Add)                    (None, 1, 128)       0           dense_38[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_33[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_35 (Activation)      (None, 1, 128)       0           add_18[0][0]                     
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_39 (Dense)                (None, 1, 128)       16512       activation_35[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_36 (Activation)      (None, 1, 128)       0           dense_39[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_40 (Dense)                (None, 1, 128)       16512       activation_36[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_19 (Add)                    (None, 1, 128)       0           dense_40[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_35[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_37 (Activation)      (None, 1, 128)       0           add_19[0][0]                     
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_41 (Dense)                (None, 1, 128)       16512       activation_37[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_38 (Activation)      (None, 1, 128)       0           dense_41[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_42 (Dense)                (None, 1, 128)       16512       activation_38[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_20 (Add)                    (None, 1, 128)       0           dense_42[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_37[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_39 (Activation)      (None, 1, 128)       0           add_20[0][0]                     
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_43 (Dense)                (None, 1, 128)       16512       activation_39[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_40 (Activation)      (None, 1, 128)       0           dense_43[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_44 (Dense)                (None, 1, 128)       16512       activation_40[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_21 (Add)                    (None, 1, 128)       0           dense_44[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_39[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_41 (Activation)      (None, 1, 128)       0           add_21[0][0]                     
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_45 (Dense)                (None, 1, 128)       16512       activation_41[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_42 (Activation)      (None, 1, 128)       0           dense_45[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_46 (Dense)                (None, 1, 128)       16512       activation_42[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_22 (Add)                    (None, 1, 128)       0           dense_46[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_41[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_43 (Activation)      (None, 1, 128)       0           add_22[0][0]                     
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_47 (Dense)                (None, 1, 128)       16512       activation_43[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_44 (Activation)      (None, 1, 128)       0           dense_47[0][0]                   
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_48 (Dense)                (None, 1, 128)       16512       activation_44[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_23 (Add)                    (None, 1, 128)       0           dense_48[0][0]                   
+INFO:Reinforcement.Functions:                                                                 activation_43[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_45 (Activation)      (None, 1, 128)       0           add_23[0][0]                     
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_49 (Dense)                (None, 1, 1)         129         activation_45[0][0]              
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:reshape_2 (Reshape)             (None, 1)            0           dense_49[0][0]                   
+INFO:Reinforcement.Functions:==================================================================================================
+INFO:Reinforcement.Functions:Total params: 349,953
+INFO:Reinforcement.Functions:Trainable params: 349,953
+INFO:Reinforcement.Functions:Non-trainable params: 0
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:episode: 1, score:[1160.00], loss:[65.89054], sequence:[0], isInPoolRatio:[0.36], optActionSelectedRatio:[0.16], optActionInPoolButNotSelected:[0.55], random actions:[118], eInit:[1.0000], init state:[6 8 7 1 0 0 0 0], end state:[1 8 7 0 0 0 0 0], runtime(seconds):[625.10]
+INFO:Reinforcement.Functions:episode: 2, score:[1942.40], loss:[72.09194], sequence:[0], isInPoolRatio:[0.94], optActionSelectedRatio:[0.41], optActionInPoolButNotSelected:[0.55], random actions:[122], eInit:[0.9900], init state:[ 2 13  2  0  0  0  0  0], end state:[ 4 13  2  1  0  0  0  0], runtime(seconds):[621.89]
+INFO:Reinforcement.Functions:episode: 3, score:[2176.80], loss:[77.30259], sequence:[0], isInPoolRatio:[0.95], optActionSelectedRatio:[0.55], optActionInPoolButNotSelected:[0.40], random actions:[128], eInit:[0.9801], init state:[ 0  1 51  0  0  0  0  0], end state:[ 2  1 51  0  0  0  0  0], runtime(seconds):[624.64]
+INFO:Reinforcement.Functions:episode: 4, score:[1675.60], loss:[58.50295], sequence:[0], isInPoolRatio:[0.93], optActionSelectedRatio:[0.11], optActionInPoolButNotSelected:[0.88], random actions:[104], eInit:[0.9703], init state:[ 4 22  5  0  0  0  0  0], end state:[ 6 22  5  1  1  0  0  0], runtime(seconds):[627.51]
+INFO:Reinforcement.Functions:episode: 5, score:[2320.80], loss:[47.83337], sequence:[0], isInPoolRatio:[0.95], optActionSelectedRatio:[0.68], optActionInPoolButNotSelected:[0.25], random actions:[125], eInit:[0.9606], init state:[ 0 11 35  0  0  0  0  0], end state:[ 2 11 35  0  0  0  0  0], runtime(seconds):[610.84]
+INFO:Reinforcement.Functions:episode: 6, score:[1767.20], loss:[48.32717], sequence:[0], isInPoolRatio:[0.96], optActionSelectedRatio:[0.18], optActionInPoolButNotSelected:[0.81], random actions:[111], eInit:[0.9510], init state:[ 4 10 46  1  1  0  1  0], end state:[ 6 10 46  1  0  0  0  0], runtime(seconds):[595.24]
+INFO:Reinforcement.Functions:episode: 7, score:[1762.80], loss:[42.41215], sequence:[0], isInPoolRatio:[0.94], optActionSelectedRatio:[0.15], optActionInPoolButNotSelected:[0.84], random actions:[98], eInit:[0.9415], init state:[ 4  6 21  0  0  0  0  0], end state:[ 6  6 21  1  0  0  0  0], runtime(seconds):[595.41]
+INFO:Reinforcement.Functions:episode: 8, score:[2043.60], loss:[39.21723], sequence:[0], isInPoolRatio:[0.95], optActionSelectedRatio:[0.43], optActionInPoolButNotSelected:[0.54], random actions:[108], eInit:[0.9321], init state:[ 5 16 38  0  0  0  0  0], end state:[ 0 16 38  0  0  0  0  0], runtime(seconds):[594.64]
+INFO:Reinforcement.Functions:episode: 9, score:[2440.40], loss:[35.73080], sequence:[0], isInPoolRatio:[0.97], optActionSelectedRatio:[0.76], optActionInPoolButNotSelected:[0.19], random actions:[106], eInit:[0.9227], init state:[ 0 13 21  0  0  0  0  0], end state:[ 2 13 21  0  0  0  0  0], runtime(seconds):[597.98]
+INFO:Reinforcement.Functions:episode: 10, score:[1858.40], loss:[32.51858], sequence:[0], isInPoolRatio:[0.95], optActionSelectedRatio:[0.24], optActionInPoolButNotSelected:[0.74], random actions:[101], eInit:[0.9135], init state:[ 5  1 18  0  0  0  0  0], end state:[ 0  1 18  0  0  1  0  0], runtime(seconds):[597.89]
+INFO:Reinforcement.Functions:Saving [Actor] main model as [/home/yochaiz/SmartHome/Reinforcement/DDPG/results/D-28-3-H-12-0-42/Actor-main-model-1.h5]
+INFO:Reinforcement.Functions:Saving [Actor] target model as [/home/yochaiz/SmartHome/Reinforcement/DDPG/results/D-28-3-H-12-0-42/Actor-target-model-1.h5]
+INFO:Reinforcement.Functions:Saving [Critic] main model as [/home/yochaiz/SmartHome/Reinforcement/DDPG/results/D-28-3-H-12-0-42/Critic-main-model-1.h5]
+INFO:Reinforcement.Functions:Saving [Critic] target model as [/home/yochaiz/SmartHome/Reinforcement/DDPG/results/D-28-3-H-12-0-42/Critic-target-model-1.h5]
+INFO:Reinforcement.Functions:maxScore:(2440.399999999978, [9]) , maxSequence:(0, [1, 2, 3, 4, 5, 6, 7, 8, 9, 10])
+INFO:Reinforcement.Functions:episode: 11, score:[2456.80], loss:[29.33026], sequence:[0], isInPoolRatio:[0.95], optActionSelectedRatio:[0.75], optActionInPoolButNotSelected:[0.18], random actions:[108], eInit:[0.9044], init state:[ 0 12  5  0  0  0  0  0], end state:[ 2 12  5  0  0  0  0  0], runtime(seconds):[597.72]
+INFO:Reinforcement.Functions:episode: 12, score:[1808.80], loss:[29.92486], sequence:[0], isInPoolRatio:[0.94], optActionSelectedRatio:[0.23], optActionInPoolButNotSelected:[0.74], random actions:[129], eInit:[0.8953], init state:[ 4  6 53  0  0  0  0  0], end state:[ 6  6 53  1  0  0  0  0], runtime(seconds):[597.29]
+INFO:Reinforcement.Functions:episode: 13, score:[1813.20], loss:[32.72217], sequence:[0], isInPoolRatio:[0.95], optActionSelectedRatio:[0.24], optActionInPoolButNotSelected:[0.74], random actions:[120], eInit:[0.8864], init state:[5 0 2 0 0 0 0 0], end state:[0 0 2 1 0 0 0 0], runtime(seconds):[597.16]
+INFO:Reinforcement.Functions:episode: 14, score:[2312.80], loss:[27.22071], sequence:[0], isInPoolRatio:[0.96], optActionSelectedRatio:[0.64], optActionInPoolButNotSelected:[0.30], random actions:[134], eInit:[0.8775], init state:[ 1 12 25  0  0  0  0  0], end state:[ 3 12 25  1  0  0  0  0], runtime(seconds):[598.71]
+INFO:Reinforcement.Functions:episode: 15, score:[1832.40], loss:[29.91445], sequence:[0], isInPoolRatio:[0.93], optActionSelectedRatio:[0.26], optActionInPoolButNotSelected:[0.72], random actions:[114], eInit:[0.8687], init state:[ 4  0 25  1  0  0  0  0], end state:[ 6  0 25  1  0  0  0  0], runtime(seconds):[594.94]
+INFO:Reinforcement.Functions:episode: 16, score:[2494.40], loss:[36.19656], sequence:[0], isInPoolRatio:[0.97], optActionSelectedRatio:[0.78], optActionInPoolButNotSelected:[0.17], random actions:[107], eInit:[0.8601], init state:[ 0 23 55  1  0  0  0  0], end state:[ 2 23 55  1  0  0  0  0], runtime(seconds):[596.74]
+INFO:Reinforcement.Functions:episode: 17, score:[2192.00], loss:[28.59740], sequence:[0], isInPoolRatio:[0.96], optActionSelectedRatio:[0.53], optActionInPoolButNotSelected:[0.43], random actions:[104], eInit:[0.8515], init state:[ 5 17 55  0  0  0  0  0], end state:[ 0 17 55  0  0  0  0  0], runtime(seconds):[596.67]
