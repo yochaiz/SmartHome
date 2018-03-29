@@ -1,0 +1,69 @@
+INFO:Reinforcement.Functions:Critic:[{'curBackupIdx': 0, 'nBackups': 3, 'TAU': 0.001, 'actionDim': 5}]
+INFO:Reinforcement.Functions:settings:[{'gameMinutesLength': 2880, 'nModelBackups': 3, 'minGameScoreRatio': 0.95, 'nEpochs': 1, 'dequeSize': 50000, 'minGameScore': 2736, 'minGameSequence': 500, 'trainSetSize': 64, 'gamma': 0.95, 'TAU': 0.001, 'batchSize': 64, 'learningRate': 0.001, 'nGamesPerSave': 10}]
+INFO:Reinforcement.Functions:Actor:[{'k': 32, 'epsilon_min': 0.01, 'curBackupIdx': 0, 'TAU': 0.001, 'nActions': 32, 'epsilon_decay': 0.99, 'epsilon': 1.0, 'actionDim': 5, 'nBackups': 3}]
+INFO:Reinforcement.Functions:policy:[{'numOfDevices': 5, 'fname': '/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json', 'seqLen': 1, 'stateDim': (1, 8)}]
+INFO:Reinforcement.Functions:results:[{'loss': [], 'score': []}]
+INFO:Reinforcement.Functions:args:[{'gpuFrac': 0.3, 'k': 32, 'settings': '/home/yochaiz/SmartHome/Reinforcement/settings.json', 'gpuNum': 1, 'random': True, 'sequential': False, 'desc': None}]
+INFO:Reinforcement.Functions:Saving [Actor] target model as [/home/yochaiz/SmartHome/Reinforcement/DDPG/results/D-29-3-H-14-6-44/Actor-target-model-0.h5]
+INFO:Reinforcement.Functions:Saving [Actor] main model as [/home/yochaiz/SmartHome/Reinforcement/DDPG/results/D-29-3-H-14-6-44/Actor-main-model-0.h5]
+INFO:Reinforcement.Functions:Saving [Critic] target model as [/home/yochaiz/SmartHome/Reinforcement/DDPG/results/D-29-3-H-14-6-44/Critic-target-model-0.h5]
+INFO:Reinforcement.Functions:Saving [Critic] main model as [/home/yochaiz/SmartHome/Reinforcement/DDPG/results/D-29-3-H-14-6-44/Critic-main-model-0.h5]
+INFO:Reinforcement.Functions:===== DESCRIPTIONS =====
+INFO:Reinforcement.Functions:[General]: None
+INFO:Reinforcement.Functions:[Actor]: Standard (paper) architecture
+INFO:Reinforcement.Functions:[Actor]: Fixed bug where future reward (step 13) used continuous action instead of discrete action
+INFO:Reinforcement.Functions:[Actor]: No more threading during replays
+INFO:Reinforcement.Functions:[Critic]: Standard (paper) architecture
+INFO:Reinforcement.Functions:===== ============ =====
+INFO:Reinforcement.Functions:[Actor] model architecture:
+INFO:Reinforcement.Functions:_________________________________________________________________
+INFO:Reinforcement.Functions:Layer (type)                 Output Shape              Param #   
+INFO:Reinforcement.Functions:=================================================================
+INFO:Reinforcement.Functions:input_1 (InputLayer)         (None, 1, 8)              0         
+INFO:Reinforcement.Functions:_________________________________________________________________
+INFO:Reinforcement.Functions:dense_1 (Dense)              (None, 1, 512)            4608      
+INFO:Reinforcement.Functions:_________________________________________________________________
+INFO:Reinforcement.Functions:dense_2 (Dense)              (None, 1, 256)            131328    
+INFO:Reinforcement.Functions:_________________________________________________________________
+INFO:Reinforcement.Functions:dense_3 (Dense)              (None, 1, 5)              1285      
+INFO:Reinforcement.Functions:_________________________________________________________________
+INFO:Reinforcement.Functions:reshape_1 (Reshape)          (None, 5)                 0         
+INFO:Reinforcement.Functions:=================================================================
+INFO:Reinforcement.Functions:Total params: 137,221
+INFO:Reinforcement.Functions:Trainable params: 137,221
+INFO:Reinforcement.Functions:Non-trainable params: 0
+INFO:Reinforcement.Functions:_________________________________________________________________
+INFO:Reinforcement.Functions:[Critic] model architecture:
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:Layer (type)                    Output Shape         Param #     Connected to                     
+INFO:Reinforcement.Functions:==================================================================================================
+INFO:Reinforcement.Functions:input_2 (InputLayer)            (None, 1, 8)         0                                            
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_4 (Dense)                 (None, 1, 512)       4608        input_2[0][0]                    
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:input_3 (InputLayer)            (None, 5)            0                                            
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_5 (Dense)                 (None, 1, 256)       131328      dense_4[0][0]                    
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_6 (Dense)                 (None, 256)          1536        input_3[0][0]                    
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:add_1 (Add)                     (None, 1, 256)       0           dense_5[0][0]                    
+INFO:Reinforcement.Functions:                                                                 dense_6[0][0]                    
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:activation_1 (Activation)       (None, 1, 256)       0           add_1[0][0]                      
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:dense_7 (Dense)                 (None, 1, 1)         257         activation_1[0][0]               
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:reshape_2 (Reshape)             (None, 1)            0           dense_7[0][0]                    
+INFO:Reinforcement.Functions:==================================================================================================
+INFO:Reinforcement.Functions:Total params: 137,729
+INFO:Reinforcement.Functions:Trainable params: 137,729
+INFO:Reinforcement.Functions:Non-trainable params: 0
+INFO:Reinforcement.Functions:__________________________________________________________________________________________________
+INFO:Reinforcement.Functions:episode: 1, score:[2182.80], loss:[115.84847], sequence:[0], isInPoolRatio:[1.00], optActionSelectedRatio:[0.65], optActionInPoolButNotSelected:[0.32], random actions:[132], eInit:[1.0000], init state:[ 3 11 28  0  0  0  0  0], end state:[ 5 11 28  0  0  0  0  0], runtime(seconds):[306.88]
+INFO:Reinforcement.Functions:episode: 2, score:[2140.00], loss:[66.26306], sequence:[0], isInPoolRatio:[1.00], optActionSelectedRatio:[0.54], optActionInPoolButNotSelected:[0.44], random actions:[117], eInit:[0.9900], init state:[6 8 0 1 0 0 0 0], end state:[1 8 0 0 0 0 0 0], runtime(seconds):[310.24]
+INFO:Reinforcement.Functions:episode: 3, score:[2229.60], loss:[67.68063], sequence:[0], isInPoolRatio:[1.00], optActionSelectedRatio:[0.62], optActionInPoolButNotSelected:[0.35], random actions:[122], eInit:[0.9801], init state:[ 1  0 24  1  0  0  0  0], end state:[ 3  0 24  0  0  0  0  0], runtime(seconds):[309.03]
+INFO:Reinforcement.Functions:episode: 4, score:[2216.40], loss:[63.46443], sequence:[0], isInPoolRatio:[1.00], optActionSelectedRatio:[0.60], optActionInPoolButNotSelected:[0.37], random actions:[120], eInit:[0.9703], init state:[ 0  9 59  0  0  0  0  0], end state:[ 2  9 59  0  0  0  0  0], runtime(seconds):[308.86]
+INFO:Reinforcement.Functions:episode: 5, score:[2257.60], loss:[60.13939], sequence:[0], isInPoolRatio:[1.00], optActionSelectedRatio:[0.60], optActionInPoolButNotSelected:[0.38], random actions:[109], eInit:[0.9606], init state:[ 6 19 20  0  0  0  0  0], end state:[ 1 19 20  0  0  0  0  0], runtime(seconds):[319.67]
+INFO:Reinforcement.Functions:episode: 6, score:[2420.80], loss:[44.51663], sequence:[0], isInPoolRatio:[1.00], optActionSelectedRatio:[0.72], optActionInPoolButNotSelected:[0.25], random actions:[119], eInit:[0.9510], init state:[ 0 15 56  0  0  0  0  0], end state:[ 2 15 56  0  0  0  0  0], runtime(seconds):[318.21]
+INFO:Reinforcement.Functions:episode: 7, score:[2463.20], loss:[37.00008], sequence:[0], isInPoolRatio:[1.00], optActionSelectedRatio:[0.78], optActionInPoolButNotSelected:[0.19], random actions:[114], eInit:[0.9415], init state:[ 1 10  9  0  0  0  0  0], end state:[ 3 10  9  0  0  0  0  0], runtime(seconds):[319.49]

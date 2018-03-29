@@ -102,7 +102,7 @@ class Critic(DeepNetwork):
     # Standard (paper) architecture
     def buildModel(self, lr):
         self.description.append("Standard (paper) architecture")
-        hidden = [128, 64]  # number of hidden layers output units
+        hidden = [512, 256]  # number of hidden layers output units
         nOutput = 1  # number of output layer units
 
         # define stateInput

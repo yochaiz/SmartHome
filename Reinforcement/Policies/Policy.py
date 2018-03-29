@@ -99,7 +99,7 @@ class Policy:
     def toJSON(self):
         var = dict(vars(self))  # make dict copy
         jsonObj = {}
-        for key, val in var.iteritems():
+        for key, val in var.items():
             if type(val) in self.dictTypes:
                 jsonObj[key] = val
 
@@ -156,8 +156,8 @@ class Policy:
             daysArray = [[] for j in range(nDays)]
 
             for timeDict in device:
-                if type(timeDict[
-                            "days"]) is unicode:  # replace predefined array in JSON with actual array for future simplicity
+                # replace predefined array in JSON with actual array for future simplicity
+                if type(timeDict["days"]) is not list:
                     timeDict["days"] = policy[timeDict["days"]]
 
                 # sort timeDict by startTime

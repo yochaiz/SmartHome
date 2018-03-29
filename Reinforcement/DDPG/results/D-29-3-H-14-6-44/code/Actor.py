@@ -130,8 +130,8 @@ class Actor(DeepNetwork):
     # Standard (paper) architecture
     def buildModel(self, lr):
         self.description.append("Standard (paper) architecture")
-        hidden1 = 128
-        hidden2 = 64
+        hidden1 = 512
+        hidden2 = 256
 
         # define stateInput
         self.stateInput = Input(shape=self.stateDim)
