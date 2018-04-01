@@ -2,6 +2,7 @@ import os, sys, json, logging, argparse, re, signal
 from datetime import datetime
 from shutil import copy2
 from Reinforcement.Results import Results
+from Reinforcement.DDPG.DeepNetwork import DeepNetwork
 
 
 def loadInfoFile(folderName, logger):
@@ -115,14 +116,16 @@ def saveDataToJSON(info, jsonFullFname):
 
 
 # attach SIGTERM handler to program
-def attachSIGTERMhandler(logger):
+def attachSIGTERMhandler(dirName, logger):
     # define terminate signal handler
     def terminateSignalHandler(signal, frame):
         if logger is not None:
-            logger.info('_ _ _ Program terminated by user _ _ _')
+            logger.info('_ _ _ Program was terminated by user or server _ _ _')
+            DeepNetwork.save(dirName, logger)
         sys.exit(0)
 
     signal.signal(signal.SIGTERM, terminateSignalHandler)
+    signal.signal(signal.SIGKILL, terminateSignalHandler)
 
 
 def updateMaxTuple(newValue, g, curTuple):

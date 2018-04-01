@@ -18,7 +18,7 @@ args = Funcs.parseArguments()
 dirName = Funcs.createResultsFolder(baseFolder)
 logger = Funcs.initLogger(dirName)
 sess = Funcs.initGPU(args.gpuNum, args.gpuFrac)
-Funcs.attachSIGTERMhandler(logger)
+Funcs.attachSIGTERMhandler(dirName, logger)
 # save source code
 Funcs.saveCode(dirName, (baseFolder, ['train.py', 'Actor.py', 'Critic.py', 'DeepNetwork.py', 'ReplayBuffer.py']))
 
@@ -149,6 +149,10 @@ while curSequence < settings['minGameSequence']:
     else:
         curSequence = 0
 
+    # update opt model if achieved new max score
+    if score > maxScore[0]:
+        logger.info("Saving optimal models")
+        DeepNetwork.save(dirName, logger)
     # update maximal score achieved during games
     maxScore = Funcs.updateMaxTuple(score, g, maxScore)
     # update maximal sequence achieved during games
