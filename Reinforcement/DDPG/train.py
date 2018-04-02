@@ -149,15 +149,6 @@ while curSequence < settings['minGameSequence']:
     else:
         curSequence = 0
 
-    # update opt model if achieved new max score
-    if score > maxScore[0]:
-        logger.info("Saving optimal models")
-        DeepNetwork.save(dirName, logger)
-    # update maximal score achieved during games
-    maxScore = Funcs.updateMaxTuple(score, g, maxScore)
-    # update maximal sequence achieved during games
-    maxSequence = Funcs.updateMaxTuple(curSequence, g, maxSequence)
-
     endT = time.time()
 
     # log game
@@ -167,6 +158,15 @@ while curSequence < settings['minGameSequence']:
             .format(g, score, loss, curSequence, isInPoolRatio, numOfOptActionSelected, optActionInPoolButNotSelected,
                     numOfRandomActions,
                     epsilon, initState, state[-1, :], (endT - startT)))
+
+    # update opt model if achieved new max score
+    if score > maxScore[0]:
+        logger.info("Saving optimal models")
+        DeepNetwork.save(dirName, logger)
+    # update maximal score achieved during games
+    maxScore = Funcs.updateMaxTuple(score, g, maxScore)
+    # update maximal sequence achieved during games
+    maxSequence = Funcs.updateMaxTuple(curSequence, g, maxSequence)
 
     # update results object
     results.loss.append(round(loss, 5))

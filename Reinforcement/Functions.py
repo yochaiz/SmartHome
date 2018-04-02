@@ -125,7 +125,7 @@ def attachSIGTERMhandler(dirName, logger):
         sys.exit(0)
 
     signal.signal(signal.SIGTERM, terminateSignalHandler)
-    signal.signal(signal.SIGKILL, terminateSignalHandler)
+    # signal.signal(signal.SIGKILL, terminateSignalHandler)
 
 
 def updateMaxTuple(newValue, g, curTuple):
