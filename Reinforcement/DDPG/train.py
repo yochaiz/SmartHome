@@ -85,6 +85,8 @@ g = 0  # game number
 curTime = policy.timePrefixToDate(policy.generateRandomTimePrefix())  # init start time
 stateTimeDelta = timedelta(minutes=17)  # init time delta
 epsilon = actor.epsilon
+# init optimal models save history array for logging
+optimalModelsHistory = []
 
 while curSequence < settings['minGameSequence']:
     g += 1
@@ -161,8 +163,8 @@ while curSequence < settings['minGameSequence']:
 
     # update opt model if achieved new max score
     if score > maxScore[0]:
-        logger.info("Saving optimal models")
-        DeepNetwork.save(dirName, logger)
+        backupIdx = DeepNetwork.save(dirName, None)
+        optimalModelsHistory.append(backupIdx)
     # update maximal score achieved during games
     maxScore = Funcs.updateMaxTuple(score, g, maxScore)
     # update maximal sequence achieved during games
@@ -189,6 +191,8 @@ while curSequence < settings['minGameSequence']:
     if (g % settings['nGamesPerSave']) == 0:
         DeepNetwork.save(dirName, logger)
         logger.info("maxScore:{} , maxSequence:{}".format(maxScore, maxSequence))
+        logger.info("Optimal models save history:{}".format(optimalModelsHistory))
+        optimalModelsHistory = []
 
 ## GAME HAS ENDED
 # log max score & sequence values
