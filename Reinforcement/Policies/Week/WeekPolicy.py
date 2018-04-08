@@ -46,6 +46,7 @@ class WeekPolicy(Policy):
     def __init__(self, fname, seqLen=1):
         super(WeekPolicy, self).__init__(fname, seqLen)
         self.stateDim = (self.seqLen, self.stateDevicesStartIdx + self.numOfDevices)
+        self.rewardScaleFactor = 5
 
     def minTimeUnit(self):
         return timedelta(minutes=1)
@@ -100,7 +101,8 @@ class WeekPolicy(Policy):
 
         # build input according to seqLen
         for i in reversed(range(self.seqLen)):  # iterate backwards
-            input[i, :self.stateDevicesStartIdx] = np.array([stateTime.weekday(), stateTime.hour, stateTime.minute], dtype=int)
+            input[i, :self.stateDevicesStartIdx] = np.array([stateTime.weekday(), stateTime.hour, stateTime.minute],
+                                                            dtype=int)
             input[i, self.stateDevicesStartIdx:] = self.buildExpectedState(stateTime)
             stateTime -= self.minTimeUnit()
 
@@ -117,6 +119,7 @@ class WeekPolicy(Policy):
 
         # total reward is scaled in range [-1,1]
         reward = (correctCounter - wrongCounter) / float(self.numOfDevices)
+        reward *= self.rewardScaleFactor
 
         return reward
 

@@ -39,7 +39,7 @@ settings = None
 with open(args.settings, 'r') as f:
     settings = json.load(f)
 
-minGameScore = int(settings['minGameScoreRatio'] * settings['gameMinutesLength'])
+minGameScore = int(settings['minGameScoreRatio'] * settings['gameMinutesLength'] * policy.rewardScaleFactor)
 settings['minGameScore'] = minGameScore
 info['settings'] = settings
 
