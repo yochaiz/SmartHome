@@ -162,7 +162,7 @@ while curSequence < settings['minGameSequence']:
     # update opt model if achieved new max score
     if score > maxScore[0]:
         backupIdx = DeepNetwork.save(dirName, None)
-        optimalModelsHistory.append(backupIdx)
+        optimalModelsHistory.append((g, backupIdx))
     # update maximal score achieved during games
     maxScore = Funcs.updateMaxTuple(score, g, maxScore)
     # update maximal sequence achieved during games
