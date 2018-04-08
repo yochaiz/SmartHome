@@ -187,8 +187,12 @@ while curSequence < settings['minGameSequence']:
 
     # save models and log max score & sequence values
     if (g % settings['nGamesPerSave']) == 0:
-        DeepNetwork.save(dirName, logger)
+        # save models if haven't saved them lately
+        if len(optimalModelsHistory) == 0:
+            DeepNetwork.save(dirName, logger)
+        # log max score & sequence values
         logger.info("maxScore:{} , maxSequence:{}".format(maxScore, maxSequence))
+        # log when we have reached optimal models lately
         logger.info("Optimal models save history:{}".format(optimalModelsHistory))
         optimalModelsHistory = []
 
