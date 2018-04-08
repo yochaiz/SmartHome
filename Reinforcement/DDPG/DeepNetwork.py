@@ -33,9 +33,9 @@ class DeepNetwork:
         self.models[self.mainModelKey] = self.buildModel(lr)
         # create target (final) model as copy of training model
         self.models[self.targetModelKey] = clone_model(self.models[self.mainModelKey])
+        # both models should start with same weights
         self.models[self.targetModelKey].set_weights(self.models[self.mainModelKey].get_weights())
         # self.models[self.targetModelKey] = self.buildModel()
-        # TODO: both models should start with same weights or not ?? papers says yes ...
 
         # add self to objects list
         DeepNetwork.objs.append(self)
