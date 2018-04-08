@@ -116,12 +116,14 @@ def saveDataToJSON(info, jsonFullFname):
 
 
 # attach SIGTERM handler to program
-def attachSIGTERMhandler(dirName, logger):
+def attachSIGTERMhandler(results, logger):
     # define terminate signal handler
     def terminateSignalHandler(signal, frame):
         if logger is not None:
             logger.info('_ _ _ Program was terminated by user or server _ _ _')
-            DeepNetwork.save(dirName, logger)
+            DeepNetwork.save(results.getFullPath(), logger)
+
+        results.moveToEnded()
         sys.exit(0)
 
     signal.signal(signal.SIGTERM, terminateSignalHandler)

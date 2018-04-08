@@ -7,9 +7,17 @@ now = datetime.now()
 outputFile = 'D-{}-{}-H-{}-{}-{}.out'.format(now.day, now.month, now.hour, now.minute, now.second)
 
 commands = [
-    [sys.executable, './train.py', '0', '--random', '--k', '32'],
-    [sys.executable, './train.py', '0', '--random']
+    [sys.executable, './train.py', '0', '--random', '--k', '32', '--desc', '"step 13 with critic main model"'],
+    [sys.executable, './train.py', '0', '--random', '--k', '32', '--desc', '"step 13 with critic & actor main model"']
 ]
+
+# dstFile = 'ReplayBuffer.py'
+# commands = [
+#     ([sys.executable, './train.py', '0', '--random', '--k', '32', '--desc', '"step 13 with critic main model"'],
+#      'ReplayBuffer-1.py'),
+#     ([sys.executable, './train.py', '0', '--random', '--k', '32', '--desc', '"step 13 with critic & actor main model"'],
+#      'ReplayBuffer-2.py')
+# ]
 
 # calc GPU fraction
 nProc = len(commands)
@@ -28,9 +36,11 @@ with open(outputFile, mode='w') as out:
     out.write('***')
     # run processes
     for cmd in commands:
+        # copy2(file, dstFile)
+        # out.write('copied [{}] to [{}]'.format(file, dstFile))
         p = Popen(cmd, stdout=out, stderr=out)
         procs.append(p)
-        time.sleep(10)
+        time.sleep(100)
 
 for p in procs:
     p.wait()

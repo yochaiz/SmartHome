@@ -65,44 +65,10 @@ class Critic(DeepNetwork):
     #
     #     return model
 
-    # # deeper architecture
-    # def buildModel(self, lr):
-    #     self.description.append("Try deeper architecture")
-    #     hidden = [256] * 2
-    #     nOutput = 1  # number of output layer units
-    #
-    #     # define stateInput
-    #     self.stateInput = Input(shape=self.stateDim)
-    #     layer1 = Dense(hidden[0], activation='relu')(self.stateInput)
-    #     layer2State = Dense(hidden[1], activation='linear')(layer1)
-    #
-    #     self.actionInput = Input(shape=(self.actionDim,))
-    #     layer2Action = Dense(hidden[1], activation='linear')(self.actionInput)
-    #
-    #     layer2 = add([layer2State, layer2Action])
-    #     layer3 = Activation('relu')(layer2)
-    #
-    #     nLayers = 3
-    #     # init layers array
-    #     h = [layer3]
-    #     # add layers to array
-    #     for i in range(nLayers):
-    #         h.append(Dense(hidden[0], activation='relu')(h[-1]))
-    #
-    #     layer4 = Dense(nOutput, activation='linear')(h[-1])
-    #     layer5 = Reshape((nOutput,))(layer4)
-    #
-    #     model = Model(inputs=[self.stateInput, self.actionInput], outputs=layer5)
-    #     # compile model
-    #     adam = Adam(lr=lr)
-    #     model.compile(loss='mse', optimizer=adam)
-    #
-    #     return model
-
-    # Standard (paper) architecture
+    # deeper architecture
     def buildModel(self, lr):
-        self.description.append("Standard (paper) architecture")
-        hidden = [128, 64]  # number of hidden layers output units
+        self.description.append("Try deeper architecture")
+        hidden = [256] * 2
         nOutput = 1  # number of output layer units
 
         # define stateInput
@@ -115,7 +81,15 @@ class Critic(DeepNetwork):
 
         layer2 = add([layer2State, layer2Action])
         layer3 = Activation('relu')(layer2)
-        layer4 = Dense(nOutput, activation='linear')(layer3)
+
+        nLayers = 3
+        # init layers array
+        h = [layer3]
+        # add layers to array
+        for i in range(nLayers):
+            h.append(Dense(hidden[0], activation='relu')(h[-1]))
+
+        layer4 = Dense(nOutput, activation='linear')(h[-1])
         layer5 = Reshape((nOutput,))(layer4)
 
         model = Model(inputs=[self.stateInput, self.actionInput], outputs=layer5)
@@ -124,3 +98,29 @@ class Critic(DeepNetwork):
         model.compile(loss='mse', optimizer=adam)
 
         return model
+
+    # # Standard (paper) architecture
+    # def buildModel(self, lr):
+    #     self.description.append("Standard (paper) architecture")
+    #     hidden = [128, 64]  # number of hidden layers output units
+    #     nOutput = 1  # number of output layer units
+    #
+    #     # define stateInput
+    #     self.stateInput = Input(shape=self.stateDim)
+    #     layer1 = Dense(hidden[0], activation='relu')(self.stateInput)
+    #     layer2State = Dense(hidden[1], activation='linear')(layer1)
+    #
+    #     self.actionInput = Input(shape=(self.actionDim,))
+    #     layer2Action = Dense(hidden[1], activation='linear')(self.actionInput)
+    #
+    #     layer2 = add([layer2State, layer2Action])
+    #     layer3 = Activation('relu')(layer2)
+    #     layer4 = Dense(nOutput, activation='linear')(layer3)
+    #     layer5 = Reshape((nOutput,))(layer4)
+    #
+    #     model = Model(inputs=[self.stateInput, self.actionInput], outputs=layer5)
+    #     # compile model
+    #     adam = Adam(lr=lr)
+    #     model.compile(loss='mse', optimizer=adam)
+    #
+    #     return model

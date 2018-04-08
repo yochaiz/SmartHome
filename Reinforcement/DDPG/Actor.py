@@ -102,45 +102,23 @@ class Actor(DeepNetwork):
     #
     #     return model
 
-    # # deeper architecture
-    # def buildModel(self, lr):
-    #     self.description.append("Try deeper architecture")
-    #     hidden = 256
-    #     nLayers = 5
-    #
-    #     # init layers array
-    #     h = []
-    #     # define stateInput
-    #     self.stateInput = Input(shape=self.stateDim)
-    #     h.append(self.stateInput)
-    #     # add layers to array
-    #     for i in range(nLayers):
-    #         h.append(Dense(hidden, activation='relu')(h[-1]))
-    #     # add output layers
-    #     h.append(Dense(self.actionDim, activation='sigmoid')(h[-1]))
-    #     V = Reshape((self.actionDim,))(h[-1])
-    #
-    #     model = Model(input=self.stateInput, outputs=V)
-    #     # compile model
-    #     adam = Adam(lr=lr)
-    #     model.compile(loss='mse', optimizer=adam)
-    #
-    #     return model
-
-    # Standard (paper) architecture
+    # deeper architecture
     def buildModel(self, lr):
-        self.description.append("Standard (paper) architecture")
-        hidden1 = 128
-        hidden2 = 64
+        self.description.append("Try deeper architecture")
+        hidden = 256
+        nLayers = 5
 
+        # init layers array
+        h = []
         # define stateInput
         self.stateInput = Input(shape=self.stateDim)
-        h0 = Dense(hidden1, activation='relu')(self.stateInput)
-        # model.add(BatchNormalization())
-        h1 = Dense(hidden2, activation='relu')(h0)
-        # model.add(BatchNormalization())
-        h2 = Dense(self.actionDim, activation='sigmoid')(h1)
-        V = Reshape((self.actionDim,))(h2)
+        h.append(self.stateInput)
+        # add layers to array
+        for i in range(nLayers):
+            h.append(Dense(hidden, activation='relu')(h[-1]))
+        # add output layers
+        h.append(Dense(self.actionDim, activation='sigmoid')(h[-1]))
+        V = Reshape((self.actionDim,))(h[-1])
 
         model = Model(input=self.stateInput, outputs=V)
         # compile model
@@ -148,6 +126,28 @@ class Actor(DeepNetwork):
         model.compile(loss='mse', optimizer=adam)
 
         return model
+
+    # # Standard (paper) architecture
+    # def buildModel(self, lr):
+    #     self.description.append("Standard (paper) architecture")
+    #     hidden1 = 128
+    #     hidden2 = 64
+    #
+    #     # define stateInput
+    #     self.stateInput = Input(shape=self.stateDim)
+    #     h0 = Dense(hidden1, activation='relu')(self.stateInput)
+    #     # model.add(BatchNormalization())
+    #     h1 = Dense(hidden2, activation='relu')(h0)
+    #     # model.add(BatchNormalization())
+    #     h2 = Dense(self.actionDim, activation='sigmoid')(h1)
+    #     V = Reshape((self.actionDim,))(h2)
+    #
+    #     model = Model(input=self.stateInput, outputs=V)
+    #     # compile model
+    #     adam = Adam(lr=lr)
+    #     model.compile(loss='mse', optimizer=adam)
+    #
+    #     return model
 
     def __optimalActionPerState(self, state, criticModel, validActions, discreteAction, i):
         # duplicate input as number of actions for Q-value prediction

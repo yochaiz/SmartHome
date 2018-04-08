@@ -13,22 +13,24 @@ from Reinforcement.Policies.Week.WeekPolicy import WeekPolicy
 
 # init current file (script) folder
 baseFolder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # script directory
+# init policy
+policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json")
+# init results
+results = Results(baseFolder, policy.getActionDim())
 
 args = Funcs.parseArguments()
-dirName = Funcs.createResultsFolder(baseFolder)
+dirName = results.getFullPath()
 logger = Funcs.initLogger(dirName)
 sess = Funcs.initGPU(args.gpuNum, args.gpuFrac)
-Funcs.attachSIGTERMhandler(dirName, logger)
+Funcs.attachSIGTERMhandler(results, logger)
 # save source code
 Funcs.saveCode(dirName, (baseFolder, ['train.py', 'Actor.py', 'Critic.py', 'DeepNetwork.py', 'ReplayBuffer.py']))
 
 # init info json file
 info, jsonFullFname = Funcs.loadInfoFile(dirName, logger)
 info['args'] = vars(args)
-
-# initialize policy and the agent
-policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json")
 info['policy'] = policy.toJSON()
+info['results'] = results.toJSON()
 
 # save policy JSON file to training results folder
 copy2(policy.getFname(), '{}/policy.json'.format(dirName))
@@ -40,10 +42,6 @@ with open(args.settings, 'r') as f:
 minGameScore = int(settings['minGameScoreRatio'] * settings['gameMinutesLength'])
 settings['minGameScore'] = minGameScore
 info['settings'] = settings
-
-# init Results object
-results = Results()
-info['results'] = results.toJSON()
 
 # init replay Buffer
 replayBuffer = ReplayBuffer(settings['dequeSize'], settings['gamma'])
@@ -197,6 +195,7 @@ while curSequence < settings['minGameSequence']:
 ## GAME HAS ENDED
 # log max score & sequence values
 logger.info("maxScore:{} , maxSequence:{}".format(maxScore, maxSequence))
-
 # save models
 DeepNetwork.save(dirName, logger)
+# move to ended folder
+results.moveToEnded()
