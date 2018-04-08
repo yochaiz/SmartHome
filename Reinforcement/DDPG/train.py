@@ -49,6 +49,9 @@ replayBuffer = ReplayBuffer(settings['dequeSize'], settings['gamma'])
 actor = Actor(sess, policy.idxToAction, policy.generateRandomAction, policy.normalizeStateForModelInput,
               policy.getStateDim(), policy.getActionDim(), settings['TAU'], settings['learningRate'], args.k,
               settings['nModelBackups'])
+# set epsilon reset signal
+actor.setEpsilonHandler(logger)
+
 # init Critic
 critic = Critic(sess, policy.getStateDim(), policy.getActionDim(), settings['TAU'], settings['learningRate'],
                 settings['nModelBackups'])

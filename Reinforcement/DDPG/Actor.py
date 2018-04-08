@@ -6,9 +6,12 @@ import numpy as np
 from math import ceil
 import tensorflow as tf
 from sklearn.neighbors import NearestNeighbors
+import signal
 
 
 class Actor(DeepNetwork):
+    epsilonInit = 1.0
+
     # class of policy function pointers
     class PolicyFunctions:
         def __init__(self, idxToAction, generateRandomAction, normalizeState):
@@ -39,7 +42,7 @@ class Actor(DeepNetwork):
         self.sess.run(tf.global_variables_initializer())
 
         # exploration params
-        self.epsilon = 1.0  # exploration rate
+        self.epsilon = self.epsilonInit  # exploration rate
         self.epsilon_min = 0.01  # exploration minimal rate
         self.epsilon_decay = 0.99  # 1 - 1E-3
 
@@ -209,3 +212,12 @@ class Actor(DeepNetwork):
 
     def updateEpsilon(self):
         self.epsilon = max(self.epsilon_min, (self.epsilon * self.epsilon_decay))
+
+    # set signal handler to reset epsilon value
+    def setEpsilonHandler(self, logger):
+        def sigHandler(signal, frame):
+            self.epsilon = self.epsilonInit
+            if logger:
+                logger.info('Epsilon value was reset to [{}]'.format(self.epsilon))
+
+        signal.signal(signal.SIGUSR2, sigHandler)
