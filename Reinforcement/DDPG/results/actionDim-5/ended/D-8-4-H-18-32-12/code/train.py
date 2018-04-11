@@ -11,14 +11,14 @@ from Reinforcement.DDPG.DeepNetwork import DeepNetwork
 from Reinforcement.DDPG.ReplayBuffer import ReplayBuffer
 from Reinforcement.Policies.Week.WeekPolicy import WeekPolicy
 
-args = Funcs.parseArguments()
 # init current file (script) folder
 baseFolder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # script directory
 # init policy
-policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json", args.rewardScale)
+policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json")
 # init results
 results = Results(baseFolder, policy.getActionDim())
 
+args = Funcs.parseArguments()
 dirName = results.getFullPath()
 logger = Funcs.initLogger(dirName)
 sess = Funcs.initGPU(args.gpuNum, args.gpuFrac)
@@ -84,7 +84,7 @@ maxSequence = (0, [])
 maxScore = (-1 * settings['gameMinutesLength'], [])
 g = 0  # game number
 curTime = policy.timePrefixToDate(policy.generateRandomTimePrefix())  # init start time
-stateTimeDelta = timedelta(minutes=((60 * 12) + 7))  # init time delta
+stateTimeDelta = timedelta(minutes=17)  # init time delta
 epsilon = actor.epsilon
 # init optimal models save history array for logging
 optimalModelsHistory = []
@@ -193,12 +193,11 @@ while curSequence < settings['minGameSequence']:
         # save models if haven't saved them lately
         if len(optimalModelsHistory) == 0:
             DeepNetwork.save(dirName, logger)
-        else:
-            # log when we have reached optimal models lately
-            logger.info("Optimal models save history:{}".format(optimalModelsHistory))
-            optimalModelsHistory = []
         # log max score & sequence values
         logger.info("maxScore:{} , maxSequence:{}".format(maxScore, maxSequence))
+        # log when we have reached optimal models lately
+        logger.info("Optimal models save history:{}".format(optimalModelsHistory))
+        optimalModelsHistory = []
 
 ## GAME HAS ENDED
 # log max score & sequence values

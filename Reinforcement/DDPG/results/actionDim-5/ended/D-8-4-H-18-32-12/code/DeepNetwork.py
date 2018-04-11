@@ -71,7 +71,7 @@ class DeepNetwork:
         wTargetModel = self.models[self.targetModelKey].get_weights()
         assert (len(wModel) == len(wTargetModel))
         for i in range(len(wTargetModel)):
-            wTargetModel[i] = (self.TAU * wModel[i]) + ((1.0 - self.TAU) * wTargetModel[i])
+            wTargetModel[i] = (self.TAU * wModel[i]) + ((1 - self.TAU) * wTargetModel[i])
 
     @staticmethod
     def updateModelParams():

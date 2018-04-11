@@ -7,8 +7,11 @@ now = datetime.now()
 outputFile = 'D-{}-{}-H-{}-{}-{}.out'.format(now.day, now.month, now.hour, now.minute, now.second)
 
 commands = [
-    [sys.executable, './train.py', '0', '--random', '--k', '32', '--desc', '"step 13 with critic main model"'],
-    [sys.executable, './train.py', '0', '--random', '--k', '32', '--desc', '"step 13 with critic & actor main model"']
+    [sys.executable, './train.py', '0', '--sequential', '--k', '32', '--desc', '"deep model **sequential**"'],
+    [sys.executable, './train.py', '0', '--sequential', '--k', '32', '--rewardScale', '0.5', '--desc',
+     '"deep model **sequential** with rewardScaleFactor = 0.5"'],
+    [sys.executable, './train.py', '0', '--sequential', '--k', '32', '--settings',
+     '/home/yochaiz/SmartHome/Reinforcement/settings2.json', '--desc', '"deep model **sequential** 0.9 minGameRatio"']
 ]
 
 # dstFile = 'ReplayBuffer.py'
@@ -40,7 +43,7 @@ with open(outputFile, mode='w') as out:
         # out.write('copied [{}] to [{}]'.format(file, dstFile))
         p = Popen(cmd, stdout=out, stderr=out)
         procs.append(p)
-        time.sleep(100)
+        time.sleep(10)
 
 for p in procs:
     p.wait()

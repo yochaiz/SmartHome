@@ -11,26 +11,24 @@ from Reinforcement.DDPG.DeepNetwork import DeepNetwork
 from Reinforcement.DDPG.ReplayBuffer import ReplayBuffer
 from Reinforcement.Policies.Week.WeekPolicy import WeekPolicy
 
-args = Funcs.parseArguments()
 # init current file (script) folder
 baseFolder = os.path.dirname(os.path.abspath(inspect.getfile(inspect.currentframe())))  # script directory
-# init policy
-policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json", args.rewardScale)
-# init results
-results = Results(baseFolder, policy.getActionDim())
 
-dirName = results.getFullPath()
+args = Funcs.parseArguments()
+dirName = Funcs.createResultsFolder(baseFolder)
 logger = Funcs.initLogger(dirName)
 sess = Funcs.initGPU(args.gpuNum, args.gpuFrac)
-Funcs.attachSIGTERMhandler(results, logger)
+Funcs.attachSIGTERMhandler(dirName, logger)
 # save source code
 Funcs.saveCode(dirName, (baseFolder, ['train.py', 'Actor.py', 'Critic.py', 'DeepNetwork.py', 'ReplayBuffer.py']))
 
 # init info json file
 info, jsonFullFname = Funcs.loadInfoFile(dirName, logger)
 info['args'] = vars(args)
+
+# initialize policy and the agent
+policy = WeekPolicy("/home/yochaiz/SmartHome/Reinforcement/Policies/Week/policy2.json")
 info['policy'] = policy.toJSON()
-info['results'] = results.toJSON()
 
 # save policy JSON file to training results folder
 copy2(policy.getFname(), '{}/policy.json'.format(dirName))
@@ -39,9 +37,13 @@ settings = None
 with open(args.settings, 'r') as f:
     settings = json.load(f)
 
-minGameScore = int(settings['minGameScoreRatio'] * settings['gameMinutesLength'] * policy.rewardScaleFactor)
+minGameScore = int(settings['minGameScoreRatio'] * settings['gameMinutesLength'])
 settings['minGameScore'] = minGameScore
 info['settings'] = settings
+
+# init Results object
+results = Results()
+info['results'] = results.toJSON()
 
 # init replay Buffer
 replayBuffer = ReplayBuffer(settings['dequeSize'], settings['gamma'])
@@ -49,9 +51,6 @@ replayBuffer = ReplayBuffer(settings['dequeSize'], settings['gamma'])
 actor = Actor(sess, policy.idxToAction, policy.generateRandomAction, policy.normalizeStateForModelInput,
               policy.getStateDim(), policy.getActionDim(), settings['TAU'], settings['learningRate'], args.k,
               settings['nModelBackups'])
-# set epsilon reset signal
-actor.setEpsilonHandler(logger)
-
 # init Critic
 critic = Critic(sess, policy.getStateDim(), policy.getActionDim(), settings['TAU'], settings['learningRate'],
                 settings['nModelBackups'])
@@ -84,10 +83,8 @@ maxSequence = (0, [])
 maxScore = (-1 * settings['gameMinutesLength'], [])
 g = 0  # game number
 curTime = policy.timePrefixToDate(policy.generateRandomTimePrefix())  # init start time
-stateTimeDelta = timedelta(minutes=((60 * 12) + 7))  # init time delta
+stateTimeDelta = timedelta(minutes=17)  # init time delta
 epsilon = actor.epsilon
-# init optimal models save history array for logging
-optimalModelsHistory = []
 
 while curSequence < settings['minGameSequence']:
     g += 1
@@ -164,8 +161,8 @@ while curSequence < settings['minGameSequence']:
 
     # update opt model if achieved new max score
     if score > maxScore[0]:
-        backupIdx = DeepNetwork.save(dirName, None)
-        optimalModelsHistory.append((g, backupIdx))
+        logger.info("Saving optimal models")
+        DeepNetwork.save(dirName, logger)
     # update maximal score achieved during games
     maxScore = Funcs.updateMaxTuple(score, g, maxScore)
     # update maximal sequence achieved during games
@@ -190,20 +187,12 @@ while curSequence < settings['minGameSequence']:
 
     # save models and log max score & sequence values
     if (g % settings['nGamesPerSave']) == 0:
-        # save models if haven't saved them lately
-        if len(optimalModelsHistory) == 0:
-            DeepNetwork.save(dirName, logger)
-        else:
-            # log when we have reached optimal models lately
-            logger.info("Optimal models save history:{}".format(optimalModelsHistory))
-            optimalModelsHistory = []
-        # log max score & sequence values
+        DeepNetwork.save(dirName, logger)
         logger.info("maxScore:{} , maxSequence:{}".format(maxScore, maxSequence))
 
 ## GAME HAS ENDED
 # log max score & sequence values
 logger.info("maxScore:{} , maxSequence:{}".format(maxScore, maxSequence))
+
 # save models
 DeepNetwork.save(dirName, logger)
-# move to ended folder
-results.moveToEnded()

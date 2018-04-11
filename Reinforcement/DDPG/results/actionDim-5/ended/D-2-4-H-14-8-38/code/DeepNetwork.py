@@ -33,9 +33,9 @@ class DeepNetwork:
         self.models[self.mainModelKey] = self.buildModel(lr)
         # create target (final) model as copy of training model
         self.models[self.targetModelKey] = clone_model(self.models[self.mainModelKey])
-        # both models should start with same weights
         self.models[self.targetModelKey].set_weights(self.models[self.mainModelKey].get_weights())
         # self.models[self.targetModelKey] = self.buildModel()
+        # TODO: both models should start with same weights or not ?? papers says yes ...
 
         # add self to objects list
         DeepNetwork.objs.append(self)
@@ -71,7 +71,7 @@ class DeepNetwork:
         wTargetModel = self.models[self.targetModelKey].get_weights()
         assert (len(wModel) == len(wTargetModel))
         for i in range(len(wTargetModel)):
-            wTargetModel[i] = (self.TAU * wModel[i]) + ((1.0 - self.TAU) * wTargetModel[i])
+            wTargetModel[i] = (self.TAU * wModel[i]) + ((1 - self.TAU) * wTargetModel[i])
 
     @staticmethod
     def updateModelParams():
@@ -89,8 +89,7 @@ class DeepNetwork:
             # build full path
             fullPath = '{}/{}-{}-model-{}.h5'.format(dirName, self.className(), key, self.curBackupIdx)
             # log model file name
-            if logger:
-                logger.info('Saving [{}] {} model as [{}]'.format(self.className(), key, fullPath))
+            logger.info('Saving [{}] {} model as [{}]'.format(self.className(), key, fullPath))
             # save model
             self.models[key].save(fullPath)
 
@@ -100,13 +99,8 @@ class DeepNetwork:
     # save function for all list objects
     @staticmethod
     def save(dirName, logger):
-        # init array of backup indices
-        backupIdx = []
         for obj in DeepNetwork.objs:
-            backupIdx.append((obj.className(), obj.curBackupIdx))
             obj.__save(dirName, logger)
-
-        return backupIdx
 
     def __printModel(self, logger):
         if self.models[self.mainModelKey] is not None:

@@ -43,10 +43,10 @@ class WeekPolicy(Policy):
     #### times: array of time interval during these days that the device should be ON.
     ##### each time interval in times is a tuple (startTime , endTime)
 
-    def __init__(self, fname, seqLen=1):
+    def __init__(self, fname, rewardScaleFactor, seqLen=1):
         super(WeekPolicy, self).__init__(fname, seqLen)
         self.stateDim = (self.seqLen, self.stateDevicesStartIdx + self.numOfDevices)
-        self.rewardScaleFactor = 5
+        self.rewardScaleFactor = rewardScaleFactor
 
     def minTimeUnit(self):
         return timedelta(minutes=1)

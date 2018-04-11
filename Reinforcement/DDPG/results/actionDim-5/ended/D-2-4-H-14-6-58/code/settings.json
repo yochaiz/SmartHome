@@ -1,5 +1,5 @@
 {
-  "minGameScoreRatio": 0.85,
+  "minGameScoreRatio": 0.95,
   "minGameSequence": 500,
   "gameMinutesLength": 2880,
   "batchSize": 64,
