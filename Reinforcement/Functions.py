@@ -98,15 +98,18 @@ def saveCode(dstDir, filesData):
     if not os.path.exists(fullPath):
         os.makedirs(fullPath)
 
+    baseDir, filesList, settingsFileFullPath = filesData
     # copy specific training files
-    baseDir, filesList = filesData
     for fname in filesList:
         copy2('{}/{}'.format(baseDir, fname), fullPath)
 
     # copy general files
-    baseFilesList = ['../Functions.py', '../settings.json', ]
+    baseFilesList = ['../Functions.py']
     for fname in baseFilesList:
         copy2('{}/{}'.format(baseDir, fname), fullPath)
+
+    # copy settings file
+    copy2(settingsFileFullPath, fullPath)
 
 
 # save info data to JSON

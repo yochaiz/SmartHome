@@ -24,7 +24,8 @@ logger = Funcs.initLogger(dirName)
 sess = Funcs.initGPU(args.gpuNum, args.gpuFrac)
 Funcs.attachSIGTERMhandler(results, logger)
 # save source code
-Funcs.saveCode(dirName, (baseFolder, ['train.py', 'Actor.py', 'Critic.py', 'DeepNetwork.py', 'ReplayBuffer.py']))
+Funcs.saveCode(dirName,
+               (baseFolder, ['train.py', 'Actor.py', 'Critic.py', 'DeepNetwork.py', 'ReplayBuffer.py'], args.settings))
 
 # init info json file
 info, jsonFullFname = Funcs.loadInfoFile(dirName, logger)
