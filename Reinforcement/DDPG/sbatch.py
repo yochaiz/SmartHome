@@ -7,11 +7,20 @@ now = datetime.now()
 outputFile = 'D-{}-{}-H-{}-{}-{}.out'.format(now.day, now.month, now.hour, now.minute, now.second)
 
 commands = [
-    [sys.executable, './train.py', '0', '--sequential', '--k', '32', '--desc', '"deep model **sequential**"'],
-    [sys.executable, './train.py', '0', '--sequential', '--k', '32', '--rewardScale', '0.5', '--desc',
-     '"deep model **sequential** with rewardScaleFactor = 0.5"'],
-    [sys.executable, './train.py', '0', '--sequential', '--k', '32', '--settings',
-     '/home/yochaiz/SmartHome/Reinforcement/settings2.json', '--desc', '"deep model **sequential** 0.9 minGameRatio"']
+    [sys.executable, './train.py', '0', '--sequential',
+     '--k', '32',
+     '--desc', '"deep model **sequential** scoreRatio = 0.9"',
+     '--settings', '/home/yochaiz/SmartHome/Reinforcement/settings2.json'],
+    [sys.executable, './train.py', '0', '--sequential',
+     '--k', '32',
+     '--rewardScale', '0.5',
+     '--desc', '"deep model **sequential** scoreRatio = 0.9 with rewardScaleFactor = 0.5"',
+     '--settings', '/home/yochaiz/SmartHome/Reinforcement/settings2.json'],
+    [sys.executable, './train.py', '0', '--sequential',
+     '--k', '32',
+     '--rewardScale', '0.1',
+     '--desc', '"deep model **sequential** scoreRatio = 0.9 with rewardScaleFactor = 0.1"',
+     '--settings', '/home/yochaiz/SmartHome/Reinforcement/settings2.json']
 ]
 
 # dstFile = 'ReplayBuffer.py'
@@ -35,8 +44,7 @@ procs = []
 
 with open(outputFile, mode='w') as out:
     # print commands
-    out.write('{}'.format(commands))
-    out.write('***')
+    out.write('***{}***'.format(commands))
     # run processes
     for cmd in commands:
         # copy2(file, dstFile)

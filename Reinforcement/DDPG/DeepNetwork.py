@@ -1,6 +1,7 @@
 # base class that applies some log behaviour for sub-classes
 from abc import ABCMeta, abstractmethod
 from keras.models import clone_model
+from keras.models import save_model
 from keras.layers import Dense, Activation, add
 
 
@@ -29,13 +30,12 @@ class DeepNetwork:
 
         # create models & graph
         self.models = {}
-        # create main model
-        self.models[self.mainModelKey] = self.buildModel(lr)
-        # create target (final) model as copy of training model
-        self.models[self.targetModelKey] = clone_model(self.models[self.mainModelKey])
-        # both models should start with same weights
-        self.models[self.targetModelKey].set_weights(self.models[self.mainModelKey].get_weights())
-        # self.models[self.targetModelKey] = self.buildModel()
+        # # create main model
+        # self.models[self.mainModelKey] = self.buildModel(lr)
+        # # create target (final) model as copy of training model
+        # self.models[self.targetModelKey] = clone_model(self.models[self.mainModelKey])
+        # # both models should start with same weights
+        # self.models[self.targetModelKey].set_weights(self.models[self.mainModelKey].get_weights())
 
         # add self to objects list
         DeepNetwork.objs.append(self)
@@ -92,7 +92,7 @@ class DeepNetwork:
             if logger:
                 logger.info('Saving [{}] {} model as [{}]'.format(self.className(), key, fullPath))
             # save model
-            self.models[key].save(fullPath)
+            save_model(self.models[key], fullPath)
 
         # update next save index
         self.curBackupIdx = (self.curBackupIdx + 1) % self.nBackups

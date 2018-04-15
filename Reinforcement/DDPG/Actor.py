@@ -23,15 +23,11 @@ class Actor(DeepNetwork):
                  nBackups):
         super(Actor, self).__init__(sess, stateDim, actionDim, TAU, lr, nBackups)
 
-        # # load models from file
-        #     self.models[self.mainModelKey] = load_model("results/D-22-3-H-14-19-41/Actor-main-model-0.h5")
-        #     self.models[self.targetModelKey] = load_model("results/D-22-3-H-14-19-41/Actor-target-model-0.h5")
-        #     # compile models
-        #     adam = Adam(lr=lr)
-        #     self.models[self.mainModelKey].compile(loss='mse', optimizer=adam)
-        #     self.models[self.targetModelKey].compile(loss='mse', optimizer=adam)
-        #
-        #     self.stateInput = self.models[self.mainModelKey].input
+        # load models from file
+        self.models[self.mainModelKey] = load_model("results/actionDim-5/ended/D-8-4-H-18-32-12/Actor-main-model-2.h5")
+        self.models[self.targetModelKey] = load_model("results/actionDim-5/ended/D-8-4-H-18-32-12/Actor-target-model-2.h5")
+
+        self.stateInput = self.models[self.mainModelKey].input
 
         # set model optimization method (gradients calculation)
         self.action_gradient = tf.placeholder(tf.float32, [None, actionDim])
